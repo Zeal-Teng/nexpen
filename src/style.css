@@ -1680,3 +1680,14 @@ html .app-shell .diary-month-date-heading{padding:12px 3px 4px;border-bottom:0}
 html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
   background: var(--theme-chip) !important;
 }
+
+/* NEXPEN v87 — unified bottom-sheet header actions */
+.app-shell .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding-bottom:14px!important}
+.app-shell .sheet-head h2{min-width:0;flex:1;margin:0;overflow-wrap:anywhere}
+.app-shell .sheet-head-actions{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:8px}
+.app-shell .sheet-head-actions .circle-button{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;display:grid;place-items:center;border-radius:50%!important;padding:0!important;box-shadow:none;cursor:pointer;touch-action:manipulation}
+.app-shell .sheet-head-actions .sheet-save-btn{background:var(--cp-action,var(--theme-accent,#4da6ce))!important;color:var(--cp-action-text,var(--theme-accent-contrast,#082333))!important;border:1px solid transparent!important}
+.app-shell .sheet-head-actions .sheet-delete-btn{background:rgba(228,80,105,.12)!important;color:#e85772!important;border:1px solid rgba(228,80,105,.28)!important}
+.app-shell .sheet-head-actions .sheet-close-btn{background:var(--cp-raised,rgba(128,140,160,.14))!important;border:1px solid var(--cp-border,rgba(128,140,160,.25))!important;color:var(--cp-text,var(--text,#c8d5e0))!important}
+.app-shell .sheet-head-actions .circle-button:focus-visible{outline:2px solid var(--cp-accent,#4da6ce);outline-offset:3px}
+@media(max-width:420px){.app-shell .sheet-head-actions{gap:6px}.app-shell .sheet-head-actions .circle-button{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important}}
