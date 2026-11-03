@@ -1,5 +1,5 @@
 /**
- * CYBERPULSE offline securities code classifier.
+ * NEXPEN offline securities code classifier.
  * Rules based on TWSE ETF code allocation (2025-05-05):
  * https://www.twse.com.tw/downloads/zh/ETF/ETFcode.pdf
  * Codes identify *likely* product classes; they do not confirm listing status.

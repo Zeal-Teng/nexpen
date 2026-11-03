@@ -11,7 +11,7 @@
  .bottom-nav button{flex:1}
  .page-head{margin-top:0}
 }
-/* CYBERPULSE / NEON GLASS: consistent futuristic styling across desktop and iPhone */
+/* NEXPEN / NEON GLASS: consistent futuristic styling across desktop and iPhone */
 :root{--cyber-bg:#080f24;--cyber-cyan:#49e7fa;--cyber-indigo:#8a83ff;--cyber-line:rgba(113,197,255,.19)}
 .app-shell,[data-theme=dark] .app-shell{background:radial-gradient(ellipse at 8% 2%,#1a3d73 0%,transparent 42%),radial-gradient(ellipse at 93% 90%,#35246b 0%,transparent 46%),linear-gradient(160deg,#070f20,#0e1630 66%,#14102d)!important;color:#eaf4ff!important;min-height:100dvh}
 .glass,[data-theme=dark] .glass{background:linear-gradient(145deg,rgba(40,69,109,.58),rgba(19,31,59,.69))!important;border:1px solid var(--cyber-line)!important;box-shadow:0 13px 35px #01091b65,inset 0 1px #c5efff20!important;backdrop-filter:blur(24px) saturate(140%)}
@@ -1226,7 +1226,7 @@ html .app-shell section.glass.panel.investment-combined{
 }
 
 /* =====================================================================
-   CYBERPULSE v76 · Unified experience system
+   NEXPEN v76 · Unified experience system
    Layout-only redesign; never modifies transactions or IndexedDB.
    Theme palettes remain sourced from the user's selected theme.
    ===================================================================== */

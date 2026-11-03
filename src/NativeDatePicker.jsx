@@ -1,3 +1,4 @@
+import {t as i18n} from './i18n.js';
 import React, {useRef} from 'react';
 
 /**

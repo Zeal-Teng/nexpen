@@ -1,3 +1,4 @@
+import {t as i18n} from './i18n.js';
 import React,{useState} from 'react';
 import {createPortal} from 'react-dom';
 import {Check,X} from 'lucide-react';
@@ -11,7 +12,7 @@ function calculate(expression){
 function Calculator({initial,onDone,onClose}){
  const[expr,setExpr]=useState(String(initial||''));const[error,setError]=useState('');
  const press=k=>{setError('');if(k==='C')return setExpr('');if(k==='⌫')return setExpr(s=>s.slice(0,-1));if(k==='='){try{setExpr(String(calculate(expr)))}catch(e){setError(e.message)}return}if('+-×÷'.includes(k))return setExpr(s=>s&&!/[+\-×÷]$/.test(s)?s+k:s);setExpr(s=>s+k)};
- return createPortal(<div className="calculator-backdrop" onClick={onClose}><div className="calculator-sheet" onClick={e=>e.stopPropagation()}><div className="picker-handle"/><div className="calculator-heading"><b>金額計算機</b><button className="sheet-close-button" aria-label="關閉計算機" onClick={onClose} type="button"><X size={21}/></button></div><div className="calc-display">{expr||'0'}</div><div className="calc-result">{error||'可輸入 100+20×3，再按 = 計算'}</div><div className="calc-keys">{['C','⌫','÷','×','7','8','9','−','4','5','6','+','1','2','3','=','0','00','.','完成'].map(k=><button key={k} type="button" className={'calc-key '+('÷×−+=' .includes(k)?'operator ':'')+(k==='完成'?'finish':'')} onClick={()=>{if(k==='完成'){try{const v=calculate(expr);if(v<0)throw Error('金額不可為負數');onDone(String(v));onClose()}catch(e){setError(e.message)}}else press(k==='−'?'-':k)}}>{k}</button>)}</div></div></div>,document.body);
+ return createPortal(<div className="calculator-backdrop" onClick={onClose}><div className="calculator-sheet" onClick={e=>e.stopPropagation()}><div className="picker-handle"/><div className="calculator-heading"><b>{i18n("金額計算機")}</b><button className="sheet-close-button" aria-label={i18n("關閉計算機")} onClick={onClose} type="button"><X size={21}/></button></div><div className="calc-display">{expr||'0'}</div><div className="calc-result">{error||'可輸入 100+20×3，再按 = 計算'}</div><div className="calc-keys">{['C','⌫','÷','×','7','8','9','−','4','5','6','+','1','2','3','=','0','00','.','完成'].map(k=><button key={k} type="button" className={'calc-key '+('÷×−+=' .includes(k)?'operator ':'')+(k==='完成'?'finish':'')} onClick={()=>{if(k==='完成'){try{const v=calculate(expr);if(v<0)throw Error('金額不可為負數');onDone(String(v));onClose()}catch(e){setError(e.message)}}else press(k==='−'?'-':k)}}>{k}</button>)}</div></div></div>,document.body);
 }
 
 export default Calculator;
