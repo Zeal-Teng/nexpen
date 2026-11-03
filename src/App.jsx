@@ -196,8 +196,66 @@ function Calculator({initial,onDone,onClose}){
  return createPortal(<div className="calculator-backdrop" onClick={onClose}><div className="calculator-sheet" onClick={e=>e.stopPropagation()}><div className="picker-handle"/><div className="calculator-heading"><b>金額計算機</b><button className="sheet-close-button" aria-label="關閉計算機" onClick={onClose} type="button"><X size={21}/></button></div><div className="calc-display">{expr||'0'}</div><div className="calc-result">{error||'可輸入 100+20×3，再按 = 計算'}</div><div className="calc-keys">{['C','⌫','÷','×','7','8','9','−','4','5','6','+','1','2','3','=','0','00','.','完成'].map(k=><button key={k} type="button" className={'calc-key '+('÷×−+=' .includes(k)?'operator ':'')+(k==='完成'?'finish':'')} onClick={()=>{if(k==='完成'){try{const v=calculate(expr);if(v<0)throw Error('金額不可為負數');onDone(String(v));onClose()}catch(e){setError(e.message)}}else press(k==='−'?'-':k)}}>{k}</button>)}</div></div></div>,document.body);
 }
 
+
+// Local PWA application lock: PBKDF2 protects the passphrase verifier. This is
+// an interface lock, not encryption of IndexedDB or protection against devtools.
+const toHex=bytes=>Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+const fromHex=hex=>new Uint8Array(hex.match(/.{2}/g).map(x=>parseInt(x,16)));
+async function hashAppPassword(password,saltHex=null){
+ if(!globalThis.crypto?.subtle)throw Error('密碼功能需要 HTTPS 或 localhost 的安全環境');
+ const salt=saltHex?fromHex(saltHex):crypto.getRandomValues(new Uint8Array(16));
+ const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);
+ const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},key,256);
+ return {salt:toHex(salt),hash:toHex(new Uint8Array(bits)),iterations:250000};
+}
+async function verifyAppPassword(password,verifier){
+ const result=await hashAppPassword(password,verifier.salt);
+ const a=fromHex(result.hash),b=fromHex(verifier.hash);
+ if(a.length!==b.length)return false;
+ let diff=0;for(let i=0;i<a.length;i++)diff|=a[i]^b[i];return diff===0;
+}
+function AppLockScreen({onUnlock}){
+ const [value,setValue]=useState('');const [error,setError]=useState('');
+ const [busy,setBusy]=useState(false);const [attempts,setAttempts]=useState(0);
+ const [blockedUntil,setBlockedUntil]=useState(0);
+ const submit=async e=>{e.preventDefault();if(busy||Date.now()<blockedUntil)return;
+  setBusy(true);setError('');try{const ok=await onUnlock(value);
+   if(!ok){const n=attempts+1;setAttempts(n);setValue('');
+    if(n%5===0){setBlockedUntil(Date.now()+30000);setError('密碼錯誤次數過多，請 30 秒後再試');}
+    else setError('密碼不正確');}
+  }catch(err){setError(err.message||'解鎖失敗');}finally{setBusy(false)}
+ };
+ return <div className="app-lock-screen"><form className="app-lock-card" onSubmit={submit}>
+  <div className="app-lock-mark"><Lock size={28}/></div><h1>CYBERPULSE</h1>
+  <p>請輸入 App 密碼解鎖</p><input aria-label="App 密碼" type="password" value={value}
+   autoComplete="off" autoFocus onChange={e=>setValue(e.target.value)} placeholder="輸入密碼" required/>
+  {error&&<div className="app-lock-error" role="alert">{error}</div>}
+  <button type="submit" disabled={busy||!value||Date.now()<blockedUntil}>{busy?'驗證中…':'解鎖'}</button>
+  <small>此密碼只限制 App 畫面的存取，不會加密本機資料。</small>
+ </form></div>;
+}
+function AppPasswordSettings({hasPassword,onSet,onRemove}){
+ const[old,setOld]=useState(''),[next,setNext]=useState(''),[confirm,setConfirm]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const save=async e=>{e.preventDefault();setError('');if(next.length<6)return setError('新密碼至少 6 個字元');if(next!==confirm)return setError('兩次輸入的新密碼不同');setBusy(true);
+  try{await onSet(old,next);setOld('');setNext('');setConfirm('');}catch(err){setError(err.message)}finally{setBusy(false)}
+ };
+ const remove=async()=>{setError('');setBusy(true);try{await onRemove(old);setOld('');setNext('');setConfirm('');}catch(err){setError(err.message)}finally{setBusy(false)}};
+ return <section className="glass panel app-password-settings"><h2>開啟 App 密碼</h2><p className="hint">{hasPassword?'已啟用：下次重新開啟 App 需輸入密碼':'目前未設定：開啟 App 時直接進入'}。密碼只儲存加鹽雜湊值，不會儲存明文。</p>
+  <form onSubmit={save} className="app-password-form">
+  {hasPassword&&<label className="field"><span>目前密碼</span><input type="password" autoComplete="current-password" value={old} onChange={e=>setOld(e.target.value)} required/></label>}
+  <label className="field"><span>{hasPassword?'設定新密碼':'設定密碼（至少 6 字元）'}</span><input type="password" autoComplete="new-password" value={next} onChange={e=>setNext(e.target.value)} required minLength={6}/></label>
+  <label className="field"><span>再次輸入新密碼</span><input type="password" autoComplete="new-password" value={confirm} onChange={e=>setConfirm(e.target.value)} required minLength={6}/></label>
+  {error&&<p role="alert" className="app-lock-error">{error}</p>}
+  <div className="app-password-actions"><button className="primary-btn" type="submit" disabled={busy}>{hasPassword?'更新密碼':'啟用密碼'}</button>
+  {hasPassword&&<button type="button" className="soft-btn" onClick={remove} disabled={busy||!old}>停用密碼</button>}</div></form>
+  <p className="hint">忘記密碼無法由 App 直接找回。此功能不是資料加密，無法防止使用開發者工具的人讀取 IndexedDB。</p>
+ </section>;
+}
+
 export default function App(){
  const[language,setLanguage]=useState('zh-TW'),[colorScheme,setColorScheme]=useState('normal'),[primaryCurrency,setPrimaryCurrency]=useState('TWD'),[primaryTwdRate,setPrimaryTwdRate]=useState(1),[primaryRateDate,setPrimaryRateDate]=useState(''),[primaryRateLoading,setPrimaryRateLoading]=useState(false);const tr=value=>trText(value,language);
+ const [passwordConfig,setPasswordConfig]=useState(null),[unlocked,setUnlocked]=useState(false);
+ const lockInitialized=useRef(false);
  const[tab,setTab]=useState('daily'),[records,setRecords]=useState([]),[accounts,setAccounts]=useState([]),[stocks,setStocks]=useState([]),[recurring,setRecurring]=useState([]),[categories,setCategories]=useState(defaultCategories),[categoryIcons,setCategoryIcons]=useState({}),[accountTypes,setAccountTypes]=useState(defaultAccountTypes),[projects,setProjects]=useState([]),[date,setDate]=useState(today()),[diaryView,setDiaryView]=useState('day'),[theme,setTheme]=useState('dark'),[fontScale,setFontScale]=useState(1),[ready,setReady]=useState(false),[dialog,setDialog]=useState(''),[editing,setEditing]=useState(null),[notice,setNotice]=useState(''),[filter,setFilter]=useState('all'),[categoryFlow,setCategoryFlow]=useState('expense'),[query,setQuery]=useState('');const fileInput=useRef(null);const datePickerRef=useRef(null);const monthPickerRef=useRef(null);const weekSwipe=useRef(null);
  // Touch/mouse/pen drag sorting: only the handle captures gestures.
  const dragCategoryRef=useRef(null);
@@ -327,7 +385,7 @@ export default function App(){
   }
  };
  const toast=s=>{setNotice(s);setTimeout(()=>setNotice(''),3300)};
- async function reload(){const[r,a,s,rr,c,t,fs,ci,at,bf,sq,langSetting,colorSetting,baseSetting,baseRateSetting,projectSetting,investHistory,investFlows]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.get('categories'),db.settings.get('theme'),db.settings.get('fontScale'),db.settings.get('categoryIcons'),db.settings.get('accountTypes'),db.settings.get('stockBrokerFees'),db.settings.get('stockClosingQuotes'),db.settings.get('language'),db.settings.get('amountColors'),db.settings.get('primaryCurrency'),db.settings.get('primaryTwdRate'),db.settings.get('projects'),db.investmentValuations.toArray(),db.investmentFlows.toArray()]);setInvestmentValuations(investHistory);setInvestmentFlows(investFlows);setProjects(projectSetting?.value||[]);setLanguage(langSetting?.value||'zh-TW');setColorScheme(colorSetting?.value||'normal');setPrimaryCurrency(baseSetting?.value||'TWD');setPrimaryTwdRate(Number(baseRateSetting?.value?.rate)||((baseSetting?.value||'TWD')==='TWD'?1:0));setPrimaryRateDate(baseRateSetting?.value?.date||'');setQuotes(sq?.value||{});setBrokerFees(bf?.value||{discount:60,minimum:20});setAccountTypes([...((at?.value)||defaultAccountTypes),...defaultAccountTypes.filter(t=>['trust','policy'].includes(t.id)&&!((at?.value)||defaultAccountTypes).some(x=>x.id===t.id))]);setRecords(r);setAccounts(a);setStocks(s);setRecurring(rr);setCategories(c?.value||defaultCategories);setTheme(t?.value||'dark');setFontScale(Number(fs?.value)||1);setCategoryIcons(ci?.value||{});}
+ async function reload(){const[r,a,s,rr,c,t,fs,ci,at,bf,sq,langSetting,colorSetting,baseSetting,baseRateSetting,projectSetting,investHistory,investFlows,appLockSetting]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.get('categories'),db.settings.get('theme'),db.settings.get('fontScale'),db.settings.get('categoryIcons'),db.settings.get('accountTypes'),db.settings.get('stockBrokerFees'),db.settings.get('stockClosingQuotes'),db.settings.get('language'),db.settings.get('amountColors'),db.settings.get('primaryCurrency'),db.settings.get('primaryTwdRate'),db.settings.get('projects'),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.settings.get('appLock')]);setPasswordConfig(appLockSetting?.value||null);if(!lockInitialized.current){setUnlocked(!appLockSetting?.value);lockInitialized.current=true;}setInvestmentValuations(investHistory);setInvestmentFlows(investFlows);setProjects(projectSetting?.value||[]);setLanguage(langSetting?.value||'zh-TW');setColorScheme(colorSetting?.value||'normal');setPrimaryCurrency(baseSetting?.value||'TWD');setPrimaryTwdRate(Number(baseRateSetting?.value?.rate)||((baseSetting?.value||'TWD')==='TWD'?1:0));setPrimaryRateDate(baseRateSetting?.value?.date||'');setQuotes(sq?.value||{});setBrokerFees(bf?.value||{discount:60,minimum:20});setAccountTypes([...((at?.value)||defaultAccountTypes),...defaultAccountTypes.filter(t=>['trust','policy'].includes(t.id)&&!((at?.value)||defaultAccountTypes).some(x=>x.id===t.id))]);setRecords(r);setAccounts(a);setStocks(s);setRecurring(rr);setCategories(c?.value||defaultCategories);setTheme(t?.value||'dark');setFontScale(Number(fs?.value)||1);setCategoryIcons(ci?.value||{});}
  useEffect(()=>{ensureDefaults().then(reload).then(()=>setReady(true)).catch(e=>toast(e.message))},[]);
  useEffect(()=>{document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;document.documentElement.style.setProperty('--app-font-scale',String(fontScale));},[theme,fontScale]);
  // On app launch, silently refresh the official securities catalog (at most once daily).
@@ -777,7 +835,13 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   }catch(e){toast(`無法更新主要貨幣匯率：${e.message}，請連線後重試`)}finally{setPrimaryRateLoading(false)}
  };
  const chooseTheme=async value=>{await db.settings.put({key:'theme',value});setTheme(value)};const toggleTheme=async()=>chooseTheme(theme==='dark'?'light':'dark');const updateFontScale=async value=>{const n=Number(value)||1;await db.settings.put({key:'fontScale',value:n});setFontScale(n)};
+ const verifyLock=async password=>{const ok=await verifyAppPassword(password,passwordConfig);if(ok)setUnlocked(true);return ok;};
+ const changeLock=async(oldPassword,newPassword)=>{if(passwordConfig&&!(await verifyAppPassword(oldPassword,passwordConfig)))throw Error('目前密碼不正確');
+  const config=await hashAppPassword(newPassword);await db.settings.put({key:'appLock',value:config});setPasswordConfig(config);toast('App 密碼已設定，下次開啟需要解鎖');};
+ const removeLock=async oldPassword=>{if(passwordConfig&&!(await verifyAppPassword(oldPassword,passwordConfig)))throw Error('目前密碼不正確');
+  await db.settings.delete('appLock');setPasswordConfig(null);setUnlocked(true);toast('已停用 App 密碼');};
  if(!ready)return <div className="loading">載入本機資料庫中…</div>;
+ if(passwordConfig&&!unlocked)return <AppLockScreen onUnlock={verifyLock}/>;
  return <div className="app-shell" lang={language} data-color-scheme={colorScheme} style={{'--user-income':colorScheme==='reverse'?'#e75365':'#26ab7d','--user-expense':colorScheme==='reverse'?'#26ab7d':'#e75365'}}><div className="ambient ambient-a"/><div className="ambient ambient-b"/><header className="topbar glass"><div className="brand"><div className="brand-icon"><Wallet size={22}/></div><div><strong>CYBER<span>PULSE</span></strong><small>LIQUID · PRIVATE LEDGER</small></div></div><div className="top-actions"><span className="offline-pill"><ShieldCheck size={13}/> 本機資料</span><button className="circle-button" onClick={toggleTheme}>{theme==='light'?<Moon size={20}/>:<Sun size={20}/>}</button></div></header>
  <div className="layout"><aside className="sidebar glass"><div className="side-caption">PERSONAL FINANCE</div>{nav.map(([key,label,Icon])=><button key={key} onClick={()=>setTab(key)} className={'side-link '+(tab===key?'selected':'')}><Icon size={19}/>{tr(label)}</button>)}<div className="sidebar-bottom">100% LOCAL-FIRST<br/>資料不會上傳 GitHub</div></aside>
  <main key={tab} className={"main page-enter "+(tab==='daily'?'daily-compact':'')}>{settingsPages.includes(tab)&&<button className="mobile-back" onClick={()=>setTab('settings')}><ChevronLeft size={19}/> 返回設定</button>}{tab!=='daily'&&<div className="page-head"><div><div className="eyebrow">YOUR MONEY, YOUR SPACE</div><h1>{tr(nav.find(n=>n[0]===tab)?.[1])}</h1></div>{tab==='daily'?<span className="page-context">{month.replace('-',' 年 ')} 月</span>:<span className="page-context">{tab==='categories'?'自訂收支分類':tab==='settings'?'本機資料管理':tab==='dashboard'?'財務概況':tab==='stocks'?'投資管理':tab==='accounts'?'帳戶管理':tab==='accountTypes'?'類型設定':tab==='projects'?'專案管理':'交易設定'}</span>}</div>}
@@ -803,7 +867,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  {tab==='accountTypes'&&<section className="glass panel account-type-page"><div className="section-header"><div><h2>帳戶類型管理</h2><p className="hint">按住拖曳把手調整帳戶類型順序，放開後立即儲存；也可使用方向鍵。除「證券交割戶」外，其餘類型不可刪除。</p></div><button type="button" className="soft-btn" onClick={()=>open('accountType')}><Plus size={16}/>新增類型</button></div><div className="account-type-list">{accountTypes.map(t=><div className={'account-type-item'+(accountTypeDrag?.id===t.id?' account-type-dragging':'')+(accountTypeDrag?.target===t.id?' account-type-drop-target':'')} data-account-type-sort-row="" data-account-type-id={t.id} key={t.id}><button type="button" className="account-type-drag-handle" title={'拖曳排序'+t.name} aria-label={'拖曳排序'+t.name} onPointerDown={e=>accountTypeDragStart(e,t.id)} onPointerMove={accountTypeDragMove} onPointerUp={accountTypeDragEnd} onPointerCancel={finishAccountTypeDrag} onKeyDown={e=>accountTypeDragKey(e,t.id)}><GripVertical size={19}/></button><div className="row-main"><b>{t.name}</b><small>{accounts.filter(a=>a.type===t.id).length} 個帳戶使用</small></div><button type="button" className="type-action" title={'修改'+t.name} aria-label={'修改'+t.name} onClick={()=>open('accountType',t)}><Edit3 size={18}/></button>{t.id==='brokerage'?<button type="button" className="type-action delete" title={'刪除'+t.name} aria-label={'刪除'+t.name} onClick={()=>deleteAccountType(t)}><Trash2 size={18}/></button>:<span className="account-type-locked" title="保留類型，不可刪除"><Lock size={17}/></span>}</div>)}</div></section>}
  {tab==='stocks'&&<>
  {investSection==='list'?<>
-  <section className="investment-combined" aria-label="投資分類與績效">
+  <section className="glass panel investment-combined" aria-label="投資分類與績效">
    <div className="investment-combined-heading"><h2>投資總覽</h2><small>點選類別查看資產及交易紀錄</small></div>
    <div className="investment-combined-list">{investmentOverview.map(item=>{
     const pnl=item.valueTwd===null?null:item.valueTwd-item.costTwd;
@@ -838,7 +902,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  <p className="hint">目前支援主要導航、統計與設定介面翻譯；既有分類名稱、使用者輸入與部分進階表單仍維持原文。</p>
  <Field label={tr('金額顏色')}><SmartSelect value={colorScheme} onChange={e=>chooseColors(e.target.value)}><option value="normal">{tr('收入／獲利顯示綠色')} · 支出／損失紅色</option><option value="reverse">{tr('收入／獲利顯示紅色')} · 支出／損失綠色</option></SmartSelect></Field>
  <div className="color-preview"><span className="income">+ 1,200</span><span className="expense">− 500</span></div>
- </section><section className="glass panel"><h2>iCloud Drive 備份</h2><p className="hint">資料保存在這台裝置。按「立即備份」產生 JSON，再透過 iPhone 的分享選單儲存至「檔案 → iCloud Drive」；還原時從檔案 App 手動選取備份。</p><button className="action-row" onClick={download}><Download size={20}/><span><b>{tr('立即備份')}</b><small>匯出完整 JSON，儲存到 iCloud Drive</small></span><ChevronRight size={18}/></button><button className="action-row" onClick={()=>fileInput.current?.click()}><Upload size={20}/><span><b>{tr('立即還原')}</b><small>從 iCloud Drive 選擇備份檔，確認後覆蓋本機</small></span><ChevronRight size={18}/></button><input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importFile}/><p className="hint">iPhone PWA 無法自動找到 iCloud Drive 最新檔案，還原時須自行選取；建議以檔名日期辨識最新備份。</p></section><section className="glass panel"><h2>{tr('外觀與使用')}</h2><div className="theme-heading"><b>{tr('外觀主題')}</b><small>選擇配色，立即套用並儲存於本機</small></div><ThemePicker value={theme} onChange={chooseTheme}/><div className="font-scale-block"><div><b>{tr('字體大小')}</b><small>依你的閱讀習慣調整</small></div><div className="scale-chips">{[[0.92,'小'],[1,'中'],[1.08,'大']].map(([v,label])=><button key={label} type="button" className={'scale-chip '+(fontScale===v?'active':'')} onClick={()=>updateFontScale(v)}>{label}</button>)}</div></div><div className="hint">安裝：用 iPhone Safari 開啟 GitHub Pages 網址 → 分享 → 加入主畫面。程式快取後可離線開啟。</div></section></>}
+ </section><section className="glass panel"><h2>iCloud Drive 備份</h2><p className="hint">資料保存在這台裝置。按「立即備份」產生 JSON，再透過 iPhone 的分享選單儲存至「檔案 → iCloud Drive」；還原時從檔案 App 手動選取備份。</p><button className="action-row" onClick={download}><Download size={20}/><span><b>{tr('立即備份')}</b><small>匯出完整 JSON，儲存到 iCloud Drive</small></span><ChevronRight size={18}/></button><button className="action-row" onClick={()=>fileInput.current?.click()}><Upload size={20}/><span><b>{tr('立即還原')}</b><small>從 iCloud Drive 選擇備份檔，確認後覆蓋本機</small></span><ChevronRight size={18}/></button><input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importFile}/><p className="hint">iPhone PWA 無法自動找到 iCloud Drive 最新檔案，還原時須自行選取；建議以檔名日期辨識最新備份。</p></section><section className="glass panel"><h2>{tr('外觀與使用')}</h2><div className="theme-heading"><b>{tr('外觀主題')}</b><small>選擇配色，立即套用並儲存於本機</small></div><ThemePicker value={theme} onChange={chooseTheme}/><div className="font-scale-block"><div><b>{tr('字體大小')}</b><small>依你的閱讀習慣調整</small></div><div className="scale-chips">{[[0.92,'小'],[1,'中'],[1.08,'大']].map(([v,label])=><button key={label} type="button" className={'scale-chip '+(fontScale===v?'active':'')} onClick={()=>updateFontScale(v)}>{label}</button>)}</div></div><div className="hint">安裝：用 iPhone Safari 開啟 GitHub Pages 網址 → 分享 → 加入主畫面。程式快取後可離線開啟。</div></section><AppPasswordSettings hasPassword={!!passwordConfig} onSet={changeLock} onRemove={removeLock}/></>}
  </main></div>
  
  <nav className="bottom-nav glass">{mobileNav.map(([key,label,Icon])=><button key={key} onClick={()=>setTab(key)} className={(tab===key||(key==='settings'&&settingsPages.includes(tab)))?'active':''}><Icon size={20} strokeWidth={tab===key?2.6:1.9}/><span>{tr(label)}</span></button>)}</nav>

@@ -1065,3 +1065,70 @@ html .app-shell .daily-compact .calendar-header .calendar-header-controls{
     grid-template-columns:minmax(0,1fr) !important;
   }
 }
+
+
+/* v73: iPhone fixes, larger type, one-line categories, app lock and restored investment glass. */
+html,body,#root{min-width:0;overflow-x:hidden}
+html{background:var(--theme-bg,#0c1624)}
+/* No translucent top seam on standalone iOS PWA. */
+@media (display-mode:standalone){html,body,#root{background:var(--theme-bg,#0c1624)}.app-shell{background:var(--theme-bg,#0c1624)!important}}
+@media(max-width:800px){
+ .app-shell{font-size:calc(17px * var(--app-font-scale,1))!important}
+ .app-shell .field>span{font-size:calc(13.5px * var(--app-font-scale,1))!important}
+ .app-shell .row-main b,.app-shell .action-row b{font-size:calc(15.5px * var(--app-font-scale,1))!important}
+ .app-shell .row-main small,.app-shell .action-row small{font-size:calc(13px * var(--app-font-scale,1))!important}
+ .app-shell .sheet-head h2{font-size:21px!important}
+ .app-shell .field input:not([type="date"]),.app-shell .field .smart-select,.app-shell .field .money-trigger{font-size:17px!important}
+ /* Force date fields onto independent rows across the common iPhone widths. */
+ .app-shell .sheet-body .form-grid:has(input[type="date"]),
+ .app-shell .sheet-body .form-grid:has(input[type="datetime-local"]){grid-template-columns:minmax(0,1fr)!important;gap:15px!important}
+ .app-shell .sheet-body .field input[type="date"],
+ .app-shell .sheet-body .field input[type="datetime-local"]{
+  display:block!important;appearance:none;-webkit-appearance:none;
+  box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;
+  height:54px!important;min-height:54px!important;line-height:normal!important;
+  padding:0 15px!important;font-size:16px!important;overflow:hidden!important
+ }
+ .app-shell .sheet-body .field input[type="date"]::-webkit-date-and-time-value,
+ .app-shell .sheet-body .field input[type="datetime-local"]::-webkit-date-and-time-value{min-width:0!important;text-align:left!important}
+ .app-shell .sheet-body .field .money-trigger,
+ .app-shell .sheet-body .field .smart-select,.app-shell .sheet-body .field input:not([type="date"]){min-height:54px!important;height:54px!important}
+ /* Reduce visual height of bottom navigation and settle it nearer the bottom. */
+ .app-shell .bottom-nav{bottom:calc(3px + env(safe-area-inset-bottom))!important;padding:4px 4px!important;min-height:63px!important}
+ .app-shell .bottom-nav button{padding:6px 4px!important;gap:3px!important}
+ .app-shell .bottom-nav button svg{width:20px;height:20px}
+ .app-shell .bottom-nav button span{font-size:11px!important}
+ .app-shell .fab{bottom:calc(82px + env(safe-area-inset-bottom))!important}
+ /* Remove blur on fixed header and top-safe-area without changing modal background. */
+ .app-shell .topbar{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+}
+/* Restore the requested glass panel around combined investment summary. */
+html .app-shell section.glass.panel.investment-combined{
+ background:var(--theme-surface,rgba(30,45,65,.82))!important;
+ border:1px solid var(--theme-line,rgba(130,160,190,.32))!important;
+ border-radius:22px!important;padding:19px 20px!important;
+ box-shadow:0 10px 34px rgba(0,0,0,.09)!important;
+ backdrop-filter:blur(14px) saturate(125%)!important;
+ -webkit-backdrop-filter:blur(14px) saturate(125%)!important;
+}
+/* Subcategory rows must never wrap into two lines. */
+.app-shell .category-sub{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;min-width:0!important}
+.app-shell .category-sub>span{flex:1 1 auto!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;overflow-wrap:normal!important}
+.app-shell .category-sub .category-tools{flex:0 0 auto!important;white-space:nowrap!important}
+.app-shell .category-sub .category-sub-icon{flex:none!important}
+@media(max-width:800px){html .app-shell section.glass.panel.investment-combined{padding:16px!important}}
+/* Application lock (screen shown before rendering private ledger). */
+.app-lock-screen{min-height:100dvh;min-width:0;background:var(--theme-bg,#0b1829);color:var(--theme-text,#e7f4ff);display:flex;align-items:center;justify-content:center;padding:24px}
+.app-lock-card{width:min(410px,100%);border:1px solid var(--theme-line,#456077);border-radius:24px;background:var(--theme-surface,#1b2d40);padding:30px 24px;display:flex;flex-direction:column;gap:14px;text-align:center}
+.app-lock-mark{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;margin:auto;background:var(--theme-accent,#55b9eb);color:var(--theme-accent-contrast,#081625)}
+.app-lock-card h1{margin:5px 0 0;font-size:25px}.app-lock-card p{margin:0 0 10px;color:var(--theme-muted,#a8bace)}
+.app-lock-card input,.app-password-settings input{min-height:49px!important;width:100%;border:1px solid var(--theme-line,#456077);border-radius:12px;padding:12px 14px;font:inherit;font-size:17px;background:var(--theme-chip,#203b52);color:var(--theme-text,#f7fbff)}
+.app-lock-card>button{padding:13px 16px;border:0;border-radius:12px;background:var(--theme-accent,#4dbce9);color:var(--theme-accent-contrast,#041422);font:inherit;font-weight:750}
+.app-lock-card>small{color:var(--theme-muted,#95aec4);line-height:1.5}
+.app-lock-error{color:#fa7e8c!important;font-size:14px!important}
+.app-password-form{display:flex;flex-direction:column;gap:13px;margin-top:15px}.app-password-actions{display:flex;gap:10px;flex-wrap:wrap}.app-password-settings>.hint{line-height:1.6}
+/* Status-bar strip should not inherit a top blur overlay on installed PWAs. */
+@media (display-mode:standalone){
+ .app-shell .ambient-a{filter:none!important}
+ .app-shell .topbar{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+}
