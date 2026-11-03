@@ -1550,3 +1550,62 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,.app-shell *::-webkit-scrollbar{
 /* NEXPEN v82: show exchange rate only under original balance. */
 .account-figures small{white-space:normal;overflow-wrap:normal;word-break:normal;font-variant-numeric:tabular-nums;text-align:right;line-height:1.25}
 .calc-error{font-size:var(--font-sm,14px);color:var(--theme-danger,#f76c87);white-space:normal;overflow-wrap:anywhere}
+
+
+/* v84 — rose-inspired coffee and apricot themes; keep all semantic tokens. */
+:root[data-theme="coffee"] {
+  --theme-bg:#f6f0e9;--theme-surface:#fffaf5;--theme-surface2:#efe2d5;
+  --theme-line:#dfccbb;--theme-text:#422f27;--theme-muted:#786252;
+  --theme-accent:#93664b;--theme-accent-contrast:#fffdf9;
+  --theme-chip:#f1e5d9;--theme-outline:#c7ab96;
+  --theme-income:#28775f;--theme-expense:#b24a54;
+  --theme-icon:#93664b;--theme-circle:#dec2aa;--theme-circle-text:#59392c;
+  color-scheme:light;
+}
+:root[data-theme="orange"] {
+  --theme-bg:#fff4e9;--theme-surface:#fffbf6;--theme-surface2:#ffead8;
+  --theme-line:#f0d4bc;--theme-text:#4e3024;--theme-muted:#816553;
+  --theme-accent:#d66a2c;--theme-accent-contrast:#fff;
+  --theme-chip:#fff0df;--theme-outline:#ebb78d;
+  --theme-income:#287d68;--theme-expense:#bb4853;
+  --theme-icon:#c4602d;--theme-circle:#f9c996;--theme-circle-text:#733a1f;
+  color-scheme:light;
+}
+
+/* v84 — calculator is rendered via a portal under document.body.
+   Its display must use theme semantic text colors, not legacy neon white.
+   Force text fill as well, to avoid pale inherited WebKit styling. */
+:root[data-theme] .calculator-sheet .calc-display {
+  color:var(--theme-text)!important;
+  -webkit-text-fill-color:var(--theme-text)!important;
+  opacity:1!important;
+  font-weight:750;
+  text-shadow:none!important;
+}
+:root[data-theme] .calculator-sheet .calc-display .calc-error {
+  color:var(--theme-expense)!important;
+  -webkit-text-fill-color:var(--theme-expense)!important;
+}
+:root[data-theme] .calculator-sheet .calc-key {
+  color:var(--theme-text)!important;
+  -webkit-text-fill-color:var(--theme-text)!important;
+  background:var(--theme-chip)!important;
+  border-color:var(--theme-line)!important;
+}
+:root[data-theme] .calculator-sheet .calc-key.operator {
+  background:var(--theme-surface2)!important;
+  color:var(--theme-accent)!important;
+  -webkit-text-fill-color:var(--theme-accent)!important;
+}
+:root[data-theme] .calculator-sheet .calc-key.finish {
+  background:var(--theme-accent)!important;
+  color:var(--theme-accent-contrast)!important;
+  -webkit-text-fill-color:var(--theme-accent-contrast)!important;
+  border-color:var(--theme-accent)!important;
+}
+/* Covers the second calculator variant used on the investment forms. */
+:root[data-theme] .investment-calculator .calc-display,
+:root[data-theme] .investment-number-picker .calc-display {
+  color:var(--theme-text)!important;
+  -webkit-text-fill-color:var(--theme-text)!important;
+}

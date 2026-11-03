@@ -1,6 +1,8 @@
 // NEXPEN UI localization. Keys use the original Traditional Chinese source labels.
 // Account names, custom categories and transaction notes are never translated automatically.
 const catalog={
+  "奶霜咖啡": {"en":"Cream Coffee","ja":"クリームコーヒー","zh-CN":"奶霜咖啡"},
+  "暖陽橘杏": {"en":"Warm Apricot","ja":"ウォームアプリコット","zh-CN":"暖阳橘杏"},
   "預設帳戶": {"en":"Default account","ja":"既定の口座","zh-CN":"默认账户"},
   "新增交易時自動帶入此帳戶；同一時間只能設定一個預設帳戶。": {"en":"Automatically selected for new transactions. Only one account can be the default.","ja":"新しい取引で自動選択されます。既定の口座は1つだけ設定できます。","zh-CN":"新增交易时自动选择此账户；同一时间只能设置一个默认账户。"},
   "請選擇": {
