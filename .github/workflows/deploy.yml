@@ -1,10 +1,12 @@
-
 name: Deploy React to GitHub Pages
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '35 7 * * 1-5'  # Taiwan 15:35, GitHub Actions uses UTC
+    - cron: '30 11 * * 1-5' # Taiwan 19:30
 
 permissions:
   contents: read
@@ -13,42 +15,76 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
-    runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch TWSE and TPEx official closing quotes
+        run: python3 scripts/fetch_market_quotes.py
+
+      - name: Fetch listed and OTC security catalog
+        run: python3 scripts/fetch_security_catalog.py
+
+      - name: Verify generated JSON before building
+        run: |
+          python3 - <<'PYVERIFY'
+          import json
+          from pathlib import Path
+          for name, key in [('market-quotes.json','quotes'),('security-catalog.json','securities')]:
+              p = Path('public') / name
+              if not p.is_file(): raise SystemExit(f'ERROR: missing {p}')
+              data = json.loads(p.read_text(encoding='utf-8'))
+              count = len(data.get(key,{}) or {})
+              print(f'{name}: {count} items ({p.stat().st_size} bytes)')
+              if count < 100: raise SystemExit(f'ERROR: incomplete {name}: {count} items')
+          PYVERIFY
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build React
+      - name: Build React with GitHub Pages base path
         run: npm run build
         env:
           VITE_BASE_PATH: /nexpen/
 
-      - name: Setup GitHub Pages
+      - name: Verify JSON exists in deployment artifact
+        run: |
+          test -s dist/market-quotes.json
+          test -s dist/security-catalog.json
+          python3 - <<'PYVERIFY'
+          import json
+          for name,key in [('market-quotes.json','quotes'),('security-catalog.json','securities')]:
+              with open('dist/'+name,encoding='utf-8') as f: data=json.load(f)
+              print('dist/'+name, len(data[key]), 'items')
+          PYVERIFY
+
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload files
-        uses: actions/upload-pages-artifact@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: dist
 
-      - name: Deploy
+      - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
