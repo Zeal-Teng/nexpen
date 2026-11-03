@@ -1132,3 +1132,329 @@ html .app-shell section.glass.panel.investment-combined{
  .app-shell .ambient-a{filter:none!important}
  .app-shell .topbar{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 }
+
+/* v74 responsive polish and navigation */
+@media(max-width:800px){
+ .app-shell{font-size:calc(18.5px * var(--app-font-scale,1))!important}
+ .app-shell .field>span,.app-shell .investment-field{font-size:calc(15px * var(--app-font-scale,1))!important}
+ .app-shell .row-main b,.app-shell .action-row b{font-size:calc(17px * var(--app-font-scale,1))!important}
+ .app-shell .row-main small,.app-shell .action-row small{font-size:calc(14px * var(--app-font-scale,1))!important}
+ .app-shell .bottom-nav button span{font-size:13px!important}
+ .investment-combined-list{display:grid;grid-template-columns:1fr;gap:12px}
+ .investment-combined-row{border:1px solid var(--line,rgba(130,170,200,.22))!important;border-radius:18px;padding:15px!important;min-width:0}
+ .investment-aggregate-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .investment-aggregate-summary .investment-aggregate-pnl{grid-column:1/-1}
+}
+.calendar-date-control .flat-date-input{width:148px;max-width:100%;background:transparent;border:0;padding:4px 0;font-weight:700}
+.diary-swipe-row{position:relative;overflow:hidden;touch-action:pan-y;isolation:isolate}
+.diary-swipe-row>.list-row{position:relative;z-index:1;background:var(--bg,#111824)}
+.diary-swipe-hint{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 18px;background:linear-gradient(90deg,#b34855,#314e6e);color:white;font-size:13px;font-weight:700}
+.investment-aggregate-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 18px;min-width:0}
+.investment-aggregate-summary>div{min-width:0;padding:15px;border-radius:16px;background:var(--card,rgba(130,160,190,.08));border:1px solid var(--line,rgba(130,160,190,.2));display:flex;flex-direction:column;gap:7px}
+.investment-aggregate-summary small{color:var(--muted,#9aabb8);font-size:13px}
+.investment-aggregate-summary strong{font-size:clamp(17px,3.4vw,24px);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.investment-aggregate-summary em{font-size:14px;font-style:normal}
+.investment-combined-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.investment-combined-row{height:100%;width:100%;min-width:0;align-content:start;border:1px solid var(--line,rgba(140,170,200,.25));border-radius:16px;padding:15px!important}
+.investment-combined-row .investment-combined-financials{min-width:0}
+.investment-combined-row strong{overflow-wrap:anywhere}
+.account-list-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:800px){.investment-combined-list{grid-template-columns:1fr}.investment-aggregate-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+@media(min-width:801px){
+ .app-shell{font-size:calc(17.5px * var(--app-font-scale,1))!important}
+ .app-shell .row-main b,.app-shell .action-row b{font-size:calc(16px * var(--app-font-scale,1))!important}
+ .app-shell .row-main small,.app-shell .action-row small{font-size:calc(13.5px * var(--app-font-scale,1))!important}
+}
+
+/* v75: cohesive font size scale (small / medium / large). Rules intentionally placed last
+   to supersede legacy fixed-size selectors from older releases. */
+:root { --cp-font: var(--app-font-scale, 1); }
+.app-shell { font-size: calc(17px * var(--cp-font)) !important; }
+.app-shell .panel h2,.app-shell .section-header h2,.app-shell .sheet-head h2,
+.app-shell .investment-list-section h2,.app-shell .investment-asset-detail h2,
+.app-shell .category-section-head h2 { font-size: calc(21px * var(--cp-font)) !important; line-height:1.35; }
+.app-shell .row-main b,.app-shell .action-row b,.app-shell .category-main-label strong,
+.app-shell .investment-combined-title b,.app-shell .stock-performance-row b,
+.app-shell .investment-history-info b,.app-shell .category-sub>span {
+ font-size: calc(16px * var(--cp-font)) !important; line-height:1.45;
+}
+.app-shell .row-main small,.app-shell .action-row small,.app-shell .hint,
+.app-shell .category-count,.app-shell .investment-history-info small,
+.app-shell .investment-history-value small,.app-shell .investment-menu-label small,
+.app-shell .stock-performance-row small,.app-shell .investment-combined-title small {
+ font-size: calc(13.5px * var(--cp-font)) !important; line-height:1.5;
+}
+.app-shell .field>span,.app-shell .investment-field,.app-shell .font-scale-block b,
+.app-shell .theme-heading b { font-size:calc(14px * var(--cp-font)) !important; }
+.app-shell .field input,.app-shell .field select,.app-shell .smart-select,
+.app-shell .money-trigger,.app-shell .soft-btn,.app-shell .primary-btn,
+.app-shell .chip,.app-shell .pill,.app-shell .scale-chip,
+.app-shell .searchbox input,.app-shell .picker-option,
+.app-shell .category-add-sub,.app-shell .category-add-main {
+ font-size:calc(16px * var(--cp-font)) !important;
+}
+.app-shell .stat small,.app-shell .week-day small,.app-shell .stock-summary-item small,
+.app-shell .stock-summary-profit small {font-size:calc(12px * var(--cp-font)) !important}
+.app-shell .stat strong,.app-shell .stock-summary-item strong {font-size:calc(20px * var(--cp-font)) !important}
+.app-shell .week-day b {font-size:calc(17px * var(--cp-font)) !important}
+.app-shell .bottom-nav button span {font-size:calc(12px * var(--cp-font)) !important}
+.app-shell .transaction-right strong,.app-shell .holding-right strong {font-size:calc(16px * var(--cp-font)) !important}
+.app-shell .transaction-right small {font-size:calc(12px * var(--cp-font)) !important}
+.app-shell .font-scale-block small,.app-shell .theme-heading small{font-size:calc(12px * var(--cp-font)) !important}
+@media(max-width:800px){
+ .app-shell{font-size:calc(18px * var(--cp-font)) !important}
+ .app-shell .row-main b,.app-shell .action-row b,.app-shell .category-sub>span{font-size:calc(17px * var(--cp-font)) !important}
+ .app-shell .row-main small,.app-shell .action-row small,.app-shell .hint{font-size:calc(14px * var(--cp-font)) !important}
+ .app-shell .bottom-nav button span{font-size:calc(13px * var(--cp-font)) !important}
+ .app-shell .field input,.app-shell .field select,.app-shell .smart-select,
+ .app-shell .money-trigger{font-size:calc(17px * var(--cp-font)) !important}
+}
+/* v75: child categories are a single-column list on phones AND desktop. */
+.app-shell .category-subs {display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+.app-shell .category-sub {width:100%;min-width:0;white-space:nowrap;flex-wrap:nowrap!important}
+.app-shell .category-sub>span{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-shell .category-sub .category-tools{flex-shrink:0;margin-left:auto}
+/* v75: no diary horizontal swipe actions, regular tap opens editor. */
+.app-shell .diary-plain-row {touch-action:pan-y;min-width:0}
+/* v75: when an investment policy/trust detail shows its own back button,
+   hide the higher-level back button. Return asset -> asset list -> investment overview. */
+.app-shell:has(.investment-assets-page > .stock-back) .investment-menu-back{display:none!important}
+/* PIN inputs retain numeric keyboard and 16px minimum to avoid iOS focus-zoom. */
+.app-lock-card input[inputmode="numeric"],.app-password-settings input[inputmode="numeric"]{
+ font-size:20px!important;letter-spacing:.18em;font-variant-numeric:tabular-nums;
+}
+
+/* =====================================================================
+   CYBERPULSE v76 · Unified experience system
+   Layout-only redesign; never modifies transactions or IndexedDB.
+   Theme palettes remain sourced from the user's selected theme.
+   ===================================================================== */
+:root{
+ --cp-space-1:5px;--cp-space-2:10px;--cp-space-3:15px;--cp-space-4:20px;
+ --cp-space-5:26px;--cp-corner:18px;--cp-corner-lg:24px;
+ --cp-shadow:0 8px 30px rgba(0,0,0,.045);
+}
+html,body,#root{width:100%;min-height:100%;overflow-x:hidden}
+.app-shell{--cp-bg:var(--theme-bg,#151820);--cp-panel:var(--theme-surface,#20242e);
+ --cp-raised:var(--theme-surface2,#282d38);--cp-border:var(--theme-line,rgba(255,255,255,.12));
+ --cp-text:var(--theme-text,#f4f8fa);--cp-muted:var(--theme-muted,#9aafc0);
+ --cp-action:var(--theme-accent,#4da7d5);--cp-action-text:var(--theme-accent-contrast,#071726);
+ background:var(--cp-bg)!important;color:var(--cp-text)!important;
+ font-feature-settings:'tnum' 1;letter-spacing:.005em;
+}
+.app-shell .ambient,.app-shell .hero-orb{display:none!important}
+.app-shell .glass{background:var(--cp-panel)!important;border:1px solid var(--cp-border)!important;
+ box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.app-shell .layout{max-width:1300px!important;gap:28px!important;
+ padding:26px clamp(18px,3vw,42px) 108px!important;align-items:flex-start!important}
+.app-shell .main{max-width:none!important;margin:0!important;min-width:0!important;align-self:flex-start!important}
+.app-shell .sidebar{top:92px!important;width:230px!important;padding:13px!important;
+ border-radius:var(--cp-corner-lg)!important;box-shadow:var(--cp-shadow)!important}
+.app-shell .side-link{min-height:46px!important;border-radius:12px!important;
+ padding:12px 14px!important;gap:12px!important;transition:background .18s ease,transform .18s ease}
+.app-shell .side-link.selected{background:var(--cp-action)!important;color:var(--cp-action-text)!important;
+ box-shadow:none!important;font-weight:800!important}
+.app-shell .side-link:active{transform:scale(.985)}
+.app-shell .topbar{background:var(--cp-panel)!important;border-color:var(--cp-border)!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important}
+.app-shell .brand-icon{box-shadow:none!important;background:var(--cp-action)!important;
+ color:var(--cp-action-text)!important;border-radius:13px!important}
+.app-shell .panel,.app-shell .hero,.app-shell .compact-hero{
+ border-radius:var(--cp-corner-lg)!important;padding:var(--cp-space-5)!important;margin-bottom:18px!important;
+ box-shadow:none!important}
+.app-shell .page-head{align-items:center!important;margin:3px 0 22px!important}
+.app-shell .page-head h1{font-size:calc(30px * var(--cp-font,1))!important;line-height:1.2!important}
+.app-shell .eyebrow{letter-spacing:.14em!important;font-weight:800!important}
+.app-shell .section-header{gap:12px!important;align-items:center!important;margin-bottom:17px!important}
+.app-shell .section-header h2,.app-shell .panel h2{letter-spacing:-.015em!important}
+.app-shell .hint,.app-shell .row-main small,.app-shell .transaction-right small{
+ color:var(--cp-muted)!important;line-height:1.5!important}
+.app-shell .hero{background:var(--cp-raised)!important;border:1px solid var(--cp-border)!important;
+ min-height:124px!important}
+.app-shell .hero strong{line-height:1.15!important;overflow-wrap:anywhere}
+.app-shell .stats-three,.app-shell .stats-two{gap:0!important;max-width:100%!important}
+.app-shell .stats-three .stat,.app-shell .stats-two .stat{min-width:0!important;background:transparent!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;padding:12px!important}
+.app-shell .stats-three .stat:not(:last-child),.app-shell .stats-two .stat:not(:last-child){
+ border-right:1px solid var(--cp-border)!important}
+.app-shell .stats-three .stat strong,.app-shell .stats-two .stat strong{overflow-wrap:anywhere;line-height:1.23!important}
+.app-shell .calendar-panel{background:transparent!important;border:0!important;padding:0 2px 16px!important;
+ border-radius:0!important;margin-bottom:8px!important}
+.app-shell .calendar-header{gap:12px!important;flex-wrap:wrap!important}
+.app-shell .calendar-header .calendar-date-control{max-width:100%;min-width:0}
+.app-shell .week-strip{touch-action:pan-y pan-x;min-width:0!important}
+.app-shell .daily-transactions{background:transparent!important;border:0!important;
+ box-shadow:none!important;padding:4px 0 16px!important}
+.app-shell .diary-search-filter{display:flex!important;align-items:center!important;gap:10px!important;
+ margin:8px 0 12px!important}
+.app-shell .searchbox{flex:1 1 auto!important;min-width:0!important;min-height:46px!important;
+ border-radius:13px!important;background:var(--cp-raised)!important;border:1px solid var(--cp-border)!important;
+ padding:0 13px!important;box-shadow:none!important}
+.app-shell .searchbox input{background:transparent!important;min-width:0!important}
+.app-shell .diary-search-filter>.smart-select.compact{flex:0 0 86px!important;width:86px!important;
+ min-width:86px!important;max-width:86px!important;height:46px!important}
+.app-shell .diary-plain-row>.list-row,.app-shell .list-row,.app-shell .action-row{
+ min-width:0!important;min-height:64px!important;gap:12px!important;transition:background .16s ease;
+ border-color:var(--cp-border)!important}
+.app-shell .diary-plain-row>.list-row:active,.app-shell .list-row:active,.app-shell .action-row:active{
+ background:color-mix(in srgb,var(--cp-action) 8%,transparent)!important}
+.app-shell .row-main,.app-shell .transaction-right{min-width:0!important}
+.app-shell .row-main b,.app-shell .row-main small{display:block;overflow:hidden;text-overflow:ellipsis}
+.app-shell .transaction-right{max-width:48%!important;text-align:right}
+.app-shell .transaction-right strong{overflow-wrap:anywhere}
+.app-shell .transaction-icon{flex:0 0 44px!important;width:44px!important;height:44px!important;
+ border-radius:13px!important;display:grid;place-items:center}
+.app-shell .bottom-nav{background:var(--cp-panel)!important;border:1px solid var(--cp-border)!important;
+ border-radius:22px!important;box-shadow:0 6px 24px rgba(0,0,0,.09)!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.app-shell .bottom-nav button{border-radius:16px!important;transition:background .18s ease,color .18s ease!important}
+.app-shell .bottom-nav button.active{background:var(--cp-action)!important;color:var(--cp-action-text)!important;
+ box-shadow:none!important}
+.app-shell .fab{background:var(--cp-action)!important;color:var(--cp-action-text)!important;
+ border:0!important;border-radius:18px!important;box-shadow:0 8px 24px rgba(0,0,0,.16)!important}
+.app-shell .fab:active{transform:scale(.94)}
+.app-shell .soft-btn,.app-shell .smart-select,.app-shell .money-trigger,
+.app-shell .primary-btn,.app-shell .scale-chip,.app-shell .chip,.app-shell .picker-option{
+ border-radius:13px!important;box-shadow:none!important}
+.app-shell .primary-btn{background:var(--cp-action)!important;color:var(--cp-action-text)!important}
+.app-shell .segmented,.app-shell .stock-trade-tabs{border-radius:15px!important;
+ background:var(--cp-raised)!important;border:1px solid var(--cp-border)!important;padding:5px!important}
+.app-shell .segmented button,.app-shell .stock-trade-tabs button{border-radius:11px!important;min-width:0}
+.app-shell .segmented .active,.app-shell .stock-trade-tabs .active{background:var(--cp-action)!important;
+ color:var(--cp-action-text)!important}
+.app-shell .investment-combined{background:var(--cp-panel)!important;border:1px solid var(--cp-border)!important;
+ padding:var(--cp-space-5)!important;border-radius:var(--cp-corner-lg)!important}
+.app-shell .investment-combined-list{gap:14px!important}
+.app-shell .investment-combined-row{border:1px solid var(--cp-border)!important;
+ background:var(--cp-raised)!important;border-radius:18px!important;padding:16px!important;
+ transition:transform .18s ease,background .18s ease}
+.app-shell .investment-combined-row:active{transform:scale(.99)}
+.app-shell .category-group{background:var(--cp-panel)!important;border:1px solid var(--cp-border)!important;
+ border-radius:18px!important;box-shadow:none!important}
+.app-shell .category-group-head{border-color:var(--cp-border)!important}
+.app-shell .category-subs{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+.app-shell .category-sub{display:flex!important;flex-wrap:nowrap!important;min-height:47px!important;
+ padding:7px 10px!important;background:var(--cp-raised)!important;border-color:var(--cp-border)!important}
+.app-shell .category-sub>span{min-width:0!important;flex:1!important;white-space:nowrap!important;
+ text-overflow:ellipsis!important;overflow:hidden!important}
+.app-shell .category-sub .category-tools{flex-shrink:0!important}
+/* All dialogs use the same spacing, field height and system keyboard/datepicker. */
+.app-shell .modal-backdrop,.app-shell .picker-backdrop{background:rgba(0,0,0,.56)!important}
+.app-shell .sheet{background:var(--cp-panel)!important;border:1px solid var(--cp-border)!important;
+ border-radius:24px 24px 0 0!important;box-shadow:0 -14px 50px rgba(0,0,0,.22)!important}
+.app-shell .sheet-head{gap:12px!important}
+.app-shell .sheet-body{min-width:0!important}
+.app-shell .sheet-body .form-grid{width:100%!important;min-width:0!important;gap:13px!important}
+.app-shell .sheet-body .form-grid>.field{min-width:0!important;width:100%!important}
+.app-shell .field input,.app-shell .field .smart-select,.app-shell .field .money-trigger,
+.app-shell .sheet-body input.native-date-input,.app-shell .investment-assets-page input.native-date-input{
+ box-sizing:border-box!important;min-height:52px!important;height:52px!important;min-width:0!important;
+ max-width:100%!important;width:100%!important;border-radius:13px!important;
+ font-size:max(16px,calc(16px * var(--cp-font,1)))!important}
+.app-shell input.native-date-input{font-family:inherit!important;appearance:auto!important;-webkit-appearance:auto!important;
+ display:block!important;min-width:0!important;padding:0 12px!important;
+ border:1px solid var(--cp-border)!important;background:var(--cp-raised)!important;color:var(--cp-text)!important}
+.app-shell input.native-date-input::-webkit-date-and-time-value{min-width:0!important;text-align:left!important}
+.app-shell input.native-date-input::-webkit-datetime-edit{max-width:100%;overflow:hidden!important}
+.app-shell .calendar-date-control input.native-date-input{min-height:43px!important;height:43px!important;
+ padding:0 8px!important;border:none!important;background:transparent!important;width:148px!important;
+ font-weight:750!important;font-size:16px!important}
+.app-shell .sheet-actions{background:var(--cp-panel)!important;gap:10px!important}
+.app-shell .picker-sheet,.app-shell .calculator-sheet{background:var(--cp-panel)!important;
+ border-radius:24px 24px 0 0!important}
+.app-shell .picker-option{min-height:48px!important}
+.app-shell .toast,.app-shell .cp-notice{z-index:100000!important}
+/* Remove all visual scrollbar tracks while keeping wheel, touch, and keyboard scrolling. */
+html,body,.app-shell,.app-shell *{scrollbar-width:none!important}
+html::-webkit-scrollbar,body::-webkit-scrollbar,.app-shell *::-webkit-scrollbar{display:none!important}
+@media(max-width:800px){
+ .app-shell .layout{display:block!important;padding:12px 15px calc(116px + env(safe-area-inset-bottom))!important}
+ .app-shell .sidebar{display:none!important}
+ .app-shell .main{width:100%!important;max-width:none!important;margin:0!important}
+ .app-shell .panel,.app-shell .hero{padding:18px!important;border-radius:20px!important;margin-bottom:16px!important}
+ .app-shell .page-head{display:none!important}
+ .app-shell .calendar-panel{padding:0 0 12px!important}
+ .app-shell .calendar-header{margin:4px 0 10px!important}
+ .app-shell .stats-three .stat{padding:11px 8px!important}
+ .app-shell .stats-three .stat strong{font-size:calc(17px * var(--cp-font,1))!important}
+ .app-shell .stats-three .stat small{font-size:calc(11px * var(--cp-font,1))!important}
+ .app-shell .daily-transactions{padding:3px 0 12px!important}
+ .app-shell .diary-plain-row>.list-row{padding:13px 1px!important}
+ .app-shell .diary-search-filter>.smart-select.compact{flex-basis:82px!important;width:82px!important;
+ min-width:82px!important;max-width:82px!important}
+ .app-shell .bottom-nav{position:fixed!important;bottom:calc(4px + env(safe-area-inset-bottom))!important;
+ left:12px!important;right:12px!important;width:auto!important;padding:5px!important;min-height:68px!important;z-index:60!important}
+ .app-shell .bottom-nav button{min-height:57px!important;gap:2px!important}
+ .app-shell .bottom-nav button span{font-size:calc(12px * var(--cp-font,1))!important}
+ .app-shell .fab{bottom:calc(92px + env(safe-area-inset-bottom))!important;right:16px!important}
+ .app-shell .investment-combined{padding:18px!important}
+ .app-shell .investment-combined-list{grid-template-columns:minmax(0,1fr)!important}
+ .app-shell .sheet{max-width:100vw!important;width:100%!important}
+ .app-shell .sheet-body .form-grid:has(input.native-date-input){grid-template-columns:minmax(0,1fr)!important}
+ .app-shell .sheet-body .form-grid:has(input.native-date-input)>.field{grid-column:1/-1!important}
+ .app-shell .sheet-body input.native-date-input{height:54px!important;min-height:54px!important;font-size:16px!important}
+ .app-shell .field .money-trigger{height:54px!important;min-height:54px!important}
+}
+@media(min-width:801px){
+ .app-shell .main{padding-top:3px!important}
+ .app-shell .sheet{border-radius:24px!important;max-width:min(670px,95vw)!important}
+ .app-shell .sheet-body .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(prefers-reduced-motion:reduce){.app-shell *{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+
+/* v78: Always-available in-app six-digit PIN keypad (mobile and desktop). */
+.cp-pin-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.cp-pin-field-button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:54px;padding:11px 15px;border:1px solid var(--theme-line,#456077);border-radius:13px;background:var(--theme-chip,#203b52);color:var(--theme-text,#f7fbff);text-align:left;font:inherit;cursor:pointer}
+.cp-pin-field-digits{letter-spacing:.12em;font-size:18px}.cp-pin-field-action{font-size:24px;color:var(--theme-accent,#55b9eb)}
+.cp-pin-validation{display:none!important}
+.cp-pin-backdrop{position:fixed;inset:0;z-index:2147483646;background:rgba(2,8,18,.7);display:flex;align-items:end;justify-content:center;overscroll-behavior:contain}
+.cp-pin-sheet{width:min(440px,100%);max-height:96dvh;overflow-y:auto;border-radius:23px 23px 0 0;border:1px solid var(--theme-line,#456077);background:var(--theme-surface,#1b2d40);color:var(--theme-text,#f7fbff);padding:16px 23px max(20px,env(safe-area-inset-bottom));box-shadow:0 -20px 60px #0006}
+.cp-pin-sheet-title{display:flex;align-items:center;justify-content:space-between;font-size:19px;padding:7px 1px}
+.cp-pin-sheet-title button{border:0;background:transparent;color:inherit;display:grid;place-items:center;width:43px;height:43px}
+.cp-pin-pad{display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;margin-inline:auto}
+.cp-pin-pad .cp-pin-dots{display:flex;justify-content:center;gap:13px;padding:7px 0 4px}
+.cp-pin-dots>span{display:block;width:13px;height:13px;border:2px solid var(--theme-muted,#8ba4ba);border-radius:50%;background:transparent}
+.cp-pin-dots>span.filled{background:var(--theme-accent,#55b9eb);border-color:var(--theme-accent,#55b9eb)}
+.cp-pin-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.cp-pin-key{min-width:0;min-height:57px;border-radius:15px;border:1px solid var(--theme-line,#456077);background:var(--theme-chip,#203b52);color:var(--theme-text,#f7fbff);font:inherit;font-size:25px;font-variant-numeric:tabular-nums;touch-action:manipulation}
+.cp-pin-key:active{background:var(--theme-accent,#55b9eb);color:var(--theme-accent-contrast,#081625)}
+.cp-pin-key-tool{font-size:17px}
+.cp-pin-done{min-height:51px;border:0;border-radius:13px;background:var(--theme-accent,#55b9eb);color:var(--theme-accent-contrast,#081625);font:inherit;font-weight:750}
+.cp-pin-done:disabled{opacity:.4}
+.app-lock-card .cp-pin-pad-embedded{margin-block:3px}
+@media(max-height:720px){.cp-pin-key{min-height:45px}.app-lock-card{padding:15px}.cp-pin-pad{gap:7px}}
+
+
+/* v79 — Summary captions: readable headings without increasing amounts. */
+.app-shell .daily-compact .stats-three .stat small,
+.app-shell .stats-three .stat small,
+.app-shell .stats-two .stat small {
+  font-size: calc(15px * var(--cp-font, 1)) !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+}
+.app-shell .investment-aggregate-summary > div > small,
+.app-shell .investment-combined-financials small,
+.app-shell .investment-combined-pnl > small,
+.app-shell .investment-overview-financials small,
+.app-shell .investment-overview-pnl > small,
+.app-shell .stock-summary-item > small,
+.app-shell .stock-summary-profit > small {
+  font-size: calc(15px * var(--cp-font, 1)) !important;
+  line-height: 1.4 !important;
+  font-weight: 700 !important;
+}
+.app-shell .hero > span {
+  font-size: calc(16px * var(--cp-font, 1)) !important;
+  line-height: 1.45 !important;
+  font-weight: 750 !important;
+  opacity: .9 !important;
+}
+@media (max-width: 800px) {
+  .app-shell .stats-three .stat small { font-size: calc(14px * var(--cp-font, 1)) !important; }
+  .app-shell .stats-three .stat { padding-top: 13px !important; padding-bottom: 13px !important; }
+  .app-shell .investment-aggregate-summary > div > small { font-size: calc(14.5px * var(--cp-font, 1)) !important; }
+  .app-shell .hero > span { font-size: calc(15px * var(--cp-font, 1)) !important; }
+}
