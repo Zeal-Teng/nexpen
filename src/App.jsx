@@ -1,0 +1,860 @@
+import { normalizeQuoteRows, validateQuoteBundle } from './marketQuotes.js';
+import React,{useEffect,useMemo,useRef,useState}from 'react';
+import{createPortal}from'react-dom';
+import{Wallet,ChartNoAxesCombined,Landmark,TrendingUp,Repeat2,Tags,Settings,Plus,ChevronLeft,ChevronRight,GripVertical,ArrowDownLeft,ArrowUpRight,ArrowLeftRight,Download,Upload,Sun,Moon,X,Trash2,Edit3,Check,CloudUpload,Search,CalendarDays,ShieldCheck,RefreshCcw,Coffee,UtensilsCrossed,Bus,Car,Home,ShoppingBag,HeartPulse,Gamepad2,Plane,GraduationCap,Gift,BriefcaseBusiness,Coins,WalletCards,Music,Smartphone,Receipt,BookOpen,Cat,Dog,Shirt,Dumbbell,TrainFront,Film,Landmark as BankIcon,House,Paintbrush,Apple,Hospital,Package,Smile,Camera,Clapperboard,Users,HandCoins,Building2,ArrowRightLeft,Pizza,Sandwich,Soup,CakeSlice,IceCreamCone,Wine,Beer,CookingPot,Fish,Beef,Milk,CupSoda,ShoppingCart,Store,CreditCard,PiggyBank,CircleDollarSign,BadgeDollarSign,Banknote,ChartPie,ChartLine,Briefcase,Laptop,Monitor,Wifi,Tv,Headphones,Speaker,Bike,BusFront,Train,TramFront,Ship,Fuel,ParkingCircle,MapPin,Map,Tickets,Ticket,Hotel,BedDouble,Sofa,Lightbulb,PlugZap,Droplets,WashingMachine,Wrench,Hammer,Scissors,Flower2,Leaf,TreePine,PawPrint,Baby,School,NotebookPen,Pencil,PenLine,Library,Stethoscope,Pill as PillIcon,Syringe,Activity,Heart,HandHeart,SmilePlus,PartyPopper,Popcorn,Drama,Trophy,Medal,Brush,Palette,Globe,AlarmClock,Clock3,Newspaper,Mail,Printer,Shield,Lock,KeyRound,Tag,Bookmark,MoreHorizontal,Umbrella,Cloud,Snowflake}from'lucide-react';
+import{PieChart,Pie,Cell,Tooltip,ResponsiveContainer,BarChart,Bar,XAxis,CartesianGrid}from'recharts';
+import{classifySecurity}from'./stockType';
+import{lookupSecurity,refreshSecurityCatalog}from'./securityCatalog';
+import{db,ensureDefaults,defaultCategories,today,uid,snapshot,restore,accountBalance,holdings}from'./db';
+import {analyzeStockPerformance} from './stockPerformance.js';
+import {calculateLots,buyLotsForSale} from './stockLots.js';
+import StockPerformanceView from './StockPerformanceView.jsx';
+import InvestmentAssets from './InvestmentAssets.jsx';
+import { accountRefs, categoryRefs, accountTypeRefs, projectRefs, stockBuyRefs } from './deletionGuards.js';
+
+const SUPPORTED_LANGUAGES=[['zh-TW','繁體中文'],['zh-CN','简体中文'],['en','English'],['ja','日本語']];
+const CURRENCIES=[['TWD','新台幣 TWD'],['USD','美元 USD'],['JPY','日圓 JPY'],['EUR','歐元 EUR'],['CNY','人民幣 CNY'],['HKD','港幣 HKD'],['GBP','英鎊 GBP'],['AUD','澳幣 AUD'],['SGD','新加坡幣 SGD'],['KRW','韓元 KRW'],['CAD','加幣 CAD'],['CHF','瑞士法郎 CHF']];
+const DICT={
+ 'zh-CN':{'日記帳':'日记账','總覽':'总览','股票':'股票','投資':'投资','設定':'设置','帳戶':'账户','帳戶管理':'账户管理','帳戶類型管理':'账户类型管理','定期交易':'定期交易','分類管理':'分类管理','主要貨幣':'主要货币','語言':'语言','金額顏色':'金额颜色','收入／獲利顯示綠色':'收入／获利显示绿色','收入／獲利顯示紅色':'收入／获利显示红色','外觀與使用':'外观与使用','財務概況':'财务概况','目前持股':'目前持股','持有成本':'持有成本','估算市值':'估算市值','未實現損益':'未实现损益','帳戶資產總額（不含股票）':'账户资产总额（不含股票）','總淨資產':'总净资产','本月支出':'本月支出','本月收入':'本月收入','當日支出':'当日支出','當日收入':'当日收入','當日淨額':'当日净额','記帳管理':'记账管理','iCloud Drive 備份':'iCloud Drive 备份','立即備份':'立即备份','立即還原':'立即还原','外觀主題':'外观主题','字體大小':'字体大小','我的帳戶':'我的账户','最後更新':'最后更新','新增股票交易':'新增股票交易','儲存':'保存','取消':'取消','期初餘額':'期初余额','小數位數':'小数位数'},
+ 'en':{'日記帳':'Diary','總覽':'Overview','股票':'Stocks','投資':'Investments','設定':'Settings','帳戶':'Accounts','帳戶管理':'Account management','帳戶類型管理':'Account types','定期交易':'Recurring transactions','分類管理':'Categories','主要貨幣':'Primary currency','語言':'Language','金額顏色':'Amount colors','收入／獲利顯示綠色':'Income / profit green','收入／獲利顯示紅色':'Income / profit red','外觀與使用':'Appearance & preferences','財務概況':'Financial overview','目前持股':'Current holdings','持有成本':'Cost basis','估算市值':'Estimated market value','未實現損益':'Unrealized P/L','帳戶資產總額（不含股票）':'Account assets (excluding stocks)','總淨資產':'Net worth','本月支出':'Monthly expenses','本月收入':'Monthly income','當日支出':'Daily expenses','當日收入':'Daily income','當日淨額':'Daily net','記帳管理':'Manage finances','iCloud Drive 備份':'iCloud Drive backup','立即備份':'Back up now','立即還原':'Restore now','外觀主題':'Theme','字體大小':'Font size','我的帳戶':'My accounts','最後更新':'Last updated','新增股票交易':'New stock transaction','儲存':'Save','取消':'Cancel','期初餘額':'Opening balance','小數位數':'Decimal places'},
+ 'ja':{'日記帳':'家計簿','總覽':'概要','股票':'株式','投資':'投資','設定':'設定','帳戶':'口座','帳戶管理':'口座管理','帳戶類型管理':'口座種別','定期交易':'定期取引','分類管理':'カテゴリ管理','主要貨幣':'基準通貨','語言':'言語','金額顏色':'金額の色','收入／獲利顯示綠色':'収入・利益を緑で表示','收入／獲利顯示紅色':'収入・利益を赤で表示','外觀與使用':'表示と設定','財務概況':'資産概要','目前持股':'保有銘柄','持有成本':'取得原価','估算市值':'時価評価額','未實現損益':'含み損益','帳戶資產總額（不含股票）':'口座資産（株式除く）','總淨資產':'純資産','本月支出':'月間支出','本月收入':'月間収入','當日支出':'当日支出','當日收入':'当日収入','當日淨額':'当日収支','記帳管理':'家計管理','iCloud Drive 備份':'iCloud Drive バックアップ','立即備份':'今すぐバックアップ','立即還原':'今すぐ復元','外觀主題':'テーマ','字體大小':'文字サイズ','我的帳戶':'口座一覧','最後更新':'最終更新','新增股票交易':'株式取引を追加','儲存':'保存','取消':'キャンセル','期初餘額':'開始残高','小數位數':'小数桁数'}
+};
+const trText=(value,language)=>DICT[language]?.[value]||value;
+const precisionFor=account=>Number.isInteger(Number(account?.decimalPlaces))&&account?.decimalPlaces!==undefined?Number(account.decimalPlaces):(['JPY','KRW'].includes(account?.currency)?0:2);
+const withinPrecision=(value,places)=>{const n=Number(value);return Number.isFinite(n)&&Math.abs(n-Number(n.toFixed(places)))<1e-8};
+const renderCurrency=(amount,currency,places=2)=>new Intl.NumberFormat('zh-TW',{style:'currency',currency:currency||'TWD',minimumFractionDigits:0,maximumFractionDigits:places}).format(Number(amount)||0);
+
+const defaultAccountTypes=[{id:'bank',name:'銀行帳戶'},{id:'cash',name:'現金'},{id:'credit',name:'信用卡'},{id:'ewallet',name:'電子支付'},{id:'brokerage',name:'證券交割戶'},{id:'trust',name:'持股信託'},{id:'policy',name:'投資保單'}];
+const themeChoices=[{id:'dark',name:'經典深色',colors:['#151820','#20242e','#4da7d5']},{id:'light',name:'純淨淺色',colors:['#f3f5f9','#ffffff','#3577b8']},{id:'ocean',name:'海洋藍',colors:['#eaf4fa','#ffffff','#177caa']},{id:'sage',name:'鼠尾草綠',colors:['#eef4ef','#ffffff','#477c68']},{id:'rose',name:'暖霧玫瑰',colors:['#faf0f0','#fffaf9','#ab6278']},{id:'cyber',name:'賽博霓虹',colors:['#080f1e','#14253b','#12dcf5']},{id:'matrix',name:'矩陣綠光',colors:['#080f0c','#13251a','#5cf29b']},{id:'violet',name:'量子紫光',colors:['#130d22','#241735','#ba8cff']},{id:'titanium',name:'鈦金科技',colors:['#111a25','#222d39','#8dd3ef']},{id:'aurora',name:'極光介面',colors:['#e9f5ff','#ffffff','#3478d8']},{id:'ember',name:'熔岩橘光',colors:['#19100e','#2b1c19','#ff9a58']}];
+// 圖示與類別名稱分開儲存，避免改動既有分類及歷史記帳資料。
+const CATEGORY_ICONS={coffee:Coffee,food:UtensilsCrossed,bus:Bus,car:Car,home:Home,shopping:ShoppingBag,health:HeartPulse,game:Gamepad2,travel:Plane,education:GraduationCap,gift:Gift,work:BriefcaseBusiness,money:Coins,wallet:WalletCards,music:Music,phone:Smartphone,bill:Receipt,book:BookOpen,cat:Cat,dog:Dog,clothes:Shirt,fitness:Dumbbell,train:TrainFront,movie:Film,bank:BankIcon,house:House,art:Paintbrush,grocery:Apple,hospital:Hospital,package:Package,smile:Smile,camera:Camera,cinema:Clapperboard,people:Users,salary:HandCoins,business:Building2,transfer:ArrowRightLeft,tags:Tags};
+const ICON_OPTIONS=[['food','餐飲'],['coffee','咖啡'],['bus','交通'],['train','捷運'],['car','汽車'],['home','居家'],['shopping','購物'],['health','健康'],['hospital','醫療'],['game','遊戲'],['travel','旅行'],['education','教育'],['gift','禮物'],['work','工作'],['salary','薪資'],['money','金錢'],['wallet','錢包'],['bill','帳單'],['phone','手機'],['book','書籍'],['clothes','服飾'],['fitness','健身'],['movie','電影'],['music','音樂'],['people','聚會'],['grocery','食材'],['bank','銀行'],['business','公司'],['camera','攝影'],['art','藝術'],['pet','寵物'],['transfer','轉帳'],['tags','其他']];
+ICON_OPTIONS.push(...[['pizza','披薩'],['sandwich','三明治'],['soup','湯品'],['cake','甜點'],['icecream','冰品'],['wine','酒水'],['beer','啤酒'],['cooking','料理'],['fish','海鮮'],['beef','肉類'],['milk','牛奶'],['drink','飲料'],['cart','超市'],['store','商店'],['credit','信用卡'],['save','儲蓄'],['dollar','貨幣'],['bonus','獎金'],['cash','現金'],['pie','分析'],['trend','趨勢'],['office','辦公'],['laptop','筆電'],['monitor','螢幕'],['wifi','網路'],['tv','電視'],['headphones','耳機'],['speaker','音響'],['bike','單車'],['busfront','公車'],['rail','鐵路'],['tram','電車'],['ship','船舶'],['fuel','加油'],['parking','停車'],['location','地點'],['map','地圖'],['tickets','票券'],['ticket','門票'],['hotel','飯店'],['bed','住宿'],['sofa','家具'],['light','電費'],['plug','電器'],['water','水費'],['washing','洗衣'],['repair','維修'],['tools','工具'],['hair','剪髮'],['flower','花卉'],['leaf','植物'],['tree','樹木'],['paw','寵物'],['baby','育兒'],['school','學校'],['notes','筆記'],['pencil','文具'],['pen','寫作'],['library','圖書館'],['doctor','醫師'],['medicine','藥品'],['vaccine','疫苗'],['dental','牙科'],['activity','運動'],['heart','愛心'],['donate','捐款'],['happy','休閒'],['party','派對'],['popcorn','零食'],['drama','表演'],['trophy','獎盃'],['medal','獎牌'],['brush','刷具'],['palette','設計'],['globe','國際'],['calendar','行事曆'],['alarm','鬧鐘'],['clock','時間'],['news','新聞'],['mail','郵件'],['printer','印表機'],['shield','保險'],['lock','安全'],['key','鑰匙'],['tag','標籤'],['bookmark','收藏'],['more','更多'],['umbrella','雨具'],['sun','陽光'],['cloud','雲端'],['moon','夜晚'],['snow','冷氣']]);
+CATEGORY_ICONS.pet=Cat;
+CATEGORY_ICONS.pizza=Pizza;
+CATEGORY_ICONS.sandwich=Sandwich;
+CATEGORY_ICONS.soup=Soup;
+CATEGORY_ICONS.cake=CakeSlice;
+CATEGORY_ICONS.icecream=IceCreamCone;
+CATEGORY_ICONS.wine=Wine;
+CATEGORY_ICONS.beer=Beer;
+CATEGORY_ICONS.cooking=CookingPot;
+CATEGORY_ICONS.fish=Fish;
+CATEGORY_ICONS.beef=Beef;
+CATEGORY_ICONS.milk=Milk;
+CATEGORY_ICONS.drink=CupSoda;
+CATEGORY_ICONS.cart=ShoppingCart;
+CATEGORY_ICONS.store=Store;
+CATEGORY_ICONS.credit=CreditCard;
+CATEGORY_ICONS.save=PiggyBank;
+CATEGORY_ICONS.dollar=CircleDollarSign;
+CATEGORY_ICONS.bonus=BadgeDollarSign;
+CATEGORY_ICONS.cash=Banknote;
+CATEGORY_ICONS.pie=ChartPie;
+CATEGORY_ICONS.trend=ChartLine;
+CATEGORY_ICONS.office=Briefcase;
+CATEGORY_ICONS.laptop=Laptop;
+CATEGORY_ICONS.monitor=Monitor;
+CATEGORY_ICONS.wifi=Wifi;
+CATEGORY_ICONS.tv=Tv;
+CATEGORY_ICONS.headphones=Headphones;
+CATEGORY_ICONS.speaker=Speaker;
+CATEGORY_ICONS.bike=Bike;
+CATEGORY_ICONS.busfront=BusFront;
+CATEGORY_ICONS.rail=Train;
+CATEGORY_ICONS.tram=TramFront;
+CATEGORY_ICONS.ship=Ship;
+CATEGORY_ICONS.fuel=Fuel;
+CATEGORY_ICONS.parking=ParkingCircle;
+CATEGORY_ICONS.location=MapPin;
+CATEGORY_ICONS.map=Map;
+CATEGORY_ICONS.tickets=Tickets;
+CATEGORY_ICONS.ticket=Ticket;
+CATEGORY_ICONS.hotel=Hotel;
+CATEGORY_ICONS.bed=BedDouble;
+CATEGORY_ICONS.sofa=Sofa;
+CATEGORY_ICONS.light=Lightbulb;
+CATEGORY_ICONS.plug=PlugZap;
+CATEGORY_ICONS.water=Droplets;
+CATEGORY_ICONS.washing=WashingMachine;
+CATEGORY_ICONS.repair=Wrench;
+CATEGORY_ICONS.tools=Hammer;
+CATEGORY_ICONS.hair=Scissors;
+CATEGORY_ICONS.flower=Flower2;
+CATEGORY_ICONS.leaf=Leaf;
+CATEGORY_ICONS.tree=TreePine;
+CATEGORY_ICONS.paw=PawPrint;
+CATEGORY_ICONS.baby=Baby;
+CATEGORY_ICONS.school=School;
+CATEGORY_ICONS.notes=NotebookPen;
+CATEGORY_ICONS.pencil=Pencil;
+CATEGORY_ICONS.pen=PenLine;
+CATEGORY_ICONS.library=Library;
+CATEGORY_ICONS.doctor=Stethoscope;
+CATEGORY_ICONS.medicine=PillIcon;
+CATEGORY_ICONS.vaccine=Syringe;
+CATEGORY_ICONS.dental=Stethoscope;
+CATEGORY_ICONS.activity=Activity;
+CATEGORY_ICONS.heart=Heart;
+CATEGORY_ICONS.donate=HandHeart;
+CATEGORY_ICONS.happy=SmilePlus;
+CATEGORY_ICONS.party=PartyPopper;
+CATEGORY_ICONS.popcorn=Popcorn;
+CATEGORY_ICONS.drama=Drama;
+CATEGORY_ICONS.trophy=Trophy;
+CATEGORY_ICONS.medal=Medal;
+CATEGORY_ICONS.brush=Brush;
+CATEGORY_ICONS.palette=Palette;
+CATEGORY_ICONS.globe=Globe;
+CATEGORY_ICONS.calendar=CalendarDays;
+CATEGORY_ICONS.alarm=AlarmClock;
+CATEGORY_ICONS.clock=Clock3;
+CATEGORY_ICONS.news=Newspaper;
+CATEGORY_ICONS.mail=Mail;
+CATEGORY_ICONS.printer=Printer;
+CATEGORY_ICONS.shield=Shield;
+CATEGORY_ICONS.lock=Lock;
+CATEGORY_ICONS.key=KeyRound;
+CATEGORY_ICONS.tag=Tag;
+CATEGORY_ICONS.bookmark=Bookmark;
+CATEGORY_ICONS.more=MoreHorizontal;
+CATEGORY_ICONS.umbrella=Umbrella;
+CATEGORY_ICONS.sun=Sun;
+CATEGORY_ICONS.cloud=Cloud;
+CATEGORY_ICONS.moon=Moon;
+CATEGORY_ICONS.snow=Snowflake;
+
+const suggestedIcon=name=>{if(/餐|食|飯|早餐|午餐|晚餐/.test(name))return 'food';if(/咖啡|飲料|茶/.test(name))return 'coffee';if(/交通|捷運|公車/.test(name))return 'bus';if(/房|家|居住|水電/.test(name))return 'home';if(/購物|消費/.test(name))return 'shopping';if(/醫|健康|看診/.test(name))return 'health';if(/薪|工作|獎金/.test(name))return 'salary';if(/投資|股|理財/.test(name))return 'money';if(/旅行|旅遊/.test(name))return 'travel';if(/娛樂|電影/.test(name))return 'movie';return 'tags'};
+const mobileNav=[['daily','日記帳',Wallet],['dashboard','總覽',ChartNoAxesCombined],['stocks','投資',TrendingUp],['settings','設定',Settings]];
+const settingsPages=['accounts','accountTypes','projects','recurring','categories'];
+const nav=[['daily','日記帳',Wallet],['dashboard','總覽',ChartNoAxesCombined],['accounts','帳戶',Landmark],['accountTypes','帳戶類型',Landmark],['projects','專案管理',Tags],['stocks','投資',TrendingUp],['recurring','定期',Repeat2],['categories','分類',Tags],['settings','設定',Settings]];
+const fmt=n=>'NT$ '+Math.round(Number(n)||0).toLocaleString('zh-TW');const fmtUnit=n=>'NT$ '+Number(n||0).toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:4});const fmtCurrency=(amount,currency='TWD')=>new Intl.NumberFormat('zh-TW',{style:'currency',currency,maximumFractionDigits:currency==='TWD'||currency==='JPY'?0:2}).format(Number(amount)||0);const fmtSigned=n=>(n<0?'-':'+')+fmt(Math.abs(n));const picker={expense:'支出',income:'收入',transfer:'轉帳'};const stockNames={buy:'買進',sell:'賣出',dividend:'配息'};const parseDate=s=>new Date(s+'T12:00:00');const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+// Taiwan exchange-traded shares / ETF fee estimates. Real settlement may differ by broker.
+const SECURITY_TYPES=[{id:'stock',label:'一般股票'},{id:'etf',label:'一般 ETF'},{id:'bondEtf',label:'債券 ETF'}];
+const asAmount=n=>Math.round(Number(n)||0);
+function estimateStockCharges(f){
+ const gross=Number(f.shares)*Number(f.price);
+ if(!Number.isFinite(gross)||gross<=0)return {gross:0,fee:0,tax:0,rate:0};
+ const pct=Number(f.feeRate??0.1425);
+ const discount=Number(f.feeDiscount??60);
+ const minimum=Number(f.feeMinimum??20);
+ const fee= Math.max(minimum, Math.round(gross*(pct/100)*(discount/100)));
+ const type=f.securityType||'stock';
+ const day=f.dayTrade===true;
+ const taxRate=type==='stock'?(day?0.0015:0.003):type==='bondEtf'&&String(f.date||'').slice(0,10)<='2026-12-31'?0:0.001;
+ const tax=f.action==='sell'?Math.round(gross*taxRate):0;
+ return {gross:Math.round(gross),fee,tax,rate:taxRate};
+}
+const Field=({label,children})=><label className="field"><span>{label}</span>{children}</label>;
+const Pill=({children,onClick,active})=><button type="button" className={'pill '+(active?'active':'')} onClick={onClick}>{children}</button>;
+const Blank=({text='還沒有記錄',sub='按右下方的 + 開始新增'})=><div className="empty"><div className="empty-icon">✧</div><b>{text}</b><small>{sub}</small></div>;
+
+// iPhone-style selection sheet: avoids native Safari select popups.
+function SmartSelect({value,onChange,children,className='',...props}){
+ const[shown,setShown]=useState(false);
+ const flatten=(nodes)=>React.Children.toArray(nodes).flatMap(n=>Array.isArray(n)?flatten(n):n?.type===React.Fragment?flatten(n.props.children):[n]).filter(n=>React.isValidElement(n)&&n.type==='option');
+ const options=flatten(children).map(x=>({value:String(x.props.value??x.props.children),label:String(x.props.children??''),disabled:!!x.props.disabled}));
+ const selected=options.find(o=>o.value===String(value));
+ return <><button type="button" className={'smart-select '+className} onClick={()=>setShown(true)} disabled={props.disabled}><span>{selected?.label||'請選擇'}</span><ChevronRight size={18}/></button>{shown&&createPortal(<div className="picker-backdrop" onClick={()=>setShown(false)}><div className="picker-sheet" onClick={e=>e.stopPropagation()}><div className="picker-handle"/><div className="picker-heading"><b>請選擇</b><button type="button" className="sheet-close-button" aria-label="關閉選擇面板" onClick={()=>setShown(false)}><X size={21}/></button></div><div className="picker-options">{options.map((o,i)=><button type="button" key={i} disabled={o.disabled} className={'picker-option '+(String(value)===o.value?'picked':'')} onClick={()=>{onChange?.({target:{value:o.value}});setShown(false)}}><span>{o.label}</span>{String(value)===o.value&&<Check size={19}/>}</button>)}</div></div></div>,document.body)}</>;
+}
+// Palette-aware selection sheet: preserves each theme's original preview colors.
+function ThemePreview({colors}){
+ return <span className="theme-palette-preview" aria-hidden="true" style={{background:colors[0],borderColor:colors[1]}}>
+  <i style={{background:colors[1]}}/><i style={{background:colors[2]}}/>
+ </span>;
+}
+function ThemePicker({value,onChange}){
+ const [shown,setShown]=useState(false);
+ const current=themeChoices.find(item=>item.id===value)||themeChoices[0];
+ return <>
+  <button type="button" className="smart-select theme-picker compact theme-picker-trigger" aria-haspopup="dialog" aria-expanded={shown} aria-label="選擇外觀主題" onClick={()=>setShown(true)}>
+   <ThemePreview colors={current.colors}/><span>{current.name}</span><ChevronRight size={18}/>
+  </button>
+  {shown&&createPortal(<div className="picker-backdrop theme-preview-backdrop" onClick={()=>setShown(false)}>
+   <div className="picker-sheet theme-preview-sheet" role="dialog" aria-modal="true" aria-label="選擇外觀主題" onClick={e=>e.stopPropagation()}>
+    <div className="picker-handle"/>
+    <div className="picker-heading"><b>選擇外觀主題</b><button type="button" aria-label="關閉選擇面板" onClick={()=>setShown(false)}><X size={21}/></button></div>
+    <div className="picker-options theme-preview-options">
+     {themeChoices.map(item=><button type="button" key={item.id} className={'picker-option theme-preview-option'+(value===item.id?' picked':'')} aria-pressed={value===item.id} onClick={()=>{onChange(item.id);setShown(false)}}>
+       <ThemePreview colors={item.colors}/><span>{item.name}</span>{value===item.id&&<Check size={19}/>}
+     </button>)}
+    </div>
+   </div>
+  </div>,document.body)}
+ </>;
+}
+function calculate(expression){
+ const parts=String(expression).replace(/×/g,'*').replace(/÷/g,'/').match(/(?:\d+\.?\d*|\.\d+)|[+*/-]/g)||[];
+ if(!parts.length)return 0;
+ let values=[],ops=[];const priority=o=>o==='+'||o==='-'?1:2;
+ const apply=()=>{const b=values.pop(),a=values.pop(),o=ops.pop();if(a===undefined||b===undefined)throw Error('算式不完整');const n=o==='+'?a+b:o==='-'?a-b:o==='*'?a*b:a/b;if(!Number.isFinite(n))throw Error('無法除以零');values.push(n)};
+ for(let i=0;i<parts.length;i++){const t=parts[i];if(/^\d|^\./.test(t))values.push(Number(t));else if(t==='-'&&(i===0||/[+*/-]/.test(parts[i-1])))values.push(0),ops.push('-');else{while(ops.length&&priority(ops.at(-1))>=priority(t))apply();ops.push(t)}}while(ops.length)apply();if(values.length!==1)throw Error('算式有誤');return Math.round(values[0]*1000000)/1000000;
+}
+function Calculator({initial,onDone,onClose}){
+ const[expr,setExpr]=useState(String(initial||''));const[error,setError]=useState('');
+ const press=k=>{setError('');if(k==='C')return setExpr('');if(k==='⌫')return setExpr(s=>s.slice(0,-1));if(k==='='){try{setExpr(String(calculate(expr)))}catch(e){setError(e.message)}return}if('+-×÷'.includes(k))return setExpr(s=>s&&!/[+\-×÷]$/.test(s)?s+k:s);setExpr(s=>s+k)};
+ return createPortal(<div className="calculator-backdrop" onClick={onClose}><div className="calculator-sheet" onClick={e=>e.stopPropagation()}><div className="picker-handle"/><div className="calculator-heading"><b>金額計算機</b><button className="sheet-close-button" aria-label="關閉計算機" onClick={onClose} type="button"><X size={21}/></button></div><div className="calc-display">{expr||'0'}</div><div className="calc-result">{error||'可輸入 100+20×3，再按 = 計算'}</div><div className="calc-keys">{['C','⌫','÷','×','7','8','9','−','4','5','6','+','1','2','3','=','0','00','.','完成'].map(k=><button key={k} type="button" className={'calc-key '+('÷×−+=' .includes(k)?'operator ':'')+(k==='完成'?'finish':'')} onClick={()=>{if(k==='完成'){try{const v=calculate(expr);if(v<0)throw Error('金額不可為負數');onDone(String(v));onClose()}catch(e){setError(e.message)}}else press(k==='−'?'-':k)}}>{k}</button>)}</div></div></div>,document.body);
+}
+
+export default function App(){
+ const[language,setLanguage]=useState('zh-TW'),[colorScheme,setColorScheme]=useState('normal'),[primaryCurrency,setPrimaryCurrency]=useState('TWD'),[primaryTwdRate,setPrimaryTwdRate]=useState(1),[primaryRateDate,setPrimaryRateDate]=useState(''),[primaryRateLoading,setPrimaryRateLoading]=useState(false);const tr=value=>trText(value,language);
+ const[tab,setTab]=useState('daily'),[records,setRecords]=useState([]),[accounts,setAccounts]=useState([]),[stocks,setStocks]=useState([]),[recurring,setRecurring]=useState([]),[categories,setCategories]=useState(defaultCategories),[categoryIcons,setCategoryIcons]=useState({}),[accountTypes,setAccountTypes]=useState(defaultAccountTypes),[projects,setProjects]=useState([]),[date,setDate]=useState(today()),[diaryView,setDiaryView]=useState('day'),[theme,setTheme]=useState('dark'),[fontScale,setFontScale]=useState(1),[ready,setReady]=useState(false),[dialog,setDialog]=useState(''),[editing,setEditing]=useState(null),[notice,setNotice]=useState(''),[filter,setFilter]=useState('all'),[categoryFlow,setCategoryFlow]=useState('expense'),[query,setQuery]=useState('');const fileInput=useRef(null);const datePickerRef=useRef(null);const monthPickerRef=useRef(null);const weekSwipe=useRef(null);
+ // Touch/mouse/pen drag sorting: only the handle captures gestures.
+ const dragCategoryRef=useRef(null);
+ const [categoryDrag,setCategoryDrag]=useState(null);
+ const accountTypeDragRef=useRef(null);
+ const [accountTypeDrag,setAccountTypeDrag]=useState(null);
+ const [selectedStockSymbol,setSelectedStockSymbol]=useState(null);
+ const [investSection,setInvestSection]=useState('list'),[investmentAddMenu,setInvestmentAddMenu]=useState(false),[investmentCreate,setInvestmentCreate]=useState(null);
+ const [investmentValuations,setInvestmentValuations]=useState([]),[investmentFlows,setInvestmentFlows]=useState([]);
+ const [stockTypeStatus,setStockTypeStatus]=useState('');const [catalogAutoName,setCatalogAutoName]=useState('');const [brokerFees,setBrokerFees]=useState({discount:60,minimum:20});
+ const [quotes,setQuotes]=useState({});const [quoteLoading,setQuoteLoading]=useState(false);const [quoteStatus,setQuoteStatus]=useState('');
+ const quoteRequest=useRef({busy:false,last:0,pendingCodes:new Set()});
+ const mainRate=primaryCurrency==='TWD'?1:Number(primaryTwdRate);const baseAvailable=Number.isFinite(mainRate)&&mainRate>0;const crossRateToPrimary=(currency,twdRate)=>{if(currency===primaryCurrency)return 1;if(!baseAvailable)return NaN;const base=currency==='TWD'?1:Number(twdRate);return Number.isFinite(base)&&base>0?base/mainRate:NaN};const formatFxRate=rate=>Number.isFinite(rate)&&rate>0?Number(rate.toPrecision(9)).toLocaleString('zh-TW',{maximumFractionDigits:8}):'匯率尚未取得';const inPrimary=n=>baseAvailable?Number(n)/mainRate:NaN;const fmtPrimary=n=>baseAvailable?renderCurrency(inPrimary(n),primaryCurrency,['JPY','KRW'].includes(primaryCurrency)?0:2):'匯率尚未取得';
+ // v53: Currency codes below an entry only identify balances NOT denominated in the primary currency.
+ const nonPrimaryCode=currency=>{const c=currency||'TWD';return c===primaryCurrency?'':c};
+ const accountCurrencyCode=id=>nonPrimaryCode(accounts.find(a=>a.id===id)?.currency);
+ // v54: The account currency label is shown only when different from the primary currency.
+ // Per-entry figures remain in their native currency; group totals and net worth retain explicit primary currency.
+ const fmtEntryNumber=(amount,account)=>new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:precisionFor(account)}).format(Number(amount)||0);
+ const fmtPrimaryNumber=n=>baseAvailable?new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:['JPY','KRW'].includes(primaryCurrency)?0:2}).format(inPrimary(n)):'匯率尚未取得';
+ const fmtAccountFigure=(amount,account)=>`${nonPrimaryCode(account?.currency)?nonPrimaryCode(account?.currency)+' ':''}${fmtEntryNumber(amount,account)}`;
+ const fmtStockUnit=n=>`${primaryCurrency==='TWD'?'':'TWD '}${new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:4}).format(Number(n)||0)}`;
+ const fmtStockTradeAmount=n=>`${primaryCurrency==='TWD'?'':'TWD '}${new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(n)||0)}`;
+
+ const [rateLoading,setRateLoading]=useState(false);const [calculator,setCalculator]=useState(null);const [form,setForm]=useState({});const patch=(key,value)=>setForm(f=>({...f,[key]:value}));
+ useEffect(()=>{if(dialog!=='stock'||form.action==='dividend'||form.feeMode!=='auto')return;
+ const calc=estimateStockCharges(form);
+ setForm(old=>{
+  if(old.feeMode!=='auto')return old;
+  const fee=String(calc.fee),tax=String(calc.tax);
+  return old.fee===fee&&old.tax===tax?old:{...old,fee,tax};
+ });
+},[dialog,form.action,form.shares,form.price,form.securityType,form.dayTrade,form.date,form.feeRate,form.feeDiscount,form.feeMinimum,form.feeMode]);
+ // ISIN lookup is debounced; it only supplies metadata, never blocks saving a trade.
+ useEffect(()=>{
+  if(dialog!=='stock')return;
+  const code=String(form.symbol||'').trim().toUpperCase();
+  if(!/^[0-9A-Z]{4,8}$/.test(code))return;
+  let cancelled=false;
+  const timer=setTimeout(async()=>{
+   try{
+    const sec=await lookupSecurity(code);
+    if(cancelled)return;
+    if(!sec){setStockTypeStatus('官方名冊查無此代號；可手動填入股票名稱與選擇證券類型');return;}
+    setForm(f=>{
+     if(String(f.symbol||'').trim().toUpperCase()!==code)return f;
+     const canFill=!String(f.securityName||'').trim()||f.securityName===catalogAutoName;
+     return {...f,...(canFill?{securityName:sec.name}:{}),securityType:sec.kind||f.securityType,dayTrade:sec.kind==='stock'?f.dayTrade:false};
+    });
+    setCatalogAutoName(sec.name);
+    setStockTypeStatus(`已辨識 ${sec.market==='twse'?'上市':'上櫃'}：${sec.name} · ${sec.kind==='bondEtf'?'債券 ETF':sec.kind==='etf'?'ETF':'一般股票'}`);
+   }catch(e){if(!cancelled)setStockTypeStatus(`官方名冊暫時無法取得：${e.message}；可自行輸入名稱`);}
+  },450);
+  return()=>{cancelled=true;clearTimeout(timer)};
+ },[dialog,form.symbol]);
+ // 只依代號分類，不查詢或填入股票名稱。
+ const inferStockType=code=>{
+  const result=classifySecurity(code);
+  setStockTypeStatus(result.message);
+  if(result.type)setForm(f=>({...f,securityType:result.type,dayTrade:result.type==='stock'?f.dayTrade:false}));
+ };
+ const saveBrokerFees=async()=>{
+  const discount=Number(form.feeDiscount),minimum=Number(form.feeMinimum);
+  if(!Number.isFinite(discount)||discount<0||discount>100||!Number.isFinite(minimum)||minimum<0)throw Error('折扣須介於 0～100%，最低手續費不得為負數');
+  await db.settings.put({key:'stockBrokerFees',value:{discount,minimum}});
+  setBrokerFees({discount,minimum});toast('券商手續費設定已儲存');
+ };
+ const refreshQuotes=async({force=false,codesOverride=[]}={})=>{
+  const codes=new Set([...holdings(stocks).map(h=>String(h.symbol||'').trim().toUpperCase()),...accounts.filter(a=>a.type==='trust').map(a=>String(a.trustSymbol||'').trim().toUpperCase()),...codesOverride.map(code=>String(code||'').trim().toUpperCase())].filter(Boolean));
+  if(!codes.size){setQuoteStatus('目前沒有持股需要更新');return;}
+  if(quoteRequest.current.busy){
+   if(force)codes.forEach(code=>quoteRequest.current.pendingCodes.add(code));
+   return;
+  }
+  // Switching rapidly between tabs must not repeatedly download the entire market.
+  if(!force&&Date.now()-quoteRequest.current.last<5*60*1000)return;
+  quoteRequest.current.busy=true;setQuoteLoading(true);
+  setQuoteStatus('正在讀取上市與上櫃收盤價…');
+  try{
+   const urls=import.meta.env.DEV
+    ?['/api/quotes/twse','/api/quotes/tpex']
+    :[`${import.meta.env.BASE_URL}market-quotes.json`];
+   const results=await Promise.allSettled(urls.map(async url=>{
+    const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),18000);
+    try{
+     const response=await fetch(`${url}${url.includes('?')?'&':'?'}_=${Date.now()}`,{cache:'no-store',signal:controller.signal});
+     if(!response.ok)throw Error(`${url}: HTTP ${response.status}`);
+     const json=await response.json();
+     return import.meta.env.DEV
+      ?normalizeQuoteRows(json,url.includes('twse')?'twse':'tpex')
+      :validateQuoteBundle(json);
+    }finally{clearTimeout(timer)}
+   }));
+   const got={},errors=[];
+   for(const r of results){
+    if(r.status==='rejected'){errors.push(r.reason?.message||'資料來源讀取失敗');continue;}
+    for(const [code,q] of Object.entries(r.value)){
+     if(!codes.has(code))continue;
+     if(!got[code]||q.date>got[code].date)got[code]=q;
+    }
+   }
+   // Read persisted quotes right before merge: avoids overwriting newer app state.
+   const previous=(await db.settings.get('stockClosingQuotes'))?.value||{};
+   const merged={...previous};let updated=0;
+   for(const [code,q] of Object.entries(got)){
+    if(!merged[code]||!merged[code].date||q.date>=merged[code].date){merged[code]=q;updated++;}
+   }
+   if(updated){await db.settings.put({key:'stockClosingQuotes',value:merged});setQuotes(merged);}
+   else setQuotes(merged);
+   quoteRequest.current.last=Date.now();
+   const missing=[...codes].filter(code=>!(Number(merged[code]?.price)>0));
+   if(Object.keys(got).length){
+    const latest=Object.values(got).map(q=>q.date).sort().at(-1);
+    setQuoteStatus(`最後更新日期 ${latest}`);
+   }else{
+    setQuoteStatus(`尚未取得持股行情${errors.length?`：${errors.join('；')}`:'（資料未包含持有代號）'}；保留既有報價`);
+   }
+  }catch(e){setQuoteStatus(`收盤價更新失敗：${e.message}；保留既有報價`);}
+  finally{
+   quoteRequest.current.busy=false;setQuoteLoading(false);
+   if(quoteRequest.current.pendingCodes.size){
+    const pending=[...quoteRequest.current.pendingCodes];
+    quoteRequest.current.pendingCodes.clear();
+    // Fetch a just-saved stock even if startup's earlier refresh was in flight.
+    setTimeout(()=>refreshQuotes({force:true,codesOverride:pending}),0);
+   }
+  }
+ };
+ const toast=s=>{setNotice(s);setTimeout(()=>setNotice(''),3300)};
+ async function reload(){const[r,a,s,rr,c,t,fs,ci,at,bf,sq,langSetting,colorSetting,baseSetting,baseRateSetting,projectSetting,investHistory,investFlows]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.get('categories'),db.settings.get('theme'),db.settings.get('fontScale'),db.settings.get('categoryIcons'),db.settings.get('accountTypes'),db.settings.get('stockBrokerFees'),db.settings.get('stockClosingQuotes'),db.settings.get('language'),db.settings.get('amountColors'),db.settings.get('primaryCurrency'),db.settings.get('primaryTwdRate'),db.settings.get('projects'),db.investmentValuations.toArray(),db.investmentFlows.toArray()]);setInvestmentValuations(investHistory);setInvestmentFlows(investFlows);setProjects(projectSetting?.value||[]);setLanguage(langSetting?.value||'zh-TW');setColorScheme(colorSetting?.value||'normal');setPrimaryCurrency(baseSetting?.value||'TWD');setPrimaryTwdRate(Number(baseRateSetting?.value?.rate)||((baseSetting?.value||'TWD')==='TWD'?1:0));setPrimaryRateDate(baseRateSetting?.value?.date||'');setQuotes(sq?.value||{});setBrokerFees(bf?.value||{discount:60,minimum:20});setAccountTypes([...((at?.value)||defaultAccountTypes),...defaultAccountTypes.filter(t=>['trust','policy'].includes(t.id)&&!((at?.value)||defaultAccountTypes).some(x=>x.id===t.id))]);setRecords(r);setAccounts(a);setStocks(s);setRecurring(rr);setCategories(c?.value||defaultCategories);setTheme(t?.value||'dark');setFontScale(Number(fs?.value)||1);setCategoryIcons(ci?.value||{});}
+ useEffect(()=>{ensureDefaults().then(reload).then(()=>setReady(true)).catch(e=>toast(e.message))},[]);
+ useEffect(()=>{document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;document.documentElement.style.setProperty('--app-font-scale',String(fontScale));},[theme,fontScale]);
+ // On app launch, silently refresh the official securities catalog (at most once daily).
+ // UI stays responsive and the IndexedDB catalog remains usable without internet.
+ useEffect(()=>{if(!ready)return;refreshSecurityCatalog().catch(e=>console.info('已保留本機股票名冊：',e.message));},[ready]);
+ // Refresh official closing prices on startup when there are holdings, not only after
+ // opening the Stock tab. Existing five-minute throttle prevents repeated downloads.
+ useEffect(()=>{if(ready&&(holdings(stocks).length||accounts.some(a=>a.type==='trust')))refreshQuotes();},[ready,tab,stocks]);
+ const open=(kind,item=null)=>{setEditing(item);const base={date:date,type:'expense',amount:'',account:accounts[0]?.id||'',fromAccount:accounts[0]?.id||'',toAccount:accounts[1]?.id||accounts[0]?.id||'',mainCategory:Object.keys(categories.expense)[0]||'',subCategory:(categories.expense[Object.keys(categories.expense)[0]]||[])[0]||'',note:'',name:'',projectId:'',includeInAssets:true,openingBalance:'0',investmentCost:'',trustSymbol:'',trustLots:'',policyValue:'',policyValueDate:today(),currency:'TWD',decimalPlaces:2,fxRate:1,fxDate:'',fxSource:'',symbol:'',securityName:'',matchedBuyId:'',action:'buy',shares:'',price:'',fee:'0',tax:'0',securityType:'stock',dayTrade:false,feeRate:'0.1425',feeDiscount:String(brokerFees.discount),feeMinimum:String(brokerFees.minimum),feeMode:'auto',freq:'monthly',nextDate:today(),parent:'',categoryType:'expense',mode:'main',icon:'tags'};const initial=item?{...base,...item,decimalPlaces:item.decimalPlaces??precisionFor(item),amount:item.amount??'',openingBalance:item.openingBalance??0}:{...base,type:kind==='account'?(accountTypes[0]?.id||'bank'):'expense',...(kind==='transaction'?{date}:{} )};if(kind==='stock'){initial.feeMode='auto';setStockTypeStatus('');setCatalogAutoName('');if(item){initial.feeDiscount=String(brokerFees.discount);initial.feeMinimum=String(brokerFees.minimum)}}if(kind==='accountType'||kind==='project'){initial.name=item?.name||'';initial.id=item?.id||''}if(kind==='category'){const flow=initial.categoryType||'expense';const key=initial.mode==='sub'?`${flow}/sub/${initial.parent}/${initial.name}`:`${flow}/main/${initial.name}`;initial.icon=categoryIcons[key]||suggestedIcon(initial.name||initial.parent||'')}if(kind==='recurring'&&initial.type==='transfer'){initial.mainCategory='帳戶互轉';initial.subCategory='內部轉帳'}setForm(initial);setDialog(kind);if(kind==='transaction'&&!item){setCalculator({field:'amount',value:''})}};
+ const close=()=>{setDialog('');setEditing(null)};
+ const save=async e=>{e.preventDefault();let savedStockSymbol='';try{if(dialog==='transaction'){
+   // Do not silently coerce an empty amount into zero, or round an invalid decimal.
+   const amountInput=String(form.amount??'').trim();
+   const rawAmount=Number(amountInput);
+   if(!amountInput||!Number.isFinite(rawAmount)||rawAmount<=0)throw Error('請先輸入有效且大於零的金額');
+   const amount=rawAmount;
+   if(!form.date||!/^\d{4}-\d{2}-\d{2}$/.test(form.date))throw Error('請選擇交易日期');
+   if(form.type==='transfer'){
+     const from=accounts.find(a=>a.id===form.fromAccount);
+     const to=accounts.find(a=>a.id===form.toAccount);
+     if(!from)throw Error('請選擇有效的轉出帳戶');
+     if(!to)throw Error('請選擇有效的轉入帳戶');
+     if(from.id===to.id)throw Error('轉出與轉入帳戶不可相同');
+     if((from.currency||'TWD')!==(to.currency||'TWD'))throw Error('跨幣別轉帳尚未支援，請分別以支出與收入記錄換匯');
+   }else if(form.type==='expense'||form.type==='income'){
+     if(!accounts.some(a=>a.id===form.account))throw Error('請選擇有效的資產帳戶');
+     const mains=categories[form.type]||{};
+     if(!form.mainCategory||!Object.prototype.hasOwnProperty.call(mains,form.mainCategory))throw Error('請選擇主分類');
+     if(!form.subCategory||!Array.isArray(mains[form.mainCategory])||!mains[form.mainCategory].includes(form.subCategory))throw Error('請選擇子分類');
+   }else throw Error('請選擇交易類型');
+   const usedAccounts=form.type==='transfer'?[accounts.find(a=>a.id===form.fromAccount),accounts.find(a=>a.id===form.toAccount)]:[accounts.find(a=>a.id===form.account)];
+   if(usedAccounts.some(a=>!withinPrecision(amount,precisionFor(a))))throw Error('交易金額小數位超過帳戶允許位數');
+   if(form.projectId&&!projects.some(p=>p.id===form.projectId))throw Error('所選專案不存在，請重新選擇');
+   await db.records.put({...form,projectId:form.projectId||'',id:editing?.id||uid(),amount,date:form.date,mainCategory:form.type==='transfer'?'帳戶互轉':form.mainCategory,subCategory:form.type==='transfer'?'內部轉帳':form.subCategory});
+ }
+ if(dialog==='account'){if(!accountTypes.some(t=>t.id===form.type))throw Error('請選擇有效的帳戶類型');if(!form.name.trim())throw Error('請輸入帳戶名稱');const currency=form.currency||'TWD';const balance=Number(form.openingBalance);const fxRate=currency==='TWD'?1:Number(form.fxRate);if(!Number.isFinite(balance)||!Number.isFinite(fxRate)||fxRate<=0)throw Error('請輸入有效期初餘額及匯率');const decimalPlaces=Number(form.decimalPlaces);if(!Number.isInteger(decimalPlaces)||decimalPlaces<0||decimalPlaces>6)throw Error('帳戶小數位數請選擇 0～6');if(!withinPrecision(balance,decimalPlaces))throw Error(`期初餘額最多允許 ${decimalPlaces} 位小數`);const investmentType=['trust','policy'].includes(form.type);
+ const cost=Number(form.investmentCost),policyValue=Number(form.policyValue),trustLots=Number(form.trustLots);
+ if(investmentType&&(!Number.isFinite(cost)||cost<0||String(form.investmentCost).trim()===''))throw Error('請填寫有效的累計取得成本');
+ if(form.type==='trust'&&(!/^[0-9]{4,6}[A-Z]?$/.test(String(form.trustSymbol||'').trim().toUpperCase())||!Number.isFinite(trustLots)||trustLots<0))throw Error('請輸入有效的股票代號及初始持有張數（可為 0）');
+ if(form.type==='trust'&&currency!=='TWD')throw Error('台灣持股信託帳戶請使用 TWD');
+ if(form.type==='policy'&&(!Number.isFinite(policyValue)||policyValue<0||String(form.policyValue).trim()===''))throw Error('請輸入有效的保單現值');
+ const id=editing?.id||uid();const existing=editing?.id?await db.accounts.get(editing.id):null;
+ if(existing&&['trust','policy'].includes(existing.type)){const linked=await db.investmentFlows.where('assetId').equals(id).count();if(linked&&(cost!==Number(existing.investmentCost)||form.type!==existing.type||String(form.trustSymbol||'').toUpperCase()!==String(existing.trustSymbol||'').toUpperCase()||Number(form.trustLots)!==Number(existing.trustLots)))throw Error('此投資帳戶已有追加投入紀錄，初始成本、股票代號及初始張數不可直接修改；請從投資頁記錄新增投入');}
+ await db.transaction('rw',db.accounts,db.investmentValuations,async()=>{
+ await db.accounts.put({id,name:form.name.trim(),type:form.type||'bank',openingBalance:investmentType?0:balance,includeInAssets:form.includeInAssets!==false,currency,decimalPlaces,fxRate,fxDate:currency==='TWD'?'':form.fxDate||'',fxSource:currency==='TWD'?'':form.fxSource||'manual',...(investmentType?{investmentCost:cost}:{}),...(form.type==='trust'?{trustSymbol:String(form.trustSymbol||'').trim().toUpperCase(),trustLots}:{}),...(form.type==='policy'?{policyValue,policyValueDate:form.policyValueDate||today()}:{} )});
+ if(form.type==='policy'&&(!existing||Number(existing.policyValue)!==policyValue||existing.policyValueDate!==(form.policyValueDate||today())))await db.investmentValuations.add({assetId:id,date:form.policyValueDate||today(),value:policyValue,createdAt:new Date().toISOString()});
+ });}
+ if(dialog==='accountType'){
+  const name=String(form.name||'').trim();
+  if(!name)throw Error('請輸入帳戶類型名稱');
+  if(accountTypes.some(t=>t.name===name&&t.id!==editing?.id))throw Error('帳戶類型名稱已存在');
+  const id=editing?.id||uid();
+  const next=editing?accountTypes.map(t=>t.id===id?{...t,name}:t):[...accountTypes,{id,name}];
+  await db.settings.put({key:'accountTypes',value:next});
+ }
+ if(dialog==='project'){
+  const name=String(form.name||'').trim();
+  if(!name)throw Error('請輸入專案名稱');
+  if(name.length>48)throw Error('專案名稱不可超過 48 字');
+  if(projects.some(p=>p.name===name&&p.id!==editing?.id))throw Error('專案名稱已存在');
+  const id=editing?.id||uid();
+  const next=editing?projects.map(p=>p.id===id?{...p,name}:p):[...projects,{id,name}];
+  await db.settings.put({key:'projects',value:next});
+ }
+ if(dialog==='stock'){if(accounts.find(a=>a.id===form.account)?.currency!=='TWD'&&accounts.find(a=>a.id===form.account)?.currency)throw Error('目前股票交割僅支援新台幣帳戶');if(!form.account)throw Error('請先新增交割帳戶');if(!form.symbol.trim())throw Error('請輸入股票代號');const action=form.action;const shares=Math.round(Number(form.shares)),price=Number(form.price),fee=estimateStockCharges(form).fee,tax=estimateStockCharges(form).tax,amount=Math.round(Number(form.amount));if(action==='dividend'&&!(amount>0))throw Error('請輸入股利金額');if(action!=='dividend'&&(!(shares>0)||!(price>0)||!Number.isFinite(fee)||!Number.isFinite(tax)||fee<0||tax<0))throw Error('請檢查交易股數、股價及費稅');
+ if(action!=='dividend'&&(!SECURITY_TYPES.some(t=>t.id===(form.securityType||'stock'))||Number(form.feeDiscount)<0||Number(form.feeDiscount)>100||Number(form.feeRate)<0||Number(form.feeMinimum)<0))throw Error('請檢查證券類型與手續費設定');
+ if(action!=='dividend'&&form.dayTrade&&form.securityType==='stock'&&action==='sell'&&!window.confirm('當沖 0.15% 僅適用符合法規的現股當日沖銷，請確認確實符合當沖條件。'))return;if(action==='sell'){
+  const h=holdings(stocks.filter(s=>s.id!==editing?.id)).find(h=>h.symbol===form.symbol.trim().toUpperCase());
+  if(!h||h.shares<shares)throw Error(`可賣股數不足：${h?h.shares.toLocaleString('zh-TW'):0} 股`);
+  if(!form.matchedBuyId)throw Error('請先選擇要沖銷的買進紀錄');
+  const lot=buyLotsForSale(stocks,form.symbol.trim(),form.date,editing?.id).find(l=>l.id===form.matchedBuyId);
+  if(!lot)throw Error('所選買進紀錄已無可沖銷股數，請重新選擇');
+  if(shares>Math.floor(lot.remaining))throw Error(`此筆買進最多可沖銷 ${Math.floor(lot.remaining)} 股`);
+}
+const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.symbol.trim().toUpperCase(),securityName:String(form.securityName||'').trim(),account:form.account,note:form.note||'',securityType:form.securityType||'stock',dayTrade:!!form.dayTrade,feeRate:Number(form.feeRate??0.1425),feeDiscount:Number(form.feeDiscount??60),feeMinimum:Number(form.feeMinimum??20),feeMode:'auto',shares:action==='dividend'?0:shares,price:action==='dividend'?0:price,fee:action==='dividend'?0:fee,tax:action==='dividend'?0:tax,amount:action==='dividend'?amount:0,totalAmount:action==='dividend'?0:Math.round(shares*price)+(action==='buy'?fee+tax:-fee-tax),matchedBuyId:action==='sell'?(form.matchedBuyId||null):null};
+ const before=calculateLots(stocks);
+ const after=calculateLots([...stocks.filter(x=>x.id!==editing?.id),stockCandidate]);
+ const priorIssues=new Set(before.issues.map(i=>String(i.id)+':'+i.message));
+ const newIssues=after.issues.filter(i=>!priorIssues.has(String(i.id)+':'+i.message));
+ if(newIssues.length)throw Error('沖銷後股數不一致：'+newIssues[0].message);
+ await db.stocks.put(stockCandidate);savedStockSymbol=form.symbol.trim().toUpperCase();}
+ if(dialog==='recurring'){
+  const amount=Number(form.amount);
+  if(!form.name.trim()||!Number.isFinite(amount)||!(amount>0))throw Error('請完成排程名稱與金額');
+  const relevant=form.type==='transfer'?[accounts.find(a=>a.id===form.fromAccount),accounts.find(a=>a.id===form.toAccount)]:[accounts.find(a=>a.id===form.account)];if(relevant.some(a=>!a||!withinPrecision(amount,precisionFor(a))))throw Error('排程金額小數位超過帳戶允許位數');
+  const isTransfer=form.type==='transfer', id=editing?.id||uid();
+  let updated;
+  if(isTransfer){
+    if(!form.fromAccount||!form.toAccount)throw Error('請選擇轉出及轉入帳戶');
+    if(form.fromAccount===form.toAccount)throw Error('轉出與轉入帳戶不可相同');
+    if(accounts.find(a=>a.id===form.fromAccount)?.currency!==accounts.find(a=>a.id===form.toAccount)?.currency)throw Error('跨幣別定期轉帳尚未支援');
+    updated={id,name:form.name.trim(),type:'transfer',amount,fromAccount:form.fromAccount,toAccount:form.toAccount,mainCategory:'帳戶互轉',subCategory:'內部轉帳',freq:form.freq,nextDate:form.nextDate};
+  }else{
+    if(!form.account)throw Error('請選擇帳戶');
+    const available=categories[form.type]?.[form.mainCategory]||[];
+    const subCategory=available.includes(form.subCategory)?form.subCategory:available[0]||'';
+    updated={id,name:form.name.trim(),type:form.type,amount,account:form.account,mainCategory:form.mainCategory,subCategory,freq:form.freq,nextDate:form.nextDate};
+  }
+  await db.transaction('rw',db.recurring,db.records,async()=>{
+    // Keep past amounts/dates untouched. Only sync category labels for proven linked records.
+    // For legacy entries without recurringId, exact note/name/account/type matches
+    // are linked only if the old schedule name is unique.
+    if(editing){
+      const allSchedules=await db.recurring.toArray();
+      const uniqueName=allSchedules.filter(x=>x.name===editing.name).length===1;
+      await db.records.toCollection().modify(r=>{
+        const linked=r.recurringId===id;
+        const legacy=!r.recurringId&&uniqueName&&r.note==='定期交易：'+editing.name&&
+          r.type===editing.type&&
+          (editing.type==='transfer'?r.fromAccount===editing.fromAccount&&r.toAccount===editing.toAccount:r.account===editing.account);
+        if(!linked&&!legacy)return;
+        // An existing transaction represents a completed financial event; do not
+        // silently change the transaction type or accounts when editing the schedule.
+        if(r.type!==updated.type||
+           (r.type==='transfer'?(r.fromAccount!==updated.fromAccount||r.toAccount!==updated.toAccount):r.account!==updated.account))return;
+        r.mainCategory=updated.mainCategory;
+        r.subCategory=updated.subCategory;
+        if(legacy)r.recurringId=id;
+      });
+    }
+    await db.recurring.put(updated);
+  });
+}
+ if(dialog==='category'){
+  const name=form.name?.trim();if(!name)throw Error('請輸入分類名稱');
+  const n=structuredClone(categories),flow=editing?.categoryType||form.categoryType;
+  const mode=editing?.mode||form.mode;
+  const parent=editing?.parent||form.parent;
+  const old=editing?.name?.trim();
+  if(mode==='main'){
+   if(old){if(name!==old&&Object.prototype.hasOwnProperty.call(n[flow],name))throw Error('主分類名稱已存在');if(name!==old){const replacement={};for(const [key,subs] of Object.entries(n[flow]))replacement[key===old?name:key]=subs;n[flow]=replacement;}}
+   else {if(Object.prototype.hasOwnProperty.call(n[flow],name))throw Error('主分類名稱已存在');n[flow][name]=[];}
+  }else{
+   if(!parent||!n[flow][parent])throw Error('請選擇所屬主分類');
+   if(n[flow][parent].includes(name)&&name!==old)throw Error('子分類名稱已存在');
+   if(old){n[flow][parent]=n[flow][parent].map(v=>v===old?name:v)}else n[flow][parent].push(name);
+  }
+  await db.transaction('rw',db.settings,db.records,db.recurring,async()=>{
+   if(old&&name!==old){
+    await db.records.where('type').equals(flow).modify(r=>{if(mode==='main'&&r.mainCategory===old)r.mainCategory=name;if(mode==='sub'&&r.mainCategory===parent&&r.subCategory===old)r.subCategory=name});
+    await db.recurring.toCollection().modify(r=>{if(r.type!==flow)return;if(mode==='main'&&r.mainCategory===old)r.mainCategory=name;if(mode==='sub'&&r.mainCategory===parent&&r.subCategory===old)r.subCategory=name});
+   }
+   await db.settings.put({key:'categories',value:n});
+   const iconData={...categoryIcons};
+   const oldKey=mode==='main'?`${flow}/main/${old}`:`${flow}/sub/${parent}/${old}`;
+   const newKey=mode==='main'?`${flow}/main/${name}`:`${flow}/sub/${parent}/${name}`;
+   if(old&&oldKey!==newKey)delete iconData[oldKey];
+   iconData[newKey]=CATEGORY_ICONS[form.icon]?form.icon:'tags';
+   if(mode==='main'&&old&&old!==name){for(const [key,value] of Object.entries(iconData)){const prefix=`${flow}/sub/${old}/`;if(key.startsWith(prefix)){iconData[`${flow}/sub/${name}/${key.slice(prefix.length)}`]=value;delete iconData[key]}}}
+   await db.settings.put({key:'categoryIcons',value:iconData});
+  });
+ }
+ await reload();close();toast('已儲存至 iPhone 本機');
+ if(savedStockSymbol)void refreshQuotes({force:true,codesOverride:[savedStockSymbol]});
+ }catch(err){toast(err.message)}};
+ async function reorderAccountType(sourceId,targetId){
+  if(!sourceId||!targetId||sourceId===targetId)return;
+  try{
+   await db.transaction('rw',db.settings,async()=>{
+    const setting=await db.settings.get('accountTypes');
+    const list=[...(setting?.value||defaultAccountTypes)];
+    const from=list.findIndex(item=>item.id===sourceId);
+    const to=list.findIndex(item=>item.id===targetId);
+    if(from<0||to<0)throw Error('帳戶類型清單已變動，請重新排序');
+    const [moving]=list.splice(from,1);
+    list.splice(to,0,moving);
+    await db.settings.put({key:'accountTypes',value:list});
+   });
+   await reload();
+  }catch(e){toast(e.message)}
+ }
+ function finishAccountTypeDrag(){accountTypeDragRef.current=null;setAccountTypeDrag(null)}
+ function accountTypeDragStart(e,id){
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  e.preventDefault();e.stopPropagation();
+  accountTypeDragRef.current={id,pointerId:e.pointerId,target:null};
+  e.currentTarget.setPointerCapture?.(e.pointerId);
+  setAccountTypeDrag({id,target:null});
+ }
+ function accountTypeDragMove(e){
+  const drag=accountTypeDragRef.current;
+  if(!drag||drag.pointerId!==e.pointerId)return;
+  e.preventDefault();
+  const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-account-type-sort-row]');
+  const target=hit?.dataset.accountTypeId||null;
+  if(drag.target!==target){drag.target=target;setAccountTypeDrag({id:drag.id,target})}
+ }
+ function accountTypeDragEnd(e){
+  const drag=accountTypeDragRef.current;
+  if(!drag||drag.pointerId!==e.pointerId)return;
+  const target=drag.target;finishAccountTypeDrag();
+  if(target)void reorderAccountType(drag.id,target);
+ }
+ function accountTypeDragKey(e,id){
+  if(!['ArrowUp','ArrowDown'].includes(e.key))return;
+  e.preventDefault();
+  const index=accountTypes.findIndex(t=>t.id===id);
+  const neighbour=accountTypes[index+(e.key==='ArrowUp'?-1:1)];
+  if(neighbour)void reorderAccountType(id,neighbour.id);
+ }
+ async function deleteAccountType(type){
+  try{
+   if(type.id!=='brokerage')throw Error('此帳戶類型為保留類型，只有「證券交割戶」可以刪除');
+   await db.transaction('rw',db.accounts,db.settings,async()=>{
+    const allAccounts=await db.accounts.toArray();
+    const refs=accountTypeRefs(type.id,allAccounts);
+    if(refs>0)throw Error(`此帳戶類型仍有 ${refs} 個帳戶使用，請先調整帳戶類型`);
+    const row=await db.settings.get('accountTypes');const list=row?.value||defaultAccountTypes;
+    if(list.length<=1)throw Error('至少需要保留一個帳戶類型');
+    if(!list.some(t=>t.id===type.id))throw Error('此帳戶類型已不存在');
+    if(!confirm(`確定刪除「${type.name}」帳戶類型？`))return;
+    await db.settings.put({key:'accountTypes',value:list.filter(t=>t.id!==type.id)});
+   });await reload();
+  }catch(e){toast(e.message)}
+ }
+ async function deleteProject(project){
+  try{
+   await db.transaction('rw',db.records,db.recurring,db.settings,async()=>{
+    const [rr,rs,pr]=await Promise.all([db.records.toArray(),db.recurring.toArray(),db.settings.get('projects')]);
+    const refs=projectRefs(project.id,rr,rs);
+    if(refs>0)throw Error(`此專案仍被 ${refs} 筆交易／排程使用，請先修改關聯資料`);
+    const list=pr?.value||[];
+    if(!list.some(p=>p.id===project.id))throw Error('此專案已不存在');
+    if(!confirm(`確定刪除「${project.name}」專案？`))return;
+    await db.settings.put({key:'projects',value:list.filter(p=>p.id!==project.id)});
+   });await reload();
+  }catch(e){toast(e.message)}
+ }
+ async function remove(kind,id){
+  if(!kind||!id)return;
+  try{
+   if(kind==='accounts'){
+    await db.transaction('rw',db.accounts,db.records,db.stocks,db.recurring,db.investmentFlows,db.investmentValuations,async()=>{
+     const [rr,ss,rs]=await Promise.all([db.records.toArray(),db.stocks.toArray(),db.recurring.toArray()]);
+     const refs=accountRefs(id,rr,ss,rs);
+     const flows=await db.investmentFlows.toArray();const valuations=await db.investmentValuations.where('assetId').equals(id).count();
+     if(flows.some(f=>f.assetId===id||f.sourceAccount===id)||valuations)throw Error('此帳戶已有投資投入／估值歷史或被指定為投入資金來源，請先處理關聯紀錄');
+     if(refs.total)throw Error(`此帳戶仍有關聯資料：一般／轉帳交易 ${refs.records} 筆、股票交易 ${refs.stocks} 筆、定期排程 ${refs.recurring} 筆，請先處理後再刪除`);
+     if(!confirm('確定刪除帳戶？此動作無法復原。'))return;
+     await db.accounts.delete(id);
+    });
+   }else if(kind==='stocks'){
+    await db.transaction('rw',db.stocks,async()=>{
+     const all=await db.stocks.toArray();
+     if(stockBuyRefs(id,all))throw Error('這筆買進已被賣出交易指定沖銷，請先修改或刪除相關賣出紀錄');
+     if(!confirm('確定刪除這筆股票交易？此動作無法復原。'))return;
+     await db.stocks.delete(id);
+    });
+   }else{
+    if(!confirm('確定刪除這筆資料？此動作無法復原。'))return;
+    await db[kind].delete(id);
+   }
+   await reload();close();
+  }catch(e){toast(e.message)}
+ }
+ async function executeRecurring(x){try{const nextDate=x.nextDate;await db.transaction('rw',db.records,db.recurring,async()=>{if(x.type==='transfer'){await db.records.put({id:uid(),recurringId:x.id,date:nextDate,type:'transfer',amount:x.amount,fromAccount:x.fromAccount,toAccount:x.toAccount,mainCategory:'帳戶互轉',subCategory:'內部轉帳',note:'定期交易：'+x.name});}else{await db.records.put({id:uid(),recurringId:x.id,date:nextDate,type:x.type,amount:x.amount,account:x.account,mainCategory:x.mainCategory,subCategory:x.subCategory||'',note:'定期交易：'+x.name});}const d=parseDate(nextDate);if(x.freq==='weekly')d.setDate(d.getDate()+7);else if(x.freq==='yearly')d.setFullYear(d.getFullYear()+1);else{const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+1);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));}await db.recurring.update(x.id,{nextDate:iso(d)})});await reload();toast('已執行一次定期交易')}catch(e){toast(e.message)}}
+ // 拖曳後將來源分類插入目標分類位置；僅改寫順序，不影響交易 ID 與分類關聯。
+ async function reorderCategory(main,sub,targetName,flow){
+  if(!targetName || (sub===null?main===targetName:sub===targetName))return;
+  try{
+   await db.transaction('rw',db.settings,async()=>{
+    const row=await db.settings.get('categories');
+    const next=structuredClone(row?.value||defaultCategories);
+    if(!next[flow])throw Error('找不到分類資料');
+    if(sub===null){
+     const entries=Object.entries(next[flow]);
+     const from=entries.findIndex(([key])=>key===main);
+     const to=entries.findIndex(([key])=>key===targetName);
+     if(from<0||to<0)throw Error('主分類已變動，請重新操作');
+     const [moving]=entries.splice(from,1);
+     entries.splice(to,0,moving);
+     next[flow]=Object.fromEntries(entries);
+    }else{
+     const list=next[flow][main];
+     if(!Array.isArray(list))throw Error('找不到主分類');
+     const from=list.indexOf(sub),to=list.indexOf(targetName);
+     if(from<0||to<0)throw Error('子分類已變動，請重新操作');
+     const [moving]=list.splice(from,1);
+     list.splice(to,0,moving);
+    }
+    await db.settings.put({key:'categories',value:next});
+   });
+   await reload();
+  }catch(e){toast(e.message)}
+ }
+ function endCategoryDrag(){dragCategoryRef.current=null;setCategoryDrag(null)}
+ function categoryHandleDown(e,kind,main,sub){
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  e.preventDefault();e.stopPropagation();
+  dragCategoryRef.current={kind,main,sub,flow:categoryFlow,pointerId:e.pointerId,target:null};
+  e.currentTarget.setPointerCapture?.(e.pointerId);
+  setCategoryDrag({kind,main,sub,target:null});
+ }
+ function categoryHandleMove(e){
+  const drag=dragCategoryRef.current;
+  if(!drag||drag.pointerId!==e.pointerId)return;
+  e.preventDefault();
+  const row=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-category-sort-row]');
+  let target=null;
+  if(row?.dataset.categoryKind===drag.kind&&row.dataset.categoryFlow===drag.flow){
+   if(drag.kind==='main')target=row.dataset.categoryMain;
+   else if(row.dataset.categoryMain===drag.main)target=row.dataset.categorySub;
+  }
+  if(target!==drag.target){
+   drag.target=target;
+   setCategoryDrag({kind:drag.kind,main:drag.main,sub:drag.sub,target});
+  }
+ }
+ function categoryHandleUp(e){
+  const drag=dragCategoryRef.current;
+  if(!drag||drag.pointerId!==e.pointerId)return;
+  const target=drag.target;
+  endCategoryDrag();
+  if(target)void reorderCategory(drag.main,drag.sub,target,drag.flow);
+ }
+ function categoryHandleKey(e,kind,main,sub){
+  if(!['ArrowUp','ArrowDown'].includes(e.key))return;
+  e.preventDefault();
+  const names=kind==='main'?Object.keys(categories[categoryFlow]||{}):(categories[categoryFlow]?.[main]||[]);
+  const current=kind==='main'?main:sub;
+  const next=names[names.indexOf(current)+(e.key==='ArrowUp'?-1:1)];
+  if(next)void reorderCategory(main,sub,next,categoryFlow);
+ }
+ async function delCategory(main,sub){
+  try{
+   await db.transaction('rw',db.settings,db.records,db.recurring,db.stocks,async()=>{
+    const [rr,rs,ss,catSetting,iconSetting]=await Promise.all([db.records.toArray(),db.recurring.toArray(),db.stocks.toArray(),db.settings.get('categories'),db.settings.get('categoryIcons')]);
+    const refs=categoryRefs(categoryFlow,main,sub,rr,rs,ss);
+    if(refs.total)throw Error(`此${sub?'子':'主'}分類仍被使用：一般交易 ${refs.records} 筆、定期排程 ${refs.recurring} 筆${refs.stocks?', 股票股利 '+refs.stocks+' 筆':''}。請先調整關聯資料`);
+    const current=catSetting?.value||defaultCategories;
+    if(!Object.prototype.hasOwnProperty.call(current[categoryFlow]||{},main)||sub&&!(current[categoryFlow][main]||[]).includes(sub))throw Error('分類已不存在');
+    if(!confirm(`確定刪除${sub?'子':'主'}分類「${sub||main}」？`))return;
+    const n=structuredClone(current);
+    if(sub)n[categoryFlow][main]=n[categoryFlow][main].filter(v=>v!==sub);else delete n[categoryFlow][main];
+    const iconData={...(iconSetting?.value||{})};
+    if(sub)delete iconData[`${categoryFlow}/sub/${main}/${sub}`];
+    else for(const k of Object.keys(iconData))if(k===`${categoryFlow}/main/${main}`||k.startsWith(`${categoryFlow}/sub/${main}/`))delete iconData[k];
+    await db.settings.put({key:'categories',value:n});await db.settings.put({key:'categoryIcons',value:iconData});
+   });await reload();
+  }catch(e){toast(e.message)}
+ }
+ const fxOf=a=>a?.currency==='TWD'||!a?.currency?1:Number(a?.fxRate)||1;
+ const toTWD=(amount,accountId)=>Number(amount||0)*fxOf(accounts.find(a=>a.id===accountId));
+ const changeCurrency=async currency=>{setForm(f=>({...f,currency,decimalPlaces:['JPY','KRW'].includes(currency)?0:2,fxRate:currency==='TWD'?1:'',fxDate:'',fxSource:''}));if(currency==='TWD')return;await fetchRate(currency)};
+ const fetchRate=async currency=>{setRateLoading(true);try{const res=await fetch(`https://api.frankfurter.dev/v2/rate/${encodeURIComponent(currency)}/TWD`,{cache:'no-store'});if(!res.ok)throw Error('匯率服務回應 '+res.status);const data=await res.json();if(!(Number(data.rate)>0))throw Error('匯率資料無效');setForm(f=>f.currency===currency?{...f,fxRate:Number(data.rate),fxDate:data.date||'',fxSource:'Frankfurter'}:f);toast('已更新 '+currency+' → TWD 匯率')}catch(err){toast('無法取得匯率，可手動輸入：'+err.message)}finally{setRateLoading(false)}};
+ const sellableHoldings=holdings(stocks.filter(x=>x.id!==editing?.id));
+ const availableBuyLots=form.action==='sell'&&form.symbol?buyLotsForSale(stocks,form.symbol,form.date||date,editing?.id):[];
+ const chosenBuyLot=availableBuyLots.find(l=>l.id===form.matchedBuyId);
+ const stockPerformance=useMemo(()=>analyzeStockPerformance(stocks),[stocks]);
+ const bal=a=>a.type==='trust'?(Number(quotes[String(a.trustSymbol||'').toUpperCase()]?.price)>0?(Number(a.trustLots||0)+investmentFlows.filter(f=>f.assetId===a.id&&f.kind==='contribution').reduce((sum,f)=>sum+Number(f.units||0),0))*1000*Number(quotes[String(a.trustSymbol||'').toUpperCase()].price):0):a.type==='policy'?Number(a.policyValue||0):accountBalance(a,records,stocks,investmentFlows);const includedAccounts=accounts.filter(a=>a.includeInAssets!==false);const includedIds=new Set(includedAccounts.map(a=>a.id));const hs=holdings(stocks);const netHoldings=holdings(stocks.filter(x=>includedIds.has(x.account)));const pricedHs=hs.filter(h=>Number(quotes[h.symbol]?.price)>0);const unpricedHs=hs.filter(h=>!(Number(quotes[h.symbol]?.price)>0));const stockVal=pricedHs.reduce((s,h)=>s+h.shares*Number(quotes[h.symbol].price),0);const stockCost=hs.reduce((s,h)=>s+h.cost,0);const pricedCost=pricedHs.reduce((s,h)=>s+h.cost,0);const netStockVal=netHoldings.reduce((sum,h)=>sum+h.shares*(Number(quotes[h.symbol]?.price)||0),0);const totalNet=includedAccounts.reduce((s,a)=>s+bal(a)*fxOf(a),0)+netStockVal;
+ // v65: Investment overview: three category summaries, without tabs.
+ // Values are aggregated through the established TWD internal basis; unknown quotes are not valued at cost.
+ const investmentOverview=[
+  {id:'stocks',title:'股票',count:hs.length,costTwd:stockCost,valueTwd:unpricedHs.length?null:stockVal},
+  ...(['trust','policy'].map(type=>{
+   const assets=accounts.filter(a=>a.type===type);
+   const amounts=assets.map(a=>{
+    const added=investmentFlows.filter(f=>f.assetId===a.id&&f.kind==='contribution');
+    const cost=(Number(a.investmentCost)||0)+added.reduce((v,f)=>v+(Number(f.amount)||0),0);
+    const lots=(Number(a.trustLots)||0)+added.reduce((v,f)=>v+(Number(f.units)||0),0);
+    const quote=quotes[String(a.trustSymbol||'').trim().toUpperCase()];
+    const value=type==='trust'?(Number(quote?.price)>0?lots*1000*Number(quote.price):null):(Number(a.policyValue)||0)*fxOf(a);
+    return {costTwd:cost*fxOf(a),valueTwd:value};
+   });
+   return {id:type,title:type==='trust'?'持股信託':'投資保單',count:assets.length,
+    costTwd:amounts.reduce((v,a)=>v+a.costTwd,0),
+    valueTwd:amounts.some(a=>a.valueTwd===null)?null:amounts.reduce((v,a)=>v+a.valueTwd,0)};
+  }))
+ ];
+ // 股票股利已列入 accountBalance 的 stocks 計算，僅投影到日記帳與收支統計；
+ // 不再新增 records，避免帳戶餘額及股利重複計算。股票交易仍是唯一資料來源。
+ const dividendDiaryRows=stocks.filter(x=>x.action==='dividend').map(x=>({id:`stock-dividend:${x.id}`,stockId:x.id,isStockDividend:true,date:x.date,type:'income',amount:Number(x.amount)||0,account:x.account,mainCategory:'投資收益',subCategory:'股票股利',note:x.note?.trim()||`${x.symbol} · 股票股利`}));
+ // Trading principal is a movement between cash and securities, NOT daily income/expense.
+ // Render a virtual ledger entry only; accountBalance continues to rely on stocks once.
+ const tradeDiaryRows=stocks.filter(x=>x.action==='buy'||x.action==='sell').map(x=>({
+  id:`stock-trade:${x.id}`,stockId:x.id,isStockTrade:true,date:x.date,type:'stock',
+  stockAction:x.action,amount:Number(x.totalAmount)||0,account:x.account,
+  mainCategory:'股票交易',subCategory:x.action==='buy'?'股票買進':'股票賣出',
+  note:`${x.symbol} · ${x.action==='buy'?'買進':'賣出'}${x.securityName?`（${x.securityName}）`:''}`
+ }));
+ const diaryRecords=[...records,...dividendDiaryRows,...tradeDiaryRows];
+ const month=date.slice(0,7);
+ const monthTx=diaryRecords.filter(r=>r.date?.startsWith(month));
+ const monthExpense=monthTx.filter(r=>r.type==='expense').reduce((sum,r)=>sum+toTWD(r.amount,r.account),0);
+ const monthIncome=monthTx.filter(r=>r.type==='income').reduce((sum,r)=>sum+toTWD(r.amount,r.account),0);
+ const visibleDiaryRecords=diaryView==='month'?monthTx:diaryRecords.filter(r=>r.date===date);
+ const dayTx=visibleDiaryRecords.filter(r=>(filter==='all'||r.type===filter||(filter==='stock'&&(r.isStockDividend||r.isStockTrade)))&&(!query||`${r.note||''}${r.mainCategory||''}${r.subCategory||''}${r.stockSymbol||''}${projects.find(p=>p.id===r.projectId)?.name||''}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()))).sort((a,b)=>{
+  const dateOrder=(b.date||'').localeCompare(a.date||'');
+  return dateOrder||String(b.id||'').localeCompare(String(a.id||''));
+ });
+ const dayIncome=diaryView==='month'?monthIncome:diaryRecords.filter(r=>r.date===date&&r.type==='income').reduce((sum,r)=>sum+toTWD(r.amount,r.account),0);
+ const dayExpense=diaryView==='month'?monthExpense:diaryRecords.filter(r=>r.date===date&&r.type==='expense').reduce((sum,r)=>sum+toTWD(r.amount,r.account),0);
+ const week=useMemo(()=>{let x=parseDate(date);x.setDate(x.getDate()-x.getDay());return Array.from({length:7},(_,i)=>{let d=new Date(x);d.setDate(x.getDate()+i);return iso(d)})},[date]);const shift=n=>{let d=parseDate(date);d.setDate(d.getDate()+n);setDate(iso(d))};const openDatePicker=()=>{const el=datePickerRef.current;if(!el)return;try{if(typeof el.showPicker==='function')el.showPicker();else{el.focus();el.click()}}catch{el.focus();el.click()}};
+ const shiftMonth=n=>{const [year,mon]=date.slice(0,7).split('-').map(Number);const d=new Date(year,mon-1+n,1);setDate(iso(d))};const openMonthPicker=()=>{const el=monthPickerRef.current;if(!el)return;try{if(typeof el.showPicker==='function')el.showPicker();else{el.focus();el.click()}}catch{el.focus();el.click()}};
+ const onWeekTouchStart=e=>{if(e.touches.length!==1)return;weekSwipe.current={x:e.touches[0].clientX,y:e.touches[0].clientY,time:Date.now()}};
+ const onWeekTouchEnd=e=>{const start=weekSwipe.current;weekSwipe.current=null;if(!start||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;if(Math.abs(dx)<48||Math.abs(dx)<Math.abs(dy)*1.25)return;shift(dx<0?7:-7)};
+ const expenseGroups=Object.entries(monthTx.filter(r=>r.type==='expense').reduce((o,r)=>(o[r.mainCategory]=(o[r.mainCategory]||0)+toTWD(r.amount,r.account),o),{})).map(([name,value])=>({name,value}));const colors=['#627bfa','#b58af7','#ff9f81','#65c7ba','#f4c76c','#ff82ba'];
+ const download=async()=>{
+  try{
+   const data=await snapshot();
+   const name=`CYBERPULSE_${today()}.json`;
+   const file=new File([JSON.stringify(data,null,2)],name,{type:'application/json'});
+   const saveDownload=()=>{
+    const url=URL.createObjectURL(file);
+    const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+   };
+   // Desktop Chrome may support navigator.share but deny permission for file sharing.
+   // Use the native share sheet only on iOS; fall back to a direct download on errors.
+   const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||
+    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+   if(ios&&navigator.share&&navigator.canShare?.({files:[file]})){
+    try{
+     await navigator.share({files:[file],title:'CYBERPULSE 備份'});
+     toast('備份已分享，請確認已儲存到 iCloud Drive');
+     return;
+    }catch(err){
+     if(err?.name==='AbortError')return; // User cancelled share sheet.
+     // Permission denied, NotAllowedError, etc.: download is still available.
+     console.warn('分享備份失敗，改用下載：',err);
+    }
+   }
+   saveDownload();
+   toast('已下載備份 JSON；如需 iCloud Drive，請將檔案移至 iCloud Drive');
+  }catch(e){toast('備份失敗：'+(e?.message||String(e)))}
+ };
+ const importFile=async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;try{const obj=JSON.parse(await file.text());if(obj?.app!=='cyberpulse-liquid'||![1,2].includes(obj.version)||!['records','accounts','stocks','recurring','settings'].every(k=>Array.isArray(obj[k])))throw Error('備份格式或版本不正確');if(!confirm(`準備還原 ${file.name}\n備份時間：${obj.exportedAt?new Date(obj.exportedAt).toLocaleString('zh-TW'):'未記錄'}\n交易 ${obj.records.length} 筆、帳戶 ${obj.accounts.length} 個、股票 ${obj.stocks.length} 筆、保單估值 ${(obj.investmentValuations||[]).length} 筆、定期排程 ${obj.recurring.length} 筆。\n\n這會覆蓋目前所有本機資料。請先備份目前資料，確定還原？`))return;await restore(obj);await reload();toast('備份還原完成')}catch(err){toast('匯入失敗：'+err.message)}};
+ const chooseLanguage=async value=>{await db.settings.put({key:'language',value});setLanguage(value)};
+ const chooseColors=async value=>{await db.settings.put({key:'amountColors',value});setColorScheme(value)};
+ const changePrimaryCurrency=async value=>{
+  await db.settings.put({key:'primaryCurrency',value});setPrimaryCurrency(value);
+  if(value==='TWD'){setPrimaryTwdRate(1);setPrimaryRateDate('');return;}
+  const saved=(await db.settings.get('primaryTwdRate'))?.value;
+  if(saved?.currency===value&&Number(saved.rate)>0){setPrimaryTwdRate(Number(saved.rate));setPrimaryRateDate(saved.date||'')}
+  else {setPrimaryTwdRate(0);setPrimaryRateDate('')}
+  await updatePrimaryRate(value);
+ };
+ const updatePrimaryRate=async currency=>{
+  if(currency==='TWD')return;
+  setPrimaryRateLoading(true);
+  try{const res=await fetch(`https://api.frankfurter.dev/v2/rate/${encodeURIComponent(currency)}/TWD`,{cache:'no-store'});
+   if(!res.ok)throw Error(`HTTP ${res.status}`);const data=await res.json();const rate=Number(data.rate);
+   if(!Number.isFinite(rate)||rate<=0)throw Error('無效匯率');
+   await db.settings.put({key:'primaryTwdRate',value:{currency,rate,date:data.date||''}});
+   setPrimaryTwdRate(rate);setPrimaryRateDate(data.date||'');toast(`主要貨幣匯率已更新：1 ${currency} = ${rate} TWD`);
+  }catch(e){toast(`無法更新主要貨幣匯率：${e.message}，請連線後重試`)}finally{setPrimaryRateLoading(false)}
+ };
+ const chooseTheme=async value=>{await db.settings.put({key:'theme',value});setTheme(value)};const toggleTheme=async()=>chooseTheme(theme==='dark'?'light':'dark');const updateFontScale=async value=>{const n=Number(value)||1;await db.settings.put({key:'fontScale',value:n});setFontScale(n)};
+ if(!ready)return <div className="loading">載入本機資料庫中…</div>;
+ return <div className="app-shell" lang={language} data-color-scheme={colorScheme} style={{'--user-income':colorScheme==='reverse'?'#e75365':'#26ab7d','--user-expense':colorScheme==='reverse'?'#26ab7d':'#e75365'}}><div className="ambient ambient-a"/><div className="ambient ambient-b"/><header className="topbar glass"><div className="brand"><div className="brand-icon"><Wallet size={22}/></div><div><strong>CYBER<span>PULSE</span></strong><small>LIQUID · PRIVATE LEDGER</small></div></div><div className="top-actions"><span className="offline-pill"><ShieldCheck size={13}/> 本機資料</span><button className="circle-button" onClick={toggleTheme}>{theme==='light'?<Moon size={20}/>:<Sun size={20}/>}</button></div></header>
+ <div className="layout"><aside className="sidebar glass"><div className="side-caption">PERSONAL FINANCE</div>{nav.map(([key,label,Icon])=><button key={key} onClick={()=>setTab(key)} className={'side-link '+(tab===key?'selected':'')}><Icon size={19}/>{tr(label)}</button>)}<div className="sidebar-bottom">100% LOCAL-FIRST<br/>資料不會上傳 GitHub</div></aside>
+ <main key={tab} className={"main page-enter "+(tab==='daily'?'daily-compact':'')}>{settingsPages.includes(tab)&&<button className="mobile-back" onClick={()=>setTab('settings')}><ChevronLeft size={19}/> 返回設定</button>}{tab!=='daily'&&<div className="page-head"><div><div className="eyebrow">YOUR MONEY, YOUR SPACE</div><h1>{tr(nav.find(n=>n[0]===tab)?.[1])}</h1></div>{tab==='daily'?<span className="page-context">{month.replace('-',' 年 ')} 月</span>:<span className="page-context">{tab==='categories'?'自訂收支分類':tab==='settings'?'本機資料管理':tab==='dashboard'?'財務概況':tab==='stocks'?'投資管理':tab==='accounts'?'帳戶管理':tab==='accountTypes'?'類型設定':tab==='projects'?'專案管理':'交易設定'}</span>}</div>}
+ {tab==='daily'&&<><section className="glass panel calendar-panel">
+ <div className="calendar-header">
+
+  <div className={"week-nav "+(diaryView==='month'?'month-nav':'')}>
+   <button type="button" className="mini-btn" aria-label={diaryView==='month'?'上一個月':'上一週'} onClick={()=>diaryView==='month'?shiftMonth(-1):shift(-7)}><ChevronLeft size={20}/></button>
+   {diaryView==='month'?<div className="calendar-date-control"><button type="button" className="calendar-date-trigger" aria-label="選擇月份" onClick={openMonthPicker}>{month.replace('-',' 年 ')} 月</button><input ref={monthPickerRef} className="calendar-native-date" type="month" aria-label="選擇月份" value={month} onChange={e=>{if(e.target.value)setDate(`${e.target.value}-01`)}}/></div>:<div className="calendar-date-control"><button type="button" className="calendar-date-trigger" aria-label="開啟月曆選擇日期" onClick={openDatePicker}>{date.replaceAll('-','/')}</button><input ref={datePickerRef} className="calendar-native-date" aria-label="選擇日期" type="date" value={date} onChange={e=>{if(e.target.value)setDate(e.target.value)}}/></div>}
+   <button type="button" className="mini-btn" aria-label={diaryView==='month'?'下一個月':'下一週'} onClick={()=>diaryView==='month'?shiftMonth(1):shift(7)}><ChevronRight size={20}/></button>
+  </div>
+  <div className="diary-view-switch" role="group" aria-label="日記帳查詢範圍">
+   <button type="button" className={diaryView==='day'?'active':''} aria-pressed={diaryView==='day'} onClick={()=>setDiaryView('day')}>日</button>
+   <button type="button" className={diaryView==='month'?'active':''} aria-pressed={diaryView==='month'} onClick={()=>setDiaryView('month')}>月</button>
+  </div>
+  <div className="calendar-header-controls"><button type="button" className="soft-btn" onClick={()=>setDate(today())}><CalendarDays size={16}/> {diaryView==='month'?'本月':'今天'}</button></div>
+ </div>
+ <div className="stats-three"><div className="glass stat"><small>{diaryView==='month'?tr('本月支出'):tr('當日支出')}</small><strong className="expense">{fmtPrimaryNumber(dayExpense)}</strong></div><div className="glass stat"><small>{diaryView==='month'?tr('本月收入'):tr('當日收入')}</small><strong className="income">{fmtPrimaryNumber(dayIncome)}</strong></div><div className="glass stat"><small>{diaryView==='month'?'本月淨額':tr('當日淨額')}</small><strong className={dayIncome-dayExpense>=0?'income':'expense'}>{fmtPrimaryNumber(dayIncome-dayExpense)}</strong></div></div>
+ {diaryView==='day'&&<div className="week-strip" role="group" aria-label="選擇一週中的日期；左右滑動切換週別" onTouchStart={onWeekTouchStart} onTouchEnd={onWeekTouchEnd}>{week.map((d,i)=><button type="button" key={d} aria-label={`${d} 星期${'日一二三四五六'[i]}`} aria-pressed={d===date} className={'week-day '+(d===date?'active':'')+(d===today()?' is-today':'')} onClick={()=>setDate(d)}><small>{'日一二三四五六'[i]}</small><b>{Number(d.slice(-2))}</b><i className={diaryRecords.some(x=>x.date===d)?'dot visible':'dot'}/></button>)}</div>}
+</section><section className="glass panel daily-transactions"><div className="diary-search-filter"><div className="searchbox"><Search size={17}/><input placeholder="搜尋備註、分類" aria-label="搜尋交易" value={query} onChange={e=>setQuery(e.target.value)}/></div><SmartSelect className="compact" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">全部</option><option value="expense">支出</option><option value="income">收入</option><option value="transfer">轉帳</option><option value="stock">股票交易</option></SmartSelect></div>{dayTx.length?dayTx.map((x,i)=><React.Fragment key={x.id}>{diaryView==='month'&&(i===0||dayTx[i-1].date!==x.date)&&<div className="diary-month-date-heading">{x.date.replaceAll('-','/')} <small>{['日','一','二','三','四','五','六'][parseDate(x.date).getDay()]}</small></div>}<div className="list-row" onClick={()=>(x.isStockDividend||x.isStockTrade)?open('stock',stocks.find(s=>s.id===x.stockId)):open('transaction',x)}><div className={'transaction-icon '+x.type}>{(()=>{const iconKey=x.type==='stock'?'trend':x.type==='transfer'?'transfer':categoryIcons[`${x.type}/sub/${x.mainCategory}/${x.subCategory}`]||categoryIcons[`${x.type}/main/${x.mainCategory}`]||suggestedIcon(x.mainCategory||'');const Icon=CATEGORY_ICONS[iconKey]||Tags;return <Icon size={20}/>})()}</div><div className="row-main"><b>{x.note||x.subCategory||x.mainCategory||picker[x.type]}</b><small>{x.type==='transfer'?'帳戶轉帳':x.mainCategory||picker[x.type]}{x.projectId&&projects.some(p=>p.id===x.projectId)?' · '+projects.find(p=>p.id===x.projectId).name:''}</small></div><div className="transaction-right"><strong className={x.type==='expense'?'expense':x.type==='income'?'income':''}>{x.type==='expense'||(x.isStockTrade&&x.stockAction==='buy')?'-':x.type==='income'||(x.isStockTrade&&x.stockAction==='sell')?'+':''}{(()=>{const a=accounts.find(a=>a.id===(x.type==='transfer'?x.fromAccount:x.account));return fmtAccountFigure(x.amount,a)})()}</strong><small>{x.type==='transfer'?`${accounts.find(a=>a.id===x.fromAccount)?.name||'未指定轉出帳戶'} → ${accounts.find(a=>a.id===x.toAccount)?.name||'未指定轉入帳戶'}${accountCurrencyCode(x.toAccount)?' · '+accountCurrencyCode(x.toAccount):''}`:`${accounts.find(a=>a.id===x.account)?.name||'未指定帳戶'}`}</small></div><ChevronRight size={17} className="faint"/></div></React.Fragment>):<Blank text={diaryView==='month'?'這個月沒有符合條件的交易':'這一天沒有符合條件的交易'}/>}</section></>}
+ {tab==='dashboard'&&<><div className="hero glass"><span>總淨資產 · NET WORTH</span><strong>{fmtPrimaryNumber(totalNet)}</strong><small>現金、銀行、電子錢包、信用卡負債與持有股票估值</small><div className="hero-orb"/></div><div className="stats-two"><div className="glass stat"><small>{tr('本月支出')}</small><strong className="expense">{fmtPrimaryNumber(monthExpense)}</strong></div><div className="glass stat"><small>{tr('本月收入')}</small><strong className="income">{fmtPrimaryNumber(monthIncome)}</strong></div></div><section className="glass panel"><h2>本月支出分類</h2><div className="chart-wrap">{expenseGroups.length?<ResponsiveContainer width="100%" height={215}><PieChart><Pie data={expenseGroups} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={4}>{expenseGroups.map((_,i)=><Cell key={i} fill={colors[i%colors.length]}/>)}</Pie><Tooltip formatter={v=>fmtPrimaryNumber(v)}/></PieChart></ResponsiveContainer>:<Blank text="本月還沒有支出"/>}</div><div className="legend">{expenseGroups.map((g,i)=><div key={g.name}><i style={{background:colors[i%colors.length]}}/>{g.name}<b>{fmtPrimaryNumber(g.value)}</b></div>)}</div></section><section className="glass panel"><h2>帳戶餘額</h2><div className="chart-wrap">{includedAccounts.length?<ResponsiveContainer width="100%" height={210}><BarChart data={includedAccounts.map(a=>({name:a.name.slice(0,5),value:inPrimary(bal(a)*fxOf(a))}))}><CartesianGrid strokeDasharray="3 3" vertical={false} opacity={.16}/><XAxis dataKey="name" tick={{fontSize:10}}/><Tooltip formatter={v=>new Intl.NumberFormat('zh-TW',{maximumFractionDigits:['JPY','KRW'].includes(primaryCurrency)?0:2}).format(v)}/><Bar dataKey="value" fill="#7a8cff" radius={[9,9,0,0]}/></BarChart></ResponsiveContainer>:<Blank/>}</div></section></>}
+ {tab==='accounts'&&<><div className="hero glass compact-hero"><span>{tr('帳戶資產總額（不含股票）')}</span><strong>{fmtPrimaryNumber(includedAccounts.reduce((s,a)=>s+bal(a)*fxOf(a),0))}</strong><small>依各帳戶匯率換算為 {primaryCurrency}，僅供估值</small></div><section className="accounts-group-section"><div className="section-header account-list-header"><h2>{tr('我的帳戶')}</h2><span className="count">{accounts.length} 個帳戶</span></div>{accounts.length?(accountTypes.map(t=>[t.id,t.name]).filter(([type])=>accounts.some(a=>a.type===type)).map(([type,label])=>{const list=accounts.filter(a=>a.type===type);const converted=list.filter(a=>a.includeInAssets!==false).reduce((sum,a)=>sum+bal(a)*fxOf(a),0);return <div className="account-group" key={type}><div className="account-group-head"><div className="account-group-title"><span className={'group-marker marker-'+type}/><b>{label}</b><small>{list.length} 個</small></div><strong>{fmtPrimaryNumber(converted)}</strong></div><div className="account-group-list">{list.map(a=><div className="list-row account-row" key={a.id} onClick={()=>open('account',a)}><div className={'account-type-icon type-'+type}><Landmark size={17}/></div><div className="row-main"><b>{a.name}</b>{a.includeInAssets===false&&<small className="asset-excluded-label">未計入總資產</small>}</div><div className="account-figures"><strong>{fmtAccountFigure(bal(a),a)}</strong>{a.currency&&a.currency!==primaryCurrency&&<small>{baseAvailable?`≈ ${fmtPrimary(bal(a)*fxOf(a))} · 1 ${a.currency} = ${formatFxRate(crossRateToPrimary(a.currency,fxOf(a)))} ${primaryCurrency}`:'主要貨幣匯率尚未取得'}</small>}</div><ChevronRight className="faint" size={16}/></div>)}</div></div>})):<Blank text="尚未建立帳戶" sub="新增現金、銀行或信用卡帳戶"/>}</section></>}
+ {tab==='accountTypes'&&<section className="glass panel account-type-page"><div className="section-header"><div><h2>帳戶類型管理</h2><p className="hint">按住拖曳把手調整帳戶類型順序，放開後立即儲存；也可使用方向鍵。除「證券交割戶」外，其餘類型不可刪除。</p></div><button type="button" className="soft-btn" onClick={()=>open('accountType')}><Plus size={16}/>新增類型</button></div><div className="account-type-list">{accountTypes.map(t=><div className={'account-type-item'+(accountTypeDrag?.id===t.id?' account-type-dragging':'')+(accountTypeDrag?.target===t.id?' account-type-drop-target':'')} data-account-type-sort-row="" data-account-type-id={t.id} key={t.id}><button type="button" className="account-type-drag-handle" title={'拖曳排序'+t.name} aria-label={'拖曳排序'+t.name} onPointerDown={e=>accountTypeDragStart(e,t.id)} onPointerMove={accountTypeDragMove} onPointerUp={accountTypeDragEnd} onPointerCancel={finishAccountTypeDrag} onKeyDown={e=>accountTypeDragKey(e,t.id)}><GripVertical size={19}/></button><div className="row-main"><b>{t.name}</b><small>{accounts.filter(a=>a.type===t.id).length} 個帳戶使用</small></div><button type="button" className="type-action" title={'修改'+t.name} aria-label={'修改'+t.name} onClick={()=>open('accountType',t)}><Edit3 size={18}/></button>{t.id==='brokerage'?<button type="button" className="type-action delete" title={'刪除'+t.name} aria-label={'刪除'+t.name} onClick={()=>deleteAccountType(t)}><Trash2 size={18}/></button>:<span className="account-type-locked" title="保留類型，不可刪除"><Lock size={17}/></span>}</div>)}</div></section>}
+ {tab==='stocks'&&<>
+ {investSection==='list'?<>
+  <section className="investment-combined" aria-label="投資分類與績效">
+   <div className="investment-combined-heading"><h2>投資總覽</h2><small>點選類別查看資產及交易紀錄</small></div>
+   <div className="investment-combined-list">{investmentOverview.map(item=>{
+    const pnl=item.valueTwd===null?null:item.valueTwd-item.costTwd;
+    const pct=pnl!==null&&item.costTwd>0?pnl/item.costTwd*100:null;
+    const detail={stocks:'股票持股、買賣與股利',trust:'持股信託與追加投入',policy:'投資保單與現值紀錄'}[item.id];
+    return <button type="button" className="investment-combined-row" key={item.id} onClick={()=>{setInvestSection(item.id);setSelectedStockSymbol(null)}} aria-label={`查看${item.title}，共${item.count}筆`}>
+     <div className="investment-combined-title"><div><b>{item.title}</b><small>{detail} · {item.count} 筆</small></div><ChevronRight size={21}/></div>
+     <div className="investment-combined-financials">
+      <div><small>持有成本</small><strong>{fmtPrimaryNumber(item.costTwd)}</strong></div>
+      <div><small>目前現值</small><strong>{item.valueTwd===null?'尚無報價':fmtPrimaryNumber(item.valueTwd)}</strong></div>
+     </div>
+     <div className="investment-combined-pnl"><small>未實現損益</small><div className={pnl===null?'':pnl>=0?'income':'expense'}><strong>{pnl===null?'—':`${pnl>=0?'+':''}${fmtPrimaryNumber(pnl)}`}</strong><span>{pct===null?'—':`${pct>=0?'+':''}${pct.toFixed(2)}%`}</span></div></div>
+    </button>;
+   })}</div>
+  </section>
+ </>:<button type="button" className="stock-back investment-menu-back" onClick={()=>{setInvestSection('list');setSelectedStockSymbol(null)}}><ChevronLeft size={18}/>返回投資總覽</button>}
+ {investSection==='stocks'&&<StockPerformanceView
+   groups={stockPerformance} holdings={hs} quotes={quotes} selectedSymbol={selectedStockSymbol}
+   onSelect={setSelectedStockSymbol} onBack={()=>setSelectedStockSymbol(null)} onEdit={item=>open('stock',item)}
+   fmt={fmtPrimaryNumber} fmtUnit={fmtStockUnit} fmtTradeNative={fmtStockTradeAmount} language={language} baseAvailable={baseAvailable} nativeStockCurrency={primaryCurrency==='TWD'?'':'TWD'}
+   quoteLoading={quoteLoading} onRefresh={()=>refreshQuotes({force:true})} RefreshIcon={RefreshCcw}
+ />}{['trust','policy'].includes(investSection)&&<InvestmentAssets key={investSection} type={investSection} items={accounts.filter(a=>a.type===investSection)} valuations={investmentValuations} flows={investmentFlows} cashAccounts={accounts.filter(a=>!['trust','policy'].includes(a.type))} quotes={quotes} primaryCurrency={primaryCurrency} onChanged={reload} onEditAccount={a=>open('account',a)} />}</>}
+
+ {tab==='recurring'&&<section className="glass panel"><h2>定期交易排程</h2><p className="hint">為確保離線記帳的可預期性，排程需手動點選「執行」，不會在背景自行扣款。</p>{recurring.length?recurring.map(x=><div className="recurring-row" key={x.id}><div className="list-row" onClick={()=>open('recurring',x)}><div className={'transaction-icon '+x.type}><Repeat2 size={18}/></div><div className="row-main"><b>{x.name}</b><small>下次 {x.nextDate} · {{weekly:'每週',monthly:'每月',yearly:'每年'}[x.freq]}</small></div><div className="recurring-amount"><strong>{fmtAccountFigure(x.amount,accounts.find(a=>a.id===(x.type==='transfer'?x.fromAccount:x.account)))}</strong></div><ChevronRight className="faint" size={16}/></div><button className="soft-btn small" onClick={()=>executeRecurring(x)}><Check size={14}/> 執行一次並推進日期</button></div>):<Blank text="尚未設定定期交易"/>}</section>}
+ {tab==='projects'&&<section className="glass panel project-management-page"><div className="section-header"><div><h2>專案管理</h2><p className="hint">交易可自由指定專案，不選擇也能正常記帳。重新命名不影響歷史交易。</p></div><button type="button" className="soft-btn" onClick={()=>open('project')}><Plus size={16}/>新增專案</button></div>{projects.length?<div className="project-management-list">{projects.map(project=><div className="project-management-row" key={project.id}><div className="row-main"><b>{project.name}</b><small>{records.filter(r=>r.projectId===project.id).length} 筆關聯交易</small></div><button type="button" className="type-action" title={'修改'+project.name} aria-label={'修改'+project.name} onClick={()=>open('project',project)}><Edit3 size={18}/></button><button type="button" className="type-action delete" title={'刪除'+project.name} aria-label={'刪除'+project.name} onClick={()=>deleteProject(project)}><Trash2 size={18}/></button></div>)}</div>:<Blank text="尚未建立專案" sub="點擊新增專案，之後在新增交易時可選擇"/>}</section>}
+ {tab==='categories'&&<section className="category-section"><div className="section-header category-section-head"><div><h2>分類管理</h2><p className="hint">按住左側拖曳把手調整主分類或子分類順序，放開後自動儲存；也可聚焦把手按方向鍵排序。</p></div><div className="segmented"><Pill active={categoryFlow==='expense'} onClick={()=>setCategoryFlow('expense')}>支出</Pill><Pill active={categoryFlow==='income'} onClick={()=>setCategoryFlow('income')}>收入</Pill></div></div><div className="category-list">{Object.entries(categories[categoryFlow]).map(([main,subs])=><div className={'category-group'+(categoryDrag?.kind==='main'&&categoryDrag.main===main?' category-dragging':'')+(categoryDrag?.kind==='main'&&categoryDrag.target===main?' category-drop-target':'')} key={main} data-category-sort-row="" data-category-kind="main" data-category-flow={categoryFlow} data-category-main={main}><div className="category-group-head"><button type="button" className="category-drag-handle" title="拖曳排序主分類" aria-label={'拖曳排序主分類'+main} onPointerDown={e=>categoryHandleDown(e,'main',main,null)} onPointerMove={categoryHandleMove} onPointerUp={categoryHandleUp} onPointerCancel={endCategoryDrag} onKeyDown={e=>categoryHandleKey(e,'main',main,null)}><GripVertical size={19}/></button><div className="category-main-label">{(()=>{const Icon=CATEGORY_ICONS[categoryIcons[`${categoryFlow}/main/${main}`]||suggestedIcon(main)]||Tags;return <Icon size={20}/>})()}<strong>{main}</strong><span className="category-count">{subs.length} 個子分類</span></div><div className="category-tools"><button type="button" className="category-action" title="修改主分類" aria-label={'修改'+main} onClick={()=>open('category',{name:main,mode:'main',categoryType:categoryFlow})}><Edit3 size={17}/></button><button type="button" className="category-action delete" title="刪除主分類" aria-label={'刪除'+main} onClick={()=>delCategory(main)}><Trash2 size={16}/></button></div></div><div className="category-subs">{subs.map(sub=><div className={'category-sub'+(categoryDrag?.kind==='sub'&&categoryDrag.main===main&&categoryDrag.sub===sub?' category-dragging':'')+(categoryDrag?.kind==='sub'&&categoryDrag.main===main&&categoryDrag.target===sub?' category-drop-target':'')} key={sub} data-category-sort-row="" data-category-kind="sub" data-category-flow={categoryFlow} data-category-main={main} data-category-sub={sub}><button type="button" className="category-drag-handle" title="拖曳排序子分類" aria-label={'拖曳排序子分類'+sub} onPointerDown={e=>categoryHandleDown(e,'sub',main,sub)} onPointerMove={categoryHandleMove} onPointerUp={categoryHandleUp} onPointerCancel={endCategoryDrag} onKeyDown={e=>categoryHandleKey(e,'sub',main,sub)}><GripVertical size={16}/></button>{(()=>{const Icon=CATEGORY_ICONS[categoryIcons[`${categoryFlow}/sub/${main}/${sub}`]||categoryIcons[`${categoryFlow}/main/${main}`]||suggestedIcon(main)]||Tags;return <Icon size={16} className="category-sub-icon"/>})()}<span>{sub}</span><div className="category-tools"><button type="button" title="修改子分類" aria-label={'修改'+sub} onClick={()=>open('category',{name:sub,mode:'sub',parent:main,categoryType:categoryFlow})}><Edit3 size={15}/></button><button type="button" className="delete" title="刪除子分類" aria-label={'刪除'+sub} onClick={()=>delCategory(main,sub)}><X size={16}/></button></div></div>)}<button type="button" className="category-add-sub" onClick={()=>open('category',{name:'',mode:'sub',parent:main,categoryType:categoryFlow})}><Plus size={15}/> 新增子分類</button></div></div>)}</div><button type="button" className="category-add-main" onClick={()=>open('category',{name:'',mode:'main',categoryType:categoryFlow})}><Plus size={17}/> 新增{categoryFlow==='expense'?'支出':'收入'}主分類</button></section>}
+ {tab==='settings'&&<><section className="glass panel settings-menu"><h2>{tr('記帳管理')}</h2><p className="hint">管理帳戶、定期交易與收支分類</p>{[['accounts','帳戶管理','新增與修改銀行、現金、信用卡帳戶',Landmark],['accountTypes','帳戶類型管理','新增、修改及刪除帳戶分組類型',Tags],['projects','專案管理','建立與管理交易所屬專案',Tags],['recurring','定期交易','管理薪資、訂閱與週期性支出',Repeat2],['categories','分類管理','設定收入、支出主分類與子分類',Tags]].map(([key,label,desc,Icon])=><button className="action-row" key={key} onClick={()=>setTab(key)}><Icon size={20}/><span><b>{label}</b><small>{desc}</small></span><ChevronRight size={18}/></button>)}</section><section className="glass panel preferences-panel"><h2>{tr('主要貨幣')} / {tr('語言')} / {tr('金額顏色')}</h2>
+ <Field label={tr('主要貨幣')}><SmartSelect value={primaryCurrency} onChange={e=>changePrimaryCurrency(e.target.value)}>{CURRENCIES.map(([code,label])=><option key={code} value={code}>{code} · {label}</option>)}</SmartSelect></Field>
+ {primaryCurrency!=='TWD'&&<div className="preference-rate"><small>{baseAvailable?`1 ${primaryCurrency} = ${mainRate.toFixed(4)} TWD${primaryRateDate?' · '+primaryRateDate:''}`:'尚未取得主要貨幣匯率，總覽暫不計算換算數值'}</small><button type="button" className="soft-btn small" disabled={primaryRateLoading} onClick={()=>updatePrimaryRate(primaryCurrency)}><RefreshCcw size={15}/>{primaryRateLoading?'更新中':'更新匯率'}</button></div>}
+ <p className="hint">主要貨幣只影響總覽、持股與帳戶分組的換算顯示；帳戶餘額及交易紀錄仍以各自原幣保存。匯率僅供估算。</p>
+ <Field label={tr('語言')}><SmartSelect value={language} onChange={e=>chooseLanguage(e.target.value)}>{SUPPORTED_LANGUAGES.map(([code,name])=><option key={code} value={code}>{name}</option>)}</SmartSelect></Field>
+ <p className="hint">目前支援主要導航、統計與設定介面翻譯；既有分類名稱、使用者輸入與部分進階表單仍維持原文。</p>
+ <Field label={tr('金額顏色')}><SmartSelect value={colorScheme} onChange={e=>chooseColors(e.target.value)}><option value="normal">{tr('收入／獲利顯示綠色')} · 支出／損失紅色</option><option value="reverse">{tr('收入／獲利顯示紅色')} · 支出／損失綠色</option></SmartSelect></Field>
+ <div className="color-preview"><span className="income">+ 1,200</span><span className="expense">− 500</span></div>
+ </section><section className="glass panel"><h2>iCloud Drive 備份</h2><p className="hint">資料保存在這台裝置。按「立即備份」產生 JSON，再透過 iPhone 的分享選單儲存至「檔案 → iCloud Drive」；還原時從檔案 App 手動選取備份。</p><button className="action-row" onClick={download}><Download size={20}/><span><b>{tr('立即備份')}</b><small>匯出完整 JSON，儲存到 iCloud Drive</small></span><ChevronRight size={18}/></button><button className="action-row" onClick={()=>fileInput.current?.click()}><Upload size={20}/><span><b>{tr('立即還原')}</b><small>從 iCloud Drive 選擇備份檔，確認後覆蓋本機</small></span><ChevronRight size={18}/></button><input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importFile}/><p className="hint">iPhone PWA 無法自動找到 iCloud Drive 最新檔案，還原時須自行選取；建議以檔名日期辨識最新備份。</p></section><section className="glass panel"><h2>{tr('外觀與使用')}</h2><div className="theme-heading"><b>{tr('外觀主題')}</b><small>選擇配色，立即套用並儲存於本機</small></div><ThemePicker value={theme} onChange={chooseTheme}/><div className="font-scale-block"><div><b>{tr('字體大小')}</b><small>依你的閱讀習慣調整</small></div><div className="scale-chips">{[[0.92,'小'],[1,'中'],[1.08,'大']].map(([v,label])=><button key={label} type="button" className={'scale-chip '+(fontScale===v?'active':'')} onClick={()=>updateFontScale(v)}>{label}</button>)}</div></div><div className="hint">安裝：用 iPhone Safari 開啟 GitHub Pages 網址 → 分享 → 加入主畫面。程式快取後可離線開啟。</div></section></>}
+ </main></div>
+ 
+ <nav className="bottom-nav glass">{mobileNav.map(([key,label,Icon])=><button key={key} onClick={()=>setTab(key)} className={(tab===key||(key==='settings'&&settingsPages.includes(tab)))?'active':''}><Icon size={20} strokeWidth={tab===key?2.6:1.9}/><span>{tr(label)}</span></button>)}</nav>
+ {!['dashboard','settings','accountTypes'].includes(tab)&&<button className="fab" aria-label="新增" onClick={()=>tab==='stocks'?setInvestmentAddMenu(true):open(({daily:'transaction',accounts:'account',recurring:'recurring',categories:'category'})[tab])}><Plus size={28}/></button>}
+
+ {investmentAddMenu&&tab==='stocks'&&createPortal(<div className="investment-action-backdrop" onClick={()=>setInvestmentAddMenu(false)}><div className="investment-action-sheet" role="dialog" aria-label="新增投資" onClick={e=>e.stopPropagation()}><h3>新增投資</h3>{[['stocks','股票交易'],['trust','持股信託'],['policy','投資保單']].map(([type,label])=><button key={type} type="button" onClick={()=>{setInvestmentAddMenu(false);setInvestSection(type);if(type==='stocks')open('stock');else{setTab('accounts');open('account');setForm(f=>({...f,type,currency:type==='trust'?'TWD':f.currency,openingBalance:'0'}));}}}><Plus size={19}/>{label}<ChevronRight size={17}/></button>)}<button type="button" className="investment-action-cancel" onClick={()=>setInvestmentAddMenu(false)}>取消</button></div></div>,document.body)}
+ {notice&&createPortal(<div className="toast glass cp-notice" role="alert" aria-live="assertive">{notice}</div>,document.body)}
+ {calculator&&<Calculator initial={calculator.value} onDone={v=>{if(calculator.field==='fxPrimaryRate'){const entered=Number(v);if(!baseAvailable||!Number.isFinite(entered)||entered<=0){toast('主要貨幣匯率尚未取得或輸入匯率無效');return;}setForm(f=>({...f,fxRate:entered*mainRate,fxSource:'manual',fxDate:today()}));}else{patch(calculator.field,v);if(calculator.field==='fxRate')patch('fxSource','manual')}}} onClose={()=>setCalculator(null)}/>}
+ {!!dialog&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}><div className="sheet glass"><div className="grabber"/><div className="sheet-head"><h2>{editing?.name?'編輯':'新增'}{{transaction:'交易',account:'帳戶',stock:'股票交易',project:'專案',recurring:'定期排程',category:'分類',accountType:'帳戶類型'}[dialog]}</h2><button className="circle-button" onClick={close}><X size={21}/></button></div><form onSubmit={save} className="sheet-body">
+ {dialog==='transaction'&&<><div className="segmented stretch">{Object.entries(picker).map(([k,v])=><Pill key={k} active={form.type===k} onClick={()=>{patch('type',k);setForm(f=>({...f,type:k,mainCategory:Object.keys(categories[k]||{})[0]||'',subCategory:(categories[k]?.[Object.keys(categories[k]||{})[0]]||[])[0]||''}))}}>{v}</Pill>)}</div><div className="form-grid"><Field label="交易日期"><input type="date" required value={form.date||''} onChange={e=>patch('date',e.target.value)}/></Field><Field label="金額（新台幣）"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:"amount",value:form.amount})}><span>{form.amount!==""&&form.amount!==undefined?form.amount:"點擊輸入金額"}</span><span className="calc-mini">⌗</span></button></Field></div>{form.type==='transfer'?<div className="form-grid"><Field label="轉出帳戶"><SmartSelect value={form.fromAccount} onChange={e=>patch('fromAccount',e.target.value)}>{accounts.filter(a=>!['trust','policy'].includes(a.type)).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</SmartSelect></Field><Field label="轉入帳戶"><SmartSelect value={form.toAccount} onChange={e=>patch('toAccount',e.target.value)}>{accounts.filter(a=>!['trust','policy'].includes(a.type)).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</SmartSelect></Field></div>:<><Field label="資產帳戶"><SmartSelect value={form.account} onChange={e=>patch('account',e.target.value)}>{accounts.filter(a=>!['trust','policy'].includes(a.type)).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</SmartSelect></Field><div className="form-grid"><Field label="主分類"><SmartSelect value={form.mainCategory||''} onChange={e=>setForm(f=>({...f,mainCategory:e.target.value,subCategory:(categories[f.type]?.[e.target.value]||[])[0]||''}))}>{Object.keys(categories[form.type]||{}).map(c=><option key={c}>{c}</option>)}</SmartSelect></Field><Field label="子分類"><SmartSelect value={form.subCategory||''} onChange={e=>patch('subCategory',e.target.value)}>{(categories[form.type]?.[form.mainCategory]||[]).map(c=><option key={c}>{c}</option>)}</SmartSelect></Field></div></>}<Field label="備註"><input placeholder="例如：拿鐵咖啡" value={form.note||''} onChange={e=>patch('note',e.target.value)}/></Field><Field label="專案（選填）"><SmartSelect value={form.projectId||''} onChange={e=>patch('projectId',e.target.value)}><option value="">不指定專案</option>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</SmartSelect></Field></>}
+ {dialog==='account'&&<><Field label="帳戶名稱"><input required value={form.name||''} onChange={e=>patch('name',e.target.value)} placeholder="例如：中國信託活存"/></Field><Field label="帳戶類型"><SmartSelect value={form.type||''} onChange={e=>setForm(f=>({...f,type:e.target.value,...(['trust','policy'].includes(e.target.value)?{openingBalance:'0',currency:e.target.value==='trust'?'TWD':f.currency||'TWD',fxRate:e.target.value==='trust'?1:f.fxRate}:{} )}))}>{accountTypes.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</SmartSelect></Field>{['trust','policy'].includes(form.type)&&<><Field label="初始取得成本（後續追加請至投資頁登記）"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:'investmentCost',value:form.investmentCost||''})}><span>{String(form.investmentCost||'')||'點擊輸入成本'}</span><span className="calc-mini">⌗</span></button></Field>{form.type==='trust'?<><Field label="股票代號"><input autoCapitalize="characters" required value={form.trustSymbol||''} placeholder="例如 2330" onChange={e=>patch('trustSymbol',e.target.value.toUpperCase())}/></Field><Field label="初始持有張數（每張 1,000 股）"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:'trustLots',value:form.trustLots||''})}><span>{String(form.trustLots||'')||'點擊輸入張數'}</span><span className="calc-mini">⌗</span></button></Field><p className="hint">投資頁使用官方最近收盤價 × 張數 × 1,000 估算市值。不會另外建立股票交易。</p></>:<><Field label="目前保單現值"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:'policyValue',value:form.policyValue??''})}><span>{form.policyValue!==''&&form.policyValue!==undefined?form.policyValue:'點擊輸入現值'}</span><span className="calc-mini">⌗</span></button></Field><Field label="現值日期"><input type="date" value={form.policyValueDate||today()} onChange={e=>patch('policyValueDate',e.target.value)}/></Field><p className="hint">保單現值可在投資頁隨時更新，估值歷史會保留。</p></>}</>}<div className="form-grid"><Field label="帳戶幣別"><SmartSelect value={form.currency||'TWD'} onChange={e=>changeCurrency(e.target.value)}>{[['TWD','新台幣 TWD'],['USD','美元 USD'],['JPY','日圓 JPY'],['EUR','歐元 EUR'],['CNY','人民幣 CNY'],['HKD','港幣 HKD'],['GBP','英鎊 GBP'],['AUD','澳幣 AUD'],['SGD','新加坡幣 SGD'],['KRW','韓元 KRW'],['CAD','加幣 CAD'],['CHF','瑞士法郎 CHF']].map(([code,label])=><option key={code} value={code}>{label}</option>)}</SmartSelect></Field><Field label={`${primaryCurrency} 換算匯率`}><button type="button" className="money-trigger" disabled={form.currency===primaryCurrency||form.currency==='TWD'||!baseAvailable} onClick={()=>setCalculator({field:"fxPrimaryRate",value:Number.isFinite(crossRateToPrimary(form.currency,form.fxRate))?String(Number(crossRateToPrimary(form.currency,form.fxRate).toPrecision(9))):''})}><span>{formatFxRate(crossRateToPrimary(form.currency,form.fxRate))}</span><span className="calc-mini">{form.currency===primaryCurrency||form.currency==='TWD'?'':'⌗'}</span></button></Field></div>{<div className="fx-tools"><small>1 {form.currency} = {formatFxRate(crossRateToPrimary(form.currency,form.fxRate))} {primaryCurrency}{form.currency!=='TWD'?' · '+(form.fxDate||'尚未取得日期')+' · '+(form.fxSource||'手動'):''}</small>{form.currency!=='TWD'&&<button type="button" className="soft-btn small" disabled={rateLoading} onClick={()=>fetchRate(form.currency)}><RefreshCcw size={14}/>{rateLoading?'更新中…':'更新匯率'}</button>}</div>}<Field label="帳戶金額小數位數"><SmartSelect value={String(form.decimalPlaces??2)} onChange={e=>patch('decimalPlaces',Number(e.target.value))}>{[0,1,2,3,4,5,6].map(n=><option key={n} value={String(n)}>{n} 位</option>)}</SmartSelect></Field><Field label={`期初餘額（${form.currency||'TWD'}）`}><button type="button" className="money-trigger" onClick={()=>setCalculator({field:"openingBalance",value:form.openingBalance})}><span>{form.openingBalance!==""&&form.openingBalance!==undefined?form.openingBalance:"點擊輸入金額"}</span><span className="calc-mini">⌗</span></button></Field><label className="account-asset-toggle"><input type="checkbox" checked={form.includeInAssets!==false} onChange={e=>patch('includeInAssets',e.target.checked)}/><span><b>計入總資產</b><small>預設開啟。關閉後仍保留帳戶及交易，但不計入帳戶小計、總資產與淨資產統計。</small></span></label><p className="hint">帳戶以原幣記錄，總覽依主要貨幣換算。換算匯率依主要貨幣動態顯示；歷史匯率仍以 TWD 作為內部基準，不會改動既有交易。</p></>}
+ {dialog==='stock'&&<><div className="stock-trade-tabs" role="group" aria-label="股票交易方式"><button type="button" className={form.securityType==='stock'&&!form.dayTrade?'active':''} onClick={()=>setForm(f=>({...f,securityType:'stock',dayTrade:false}))}>一般交易</button><button type="button" className={form.securityType==='stock'&&form.dayTrade?'active':''} onClick={()=>setForm(f=>({...f,securityType:'stock',dayTrade:true}))}>現股當沖</button><button type="button" className={form.securityType==='etf'||form.securityType==='bondEtf'?'active':''} onClick={()=>setForm(f=>({...f,securityType:f.securityType==='bondEtf'?'bondEtf':'etf',dayTrade:false}))}>ETF</button></div><Field label="動作"><SmartSelect value={form.action} onChange={e=>{const action=e.target.value;setForm(f=>{if(action!=='sell')return {...f,action};const available=holdings(stocks.filter(x=>x.id!==editing?.id));return {...f,action,symbol:'',securityName:'',shares:'',matchedBuyId:''};});}}><option value="buy">買進</option><option value="sell">賣出</option><option value="dividend">現金股利</option></SmartSelect></Field><div className="form-grid"><Field label="日期"><input type="date" value={form.date||''} required onChange={e=>patch('date',e.target.value)}/></Field><Field label="股票代號">{form.action==='sell'?<SmartSelect value={form.symbol||''} onChange={e=>{const symbol=e.target.value;const matching=stocks.find(x=>x.symbol===symbol&&x.securityName);setForm(f=>({...f,symbol,securityName:matching?.securityName||'',shares:'',matchedBuyId:''}));inferStockType(symbol)}}>{sellableHoldings.map(h=><option key={h.symbol} value={h.symbol}>{h.symbol} · 可賣 {h.shares.toLocaleString('zh-TW')} 股</option>)}</SmartSelect>:<input required autoCapitalize="characters" value={form.symbol||''} onChange={e=>{const code=e.target.value.toUpperCase();setForm(f=>({...f,symbol:code,securityName:''}));setCatalogAutoName('');inferStockType(code)}} placeholder="例如 0050、2330、00679B"/>}</Field></div><Field label="股票名稱（選填）"><input value={form.securityName||''} onChange={e=>patch('securityName',e.target.value)} placeholder="輸入代號後自動帶入；也可自行修改"/></Field>{stockTypeStatus&&<p className="hint stock-lookup-status" role="status">{stockTypeStatus}</p>}{form.action==='dividend'?<Field label="現金股利金額"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:"amount",value:form.amount})}><span>{form.amount!==""&&form.amount!==undefined?form.amount:"點擊輸入金額"}</span><span className="calc-mini">⌗</span></button></Field>:<>{(form.securityType==='etf'||form.securityType==='bondEtf')&&<Field label="ETF 稅別"><SmartSelect value={form.securityType} onChange={e=>patch('securityType',e.target.value)}><option value="etf">一般 ETF（賣出稅 0.1%）</option><option value="bondEtf">債券 ETF（依日期適用稅率）</option></SmartSelect></Field>}{form.action==='sell'&&<Field label="沖銷買進紀錄（指定成本批次）"><SmartSelect value={form.matchedBuyId||''} onChange={e=>setForm(f=>({...f,matchedBuyId:e.target.value,shares:''}))}>{availableBuyLots.map(l=><option key={l.id} value={l.id}>{l.date} · {l.price.toLocaleString('zh-TW',{maximumFractionDigits:4})} 元 · 可沖銷 {Math.floor(l.remaining).toLocaleString('zh-TW')} 股</option>)}</SmartSelect><p className="hint">請先選擇要沖銷的買進紀錄，再輸入賣出股數。單筆賣出對應一筆買進，可部分沖銷；要沖銷多筆買進請分開登記賣出。</p>{chosenBuyLot&&<p className="stock-lot-preview">本批次可沖銷：{Math.floor(chosenBuyLot.remaining).toLocaleString('zh-TW')} 股 · 含費均價 NT$ {(chosenBuyLot.remainingCost/chosenBuyLot.remaining).toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:4})}</p>}</Field>}<div className="form-grid"><Field label="股數"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:"shares",value:form.shares})}><span>{String(form.shares)||"點擊輸入數字"}</span><span className="calc-mini">⌗</span></button></Field><Field label="每股單價"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:"price",value:form.price})}><span>{form.price!==""&&form.price!==undefined?form.price:"點擊輸入金額"}</span><span className="calc-mini">⌗</span></button></Field></div><div className="form-grid"><Field label="券商手續費折扣（%）"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:"feeDiscount",value:form.feeDiscount??'60'})}><span>{String(form.feeDiscount??'60')||"點擊輸入數字"}</span><span className="calc-mini">⌗</span></button></Field><Field label="最低手續費（元）"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:"feeMinimum",value:form.feeMinimum??'20'})}><span>{String(form.feeMinimum??'20')||"點擊輸入數字"}</span><span className="calc-mini">⌗</span></button></Field></div><button type="button" className="stock-fee-save" onClick={async()=>{try{await saveBrokerFees()}catch(e){toast(e.message)}}}>儲存券商費率設定（下次自動帶入）</button><div className="form-grid"><Field label="手續費率（%）"><input type="text" readOnly value={Number(form.feeRate??0.1425).toFixed(4)} className="stock-fee-readonly"/></Field><Field label="成交金額"><input type="text" readOnly value={'NT$ '+estimateStockCharges(form).gross.toLocaleString('zh-TW')} className="stock-fee-readonly"/></Field></div><p className="hint">手續費及證交稅依證券類型、成交金額、折扣自動計算；實際金額請以券商對帳單為準。</p>{form.securityType==='bondEtf'&&<p className="hint">債券 ETF 免徵證交稅的已公告期間至 2026/12/31；之後以一般 ETF 稅率預估，請核對最新公告。</p>}{form.dayTrade&&<p className="hint">當沖 0.15% 需符合當日同一券商、同一帳戶、同種類與數量沖銷資格；系統無法自動認定。</p>}<div className="form-grid"><Field label="手續費（唯讀）"><input className="stock-fee-readonly" readOnly value={'NT$ '+estimateStockCharges(form).fee.toLocaleString('zh-TW')}/></Field><Field label="交易稅（唯讀）"><input className="stock-fee-readonly" readOnly value={'NT$ '+estimateStockCharges(form).tax.toLocaleString('zh-TW')}/></Field></div></>}<Field label="交割／股利入帳帳戶"><SmartSelect value={form.account||''} onChange={e=>patch('account',e.target.value)}>{accounts.filter(a=>!['trust','policy'].includes(a.type)).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</SmartSelect></Field><Field label="備註"><input value={form.note||''} onChange={e=>patch('note',e.target.value)}/></Field></>}
+ {dialog==='recurring'&&<><Field label="排程名稱"><input value={form.name||''} required onChange={e=>patch('name',e.target.value)}/></Field><div className="form-grid"><Field label="交易類型"><SmartSelect value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value,account:accounts[0]?.id||'',fromAccount:accounts[0]?.id||'',toAccount:accounts[1]?.id||accounts[0]?.id||'',mainCategory:e.target.value==='transfer'?'帳戶互轉':Object.keys(categories[e.target.value]||{})[0]||'',subCategory:e.target.value==='transfer'?'內部轉帳':((categories[e.target.value]?.[Object.keys(categories[e.target.value]||{})[0]]||[])[0]||'')}))}><option value="expense">支出</option><option value="income">收入</option><option value="transfer">轉帳</option></SmartSelect></Field><Field label="執行週期"><SmartSelect value={form.freq} onChange={e=>patch('freq',e.target.value)}><option value="weekly">每週</option><option value="monthly">每月</option><option value="yearly">每年</option></SmartSelect></Field></div><div className="form-grid"><Field label="下次日期"><input type="date" value={form.nextDate||''} required onChange={e=>patch('nextDate',e.target.value)}/></Field><Field label="金額"><button type="button" className="money-trigger" onClick={()=>setCalculator({field:"amount",value:form.amount})}><span>{form.amount!==""&&form.amount!==undefined?form.amount:"點擊輸入金額"}</span><span className="calc-mini">⌗</span></button></Field></div>{form.type==='transfer'?<div className="form-grid"><Field label="轉出帳戶"><SmartSelect value={form.fromAccount} onChange={e=>patch('fromAccount',e.target.value)}>{accounts.filter(a=>!['trust','policy'].includes(a.type)).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</SmartSelect></Field><Field label="轉入帳戶"><SmartSelect value={form.toAccount} onChange={e=>patch('toAccount',e.target.value)}>{accounts.filter(a=>!['trust','policy'].includes(a.type)).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</SmartSelect></Field></div>:<><Field label="帳戶"><SmartSelect value={form.account} onChange={e=>patch('account',e.target.value)}>{accounts.filter(a=>!['trust','policy'].includes(a.type)).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</SmartSelect></Field><div className="form-grid"><Field label="主分類"><SmartSelect value={form.mainCategory||''} onChange={e=>setForm(f=>({...f,mainCategory:e.target.value,subCategory:(categories[f.type]?.[e.target.value]||[])[0]||''}))}>{Object.keys(categories[form.type]||{}).map(c=><option key={c}>{c}</option>)}</SmartSelect></Field><Field label="子分類"><SmartSelect value={form.subCategory||''} onChange={e=>patch('subCategory',e.target.value)}>{(categories[form.type]?.[form.mainCategory]||[]).map(c=><option key={c}>{c}</option>)}</SmartSelect></Field></div></>}<p className="hint">{form.type==='transfer'?'定期建立同幣別帳戶間的自動轉帳。':'可用於薪資、訂閱、固定支出或固定收入。'}</p></>}
+ {dialog==='project'&&<><Field label="專案名稱"><input required maxLength={48} value={form.name||''} onChange={e=>patch('name',e.target.value)} placeholder="例如：日本旅行、房屋裝潢、家庭生活"/></Field><p className="hint">專案名稱可隨時修改；已被交易使用的專案不能直接刪除。</p></>}
+ {dialog==='accountType'&&<><Field label="帳戶類型名稱"><input required maxLength={32} value={form.name||''} onChange={e=>patch('name',e.target.value)} placeholder="例如：數位銀行、投資帳戶"/></Field><p className="hint">重新命名會同步顯示在既有帳戶分組；使用中的類型不可刪除。</p></>}
+ {dialog==='category'&&<><Field label="類別類型"><SmartSelect disabled={!!editing?.name} value={form.categoryType} onChange={e=>patch('categoryType',e.target.value)}><option value="expense">支出</option><option value="income">收入</option></SmartSelect></Field><Field label="分類層級"><SmartSelect disabled={!!editing?.name} value={form.mode} onChange={e=>patch('mode',e.target.value)}><option value="main">主分類</option><option value="sub">子分類</option></SmartSelect></Field>{form.mode==='sub'&&<Field label="所屬主分類"><SmartSelect disabled={!!editing?.name} value={form.parent||''} onChange={e=>patch('parent',e.target.value)}><option value="">請選擇</option>{Object.keys(categories[form.categoryType]||{}).map(c=><option key={c}>{c}</option>)}</SmartSelect></Field>}<Field label="類別名稱"><input required value={form.name||''} onChange={e=>patch('name',e.target.value)} placeholder="輸入名稱"/></Field><div className="icon-picker"><div className="icon-picker-heading"><strong>選擇圖示</strong><small>將顯示在分類清單與記帳明細</small></div><div className="icon-grid">{ICON_OPTIONS.map(([key,label])=>{const Icon=CATEGORY_ICONS[key]||Tags;return <button type="button" key={key} title={label} aria-label={`選擇${label}圖示`} aria-pressed={form.icon===key} className={'icon-option '+(form.icon===key?'selected':'')} onClick={()=>patch('icon',key)}><Icon size={21}/><span>{label}</span></button>})}</div></div></>}
+ <div className="sheet-actions">{editing&&!['accountType','project'].includes(dialog)&&<button type="button" className="danger-btn" onClick={()=>remove(({transaction:'records',account:'accounts',stock:'stocks',recurring:'recurring'})[dialog],editing.id)}><Trash2 size={17}/> 刪除</button>}<button type="button" className="soft-btn" onClick={close}>取消</button><button type="submit" className="primary-btn"><Check size={17}/> 儲存</button></div></form></div></div>}
+ </div>;
+}
