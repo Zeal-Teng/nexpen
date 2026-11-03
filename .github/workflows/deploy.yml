@@ -38,6 +38,8 @@ jobs:
 
       - name: Build React
         run: npm run build
+        env:
+          VITE_BASE_PATH: /nexpen/
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
