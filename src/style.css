@@ -1025,3 +1025,43 @@ html .app-shell .daily-compact .calendar-header .calendar-header-controls{
 .account-type-drop-target{outline:2px dashed var(--accent,#66c5f4);outline-offset:-2px;border-radius:12px}
 .account-type-locked{width:38px;min-width:38px;display:grid;place-items:center;opacity:.48;color:inherit}
 @media (max-width:800px){.account-type-item{gap:7px}.account-type-drag-handle{width:30px}.account-type-locked{width:30px;min-width:30px}}
+
+
+/* v70: Stable phone form geometry and slightly larger legible controls. */
+@media (max-width: 800px) {
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  .app-shell { font-size: calc(16px * var(--app-font-scale, 1)) !important; }
+  .app-shell .field > span { font-size: calc(12px * var(--app-font-scale, 1)) !important; line-height: 1.4; }
+  .app-shell .row-main b,.app-shell .action-row b { font-size: calc(14px * var(--app-font-scale, 1)) !important; }
+  .app-shell .row-main small,.app-shell .action-row small { font-size: calc(12px * var(--app-font-scale, 1)) !important; }
+  .app-shell .sheet-body .form-grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; width: 100%; min-width:0; }
+  .app-shell .sheet-body .form-grid > .field { min-width:0; max-width:100%; width:100%; overflow:visible; }
+  .app-shell .sheet-body .field input[type="date"],
+  .app-shell .sheet-body .field input[type="datetime-local"],
+  .app-shell .sheet-body .field input[type="number"],
+  .app-shell .sheet-body .field input[type="text"],
+  .app-shell .sheet-body .field .money-trigger,
+  .app-shell .sheet-body .field .smart-select {
+    box-sizing:border-box !important;
+    display:flex; align-items:center;
+    width:100% !important; min-width:0 !important; max-width:100% !important;
+    height:50px !important; min-height:50px !important;
+    margin:0 !important; padding:0 12px !important;
+    font-size:16px !important; line-height:1.25 !important;
+    border-radius:12px !important;
+  }
+  .app-shell .sheet-body .field input[type="date"] { display:block; padding-inline:10px !important; }
+  .app-shell .sheet-body .field input[type="date"]::-webkit-date-and-time-value { min-width:0; text-align:left; }
+  .app-shell .sheet-body .field .money-trigger > span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+}
+@media (max-width:360px) {
+  .app-shell .sheet-body { padding-left:14px !important; padding-right:14px !important; }
+  .app-shell .sheet-body .form-grid { gap:8px; }
+  .app-shell .sheet-body .field input[type="date"] { font-size:15px !important; padding-inline:7px !important; }
+}
+/* On narrow iPhones, date and amount need their own full-width rows. */
+@media(max-width:430px){
+  .app-shell .sheet-body .form-grid:has(input[type="date"]):has(.money-trigger){
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+}

@@ -85,7 +85,7 @@ async function downloadCatalog(){
   return merged;
  }
  const res=await fetch(`${import.meta.env.BASE_URL}security-catalog.json`,{cache:'no-store'});
- if(!res.ok)throw Error('尚未部署股票名冊，請重新執行 GitHub Pages 部署');
+ if(!res.ok)throw Error('找不到 security-catalog.json：請確認 GitHub Actions 已成功生成行情及名冊，且 GitHub Pages 部署的是完整專案');
  const value=await res.json();
  if(value.format!=='cyberpulse-security-catalog-v1'||!value.securities||typeof value.securities!=='object'||!Object.keys(value.securities).length)
   throw Error('ISIN 名冊為空或格式不正確');

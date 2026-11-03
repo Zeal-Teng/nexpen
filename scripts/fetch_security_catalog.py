@@ -91,6 +91,15 @@ def main():
   print('official TWSE Code/Name fallback:',len(listed))
  except Exception as exc:
   print('WARNING: listed name fallback:',exc,file=sys.stderr)
+ # Prefer precise ISIN classification; use the same-day official quote name lists
+ # when the ISIN website blocks GitHub hosted runners.
+ namesfile=Path(__file__).resolve().parents[1]/'public'/'security-market-names.json'
+ if namesfile.exists():
+  try:
+   quotesnames=json.loads(namesfile.read_text(encoding='utf-8')).get('securities',{})
+   securities={**quotesnames,**securities}
+   print('official quotes fallback:',len(quotesnames),'names')
+  except (ValueError,OSError) as exc:print('WARNING: cannot read quote name cache:',exc,file=sys.stderr)
  if not securities:raise SystemExit('ISIN and listing sources failed; refusing to publish empty catalog')
  dest=Path(__file__).resolve().parents[1]/'public'/'security-catalog.json'
  dest.write_text(json.dumps({'format':'cyberpulse-security-catalog-v1','generatedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'securities':securities,'errors':fail},ensure_ascii=False,separators=(',',':')),encoding='utf-8')

@@ -288,3 +288,11 @@ npm run dev
 - 日記帳增加「日檢視／月檢視」；月檢視列出該月所有交易，依日期由新到舊分組。
 - 月檢視支援月份選擇、上下月切換，搜尋及交易類型篩選持續生效。
 - 統計列在月模式顯示整月支出、收入及淨額，股票買賣仍不列為日常收入與支出。
+
+
+## v70 GitHub Pages 官方行情／名稱部署注意
+請將**完整專案**（包含 `.github/workflows/deploy.yml`、`scripts/`、`vite.config.js`）推送到 GitHub `main`，不能只複製 `src/App.jsx`。在 GitHub → Actions → Deploy GitHub Pages，確認 `Fetch official market closing quotes`、`Fetch official listed and OTC securities catalog`、`Verify official data`、`deploy-pages` 皆成功。
+部署後到網站路徑 `https://<使用者>.github.io/<repo>/market-quotes.json` 與 `/security-catalog.json` 檢查是否可讀。如果 404，代表資料根本沒有生成或沒有部署，而不是瀏覽器端 CORS。
+官方服務可能阻擋 GitHub runner；此版使用重試、TWSE/TPEx 行情提供的名稱做 ISIN 備援，並在 CI 明確檢查。若官方來源全部不可用，部署應失敗以避免把空資料當成成功。GitHub Pages 保留上次成功部署版本。
+
+手機表單依兩欄最小寬度和 50px 固定輸入高度排版，日期及金額不互相覆蓋。viewport 關閉手勢縮放會影響放大閱讀需求，請用 App 內字體大小設定。

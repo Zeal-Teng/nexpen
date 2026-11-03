@@ -284,7 +284,7 @@ export default function App(){
     const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),18000);
     try{
      const response=await fetch(`${url}${url.includes('?')?'&':'?'}_=${Date.now()}`,{cache:'no-store',signal:controller.signal});
-     if(!response.ok)throw Error(`${url}: HTTP ${response.status}`);
+     if(!response.ok)throw Error(`${url}: HTTP ${response.status}（請確認 GitHub Actions 已產生 public/market-quotes.json 並重新部署完整專案）`);
      const json=await response.json();
      return import.meta.env.DEV
       ?normalizeQuoteRows(json,url.includes('twse')?'twse':'tpex')
