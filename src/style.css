@@ -1609,3 +1609,67 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,.app-shell *::-webkit-scrollbar{
   color:var(--theme-text)!important;
   -webkit-text-fill-color:var(--theme-text)!important;
 }
+
+
+/* v85: compact, accessible ledger ListView — no swipe gestures, tapping opens edit. */
+html .app-shell .daily-compact .calendar-panel,
+html .app-shell .daily-compact section.calendar-panel.glass.panel {
+  margin-bottom:0!important;
+  padding-bottom:3px!important;
+}
+html .app-shell .daily-compact .daily-transactions.diary-listview {
+  margin-top:0!important;
+  margin-bottom:0!important;
+  padding:0 0 12px!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html .app-shell .diary-listview .diary-search-filter {
+  margin:0 0 5px!important;
+}
+html .app-shell .diary-listview .diary-plain-row {
+  margin:0!important;
+  border-bottom:1px solid var(--cp-border,var(--theme-line,rgba(140,165,195,.2)));
+}
+html .app-shell .diary-listview .diary-plain-row:last-child{border-bottom:0}
+html .app-shell .diary-listview-item {
+  width:100%;display:flex;align-items:center;text-align:left;
+  appearance:none;border:0!important;border-radius:0!important;
+  background:transparent!important;min-height:62px!important;
+  padding:10px 3px!important;cursor:pointer;
+}
+html .app-shell .diary-listview-item:hover{background:color-mix(in srgb,var(--cp-action,var(--theme-accent)) 5%,transparent)!important}
+html .app-shell .diary-listview-item:focus-visible{outline:2px solid var(--cp-action,var(--theme-accent));outline-offset:-2px;border-radius:9px!important}
+html .app-shell .diary-listview-item .row-main{flex:1;min-width:0}
+html .app-shell .diary-listview-item .transaction-right{max-width:44%!important;min-width:0}
+html .app-shell .diary-month-date-heading{padding:12px 3px 4px;border-bottom:0}
+/* Investment categories, detail headers, action placement and history rows mirror stocks. */
+.app-shell .investment-assets-page>.investment-performance-summary{margin-top:0;margin-bottom:18px}
+.app-shell .investment-assets-page .stock-back{margin-bottom:14px}
+.app-shell .investment-assets-page .investment-detail-header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;margin:4px 0 10px}
+.app-shell .investment-assets-page .investment-detail-header>div{min-width:0;flex:1}
+.app-shell .investment-assets-page .investment-detail-header h2{margin:0 0 5px;overflow-wrap:anywhere}
+.app-shell .investment-assets-page .investment-detail-header small{display:block;color:var(--cp-muted,var(--theme-muted));line-height:1.4}
+.app-shell .investment-assets-page .investment-detail-header .soft-btn{flex:none;margin:0!important}
+.app-shell .investment-assets-page .investment-detail-performance{margin:12px 0 14px}
+.app-shell .investment-assets-page .investment-quote-note{margin:0 0 18px}
+.app-shell .investment-assets-page .investment-list-section .stock-performance-row{display:flex;align-items:center;gap:12px;padding:14px 0}
+.app-shell .investment-assets-page .investment-list-section .row-main{flex:1;min-width:0}
+.app-shell .investment-assets-page .investment-list-section .holding-right{flex:0 1 auto;min-width:0;max-width:48%;text-align:right}
+.app-shell .investment-assets-page .investment-list-section .holding-pnl{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.app-shell .investment-assets-page .investment-history-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.app-shell .investment-assets-page .investment-history-heading h3{margin:0}
+.app-shell .investment-assets-page .investment-action-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:0}
+.app-shell .investment-assets-page .investment-action-row .soft-btn{margin:0!important;white-space:nowrap}
+.app-shell .investment-assets-page .investment-valuation-history .stock-detail-trade{width:100%;display:flex;align-items:center;gap:12px;padding:13px 0;border:0;border-bottom:1px solid var(--cp-border,var(--theme-line));text-align:left;background:transparent;color:inherit;cursor:pointer}
+.app-shell .investment-assets-page .investment-valuation-history .stock-detail-trade:last-child{border-bottom:0}
+.app-shell .investment-assets-page .investment-valuation-history .stock-detail-trade .row-main{flex:1;min-width:0}
+.app-shell .investment-assets-page .investment-valuation-history .transaction-right{min-width:0;max-width:43%;text-align:right}
+@media(max-width:550px){
+ html .app-shell .daily-compact .calendar-panel{padding-bottom:0!important}
+ html .app-shell .investment-assets-page .investment-history-heading{align-items:flex-start}
+ html .app-shell .investment-assets-page .investment-action-row{width:100%;justify-content:flex-start;flex-wrap:wrap}
+ html .app-shell .investment-assets-page .investment-action-row button{min-height:40px}
+ html .app-shell .investment-assets-page .investment-detail-header h2{font-size:1.2rem}
+}
