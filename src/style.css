@@ -1673,3 +1673,10 @@ html .app-shell .diary-month-date-heading{padding:12px 3px 4px;border-bottom:0}
  html .app-shell .investment-assets-page .investment-action-row button{min-height:40px}
  html .app-shell .investment-assets-page .investment-detail-header h2{font-size:1.2rem}
 }
+
+
+/* v86: same neutral background for every transaction type, matching transfer.
+   Preserve the existing type-specific icon foreground colors and money colors. */
+html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
+  background: var(--theme-chip) !important;
+}
