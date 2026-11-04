@@ -2126,3 +2126,13 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 .app-shell .account-type-item .account-type-subtitles{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:6px;min-width:0;}
 .app-shell .account-type-item .account-type-subtitles small{display:block;margin:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.45;}
 @media(max-width:480px){.app-shell .account-type-item .account-type-subtitles{gap:3px;}}
+
+/* v141: account form separates ordinary cash balances from investment positions */
+.app-shell .account-setup-section{display:flex;flex-direction:column;gap:13px;margin:8px 0 17px;min-width:0;}
+.app-shell .account-setup-section .field{margin:0;}
+.app-shell .account-setup-heading{font-size:1.06rem;color:var(--theme-text);font-weight:780;}
+.app-shell .account-setup-intro{margin:0 0 3px;line-height:1.55;}
+.app-shell .account-setup-section .hint{line-height:1.55;}
+.app-shell .account-setup-readonly{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--theme-line);background:var(--theme-surface2);color:var(--theme-muted);border-radius:12px;}
+.app-shell .account-setup-readonly strong{color:var(--theme-text);}
+.app-shell .account-investment-fx{display:flex;flex-direction:column;gap:8px;}
