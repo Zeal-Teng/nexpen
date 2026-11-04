@@ -11,6 +11,7 @@ import {analyzeStockPerformance} from './stockPerformance.js';
 import {calculateLots,buyLotsForSale} from './stockLots.js';
 import StockPerformanceView from './StockPerformanceView.jsx';
 import NetWorthBreakdown from './NetWorthBreakdown.jsx';
+import {useNetWorthHistory} from './useNetWorthHistory.js';
 import SummaryHero from './SummaryHero.jsx';
 import InstallHint from './InstallHint.jsx';
 import {computeNetWorth,ASSET_GROUPS,assetGroupForType} from './netWorth.js';
@@ -848,7 +849,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  const availableBuyLots=form.action==='sell'&&form.symbol?buyLotsForSale(stocks,form.symbol,form.date||date,editing?.id):[];
  const chosenBuyLot=availableBuyLots.find(l=>l.id===form.matchedBuyId);
  const stockPerformance=useMemo(()=>analyzeStockPerformance(stocks),[stocks]);
- const bal=a=>a.type==='trust'?(Number(quotes[String(a.trustSymbol||'').toUpperCase()]?.price)>0?(Number(a.trustLots||0)+investmentFlows.filter(f=>f.assetId===a.id&&f.kind==='contribution').reduce((sum,f)=>sum+Number(f.units||0),0))*1000*Number(quotes[String(a.trustSymbol||'').toUpperCase()].price):0):a.type==='policy'?Number(a.policyValue||0):accountBalance(a,records,stocks,investmentFlows);const includedAccounts=accounts.filter(a=>a.includeInAssets!==false);const includedIds=new Set(includedAccounts.map(a=>a.id));const hs=holdings(stocks);const netHoldings=holdings(stocks.filter(x=>includedIds.has(x.account)));const pricedHs=hs.filter(h=>Number(quotes[h.symbol]?.price)>0);const unpricedHs=hs.filter(h=>!(Number(quotes[h.symbol]?.price)>0));const stockVal=pricedHs.reduce((s,h)=>s+h.shares*Number(quotes[h.symbol].price),0);const stockCost=hs.reduce((s,h)=>s+h.cost,0);const pricedCost=pricedHs.reduce((s,h)=>s+h.cost,0);const netStockVal=netHoldings.reduce((sum,h)=>sum+h.shares*(Number(quotes[h.symbol]?.price)||0),0);const totalNet=includedAccounts.reduce((s,a)=>s+bal(a)*fxOf(a),0)+netStockVal;const netWorthData=computeNetWorth({accounts,records,stocks,investmentFlows,quotes,includedHoldings:netHoldings,accountTypes});
+ const bal=a=>a.type==='trust'?(Number(quotes[String(a.trustSymbol||'').toUpperCase()]?.price)>0?(Number(a.trustLots||0)+investmentFlows.filter(f=>f.assetId===a.id&&f.kind==='contribution').reduce((sum,f)=>sum+Number(f.units||0),0))*1000*Number(quotes[String(a.trustSymbol||'').toUpperCase()].price):0):a.type==='policy'?Number(a.policyValue||0):accountBalance(a,records,stocks,investmentFlows);const includedAccounts=accounts.filter(a=>a.includeInAssets!==false);const includedIds=new Set(includedAccounts.map(a=>a.id));const hs=holdings(stocks);const netHoldings=holdings(stocks.filter(x=>includedIds.has(x.account)));const pricedHs=hs.filter(h=>Number(quotes[h.symbol]?.price)>0);const unpricedHs=hs.filter(h=>!(Number(quotes[h.symbol]?.price)>0));const stockVal=pricedHs.reduce((s,h)=>s+h.shares*Number(quotes[h.symbol].price),0);const stockCost=hs.reduce((s,h)=>s+h.cost,0);const pricedCost=pricedHs.reduce((s,h)=>s+h.cost,0);const netStockVal=netHoldings.reduce((sum,h)=>sum+h.shares*(Number(quotes[h.symbol]?.price)||0),0);const totalNet=includedAccounts.reduce((s,a)=>s+bal(a)*fxOf(a),0)+netStockVal;const netWorthData=computeNetWorth({accounts,records,stocks,investmentFlows,quotes,includedHoldings:netHoldings,accountTypes});const netWorthHistory=useNetWorthHistory(ready,netWorthData);
  // v65: Investment overview: three category summaries, without tabs.
  // Values are aggregated through the established TWD internal basis; unknown quotes are not valued at cost.
  const investmentOverview=[
@@ -1012,7 +1013,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   </React.Fragment>;
 }):<Blank text={diaryView==='month'?i18n('這個月沒有符合條件的交易'):i18n('這一天沒有符合條件的交易')}/>}
 </div></section></>}
- {tab==='dashboard'&&<NetWorthBreakdown data={netWorthData} format={n=>baseAvailable?new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(Math.round(inPrimary(n))):'匯率尚未取得'} language={language} currency={primaryCurrency}/>}
+ {tab==='dashboard'&&<NetWorthBreakdown data={netWorthData} history={netWorthHistory} format={n=>baseAvailable?new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(Math.round(inPrimary(n))):'匯率尚未取得'} language={language} currency={primaryCurrency}/>}
  {tab==='accounts'&&<><div className="hero glass compact-hero"><span>{tr('帳戶資產總額（不含股票）')}</span><strong>{fmtPrimaryNumber(includedAccounts.reduce((s,a)=>s+bal(a)*fxOf(a),0))}</strong><small>{i18n("依各帳戶匯率換算為")} {primaryCurrency}{i18n("，僅供估值")}</small></div><section className="accounts-group-section"><div className="section-header account-list-header"><h2>{tr('我的帳戶')}</h2><div className="account-list-toolbar"><button className="soft-btn small" type="button" onClick={()=>setTab('accountTypes')}><Tags size={15}/>{i18n("帳戶類型管理")}</button></div></div>{accounts.length?(()=>{
   const groups=accountTypes.filter(t=>accounts.some(a=>a.type===t.id));
   const current=groups.some(g=>g.id===expandedAccountStack)?expandedAccountStack:null;

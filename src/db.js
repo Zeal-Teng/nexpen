@@ -10,6 +10,8 @@ db.version(3).stores({localBackups:null});
 db.version(4).stores({marketCache:'key'});
 // v62: separate non-listed investment assets and their valuation history.
 db.version(5).stores({investmentValuations:'++id,assetId,date',investmentFlows:'id,assetId,date,sourceAccount'});
+// v148: one local end-of-day/latest-observed net worth entry per calendar day.
+db.version(6).stores({netWorthHistory:'date'});
 export const today = () => {const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 export const defaultCategories={expense:{'餐飲美食':['早餐','午餐','晚餐','手搖咖啡','聚會聚餐'],'交通運輸':['大眾捷運','油資加滿','停車場','計程車/Uber'],'居住居家':['租金房貸','水電瓦斯','生活雜貨','居家裝潢'],'休閒娛樂':['遊戲課金','電影串流','旅行露營'],'醫療健康':['看診掛號','日常保健品','健身運動']},income:{'薪資所得':['每月底薪','專案獎金','年終津貼','副業兼差'],'投資收益':['股票股利','資本利得','定存利息','租金收入'],'其他收入':['二手變賣','政府補助款','中獎發票']}};
 export async function ensureDefaults(){if(!await db.settings.get('categories'))await db.settings.put({key:'categories',value:defaultCategories});if(!await db.settings.get('theme'))await db.settings.put({key:'theme',value:'dark'});if(!await db.settings.get('fontScale'))await db.settings.put({key:'fontScale',value:1});}
@@ -30,14 +32,14 @@ export function uid(){
   const h = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
   return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
 }
-export async function snapshot(){const [records,accounts,stocks,recurring,settings,investmentValuations,investmentFlows]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.toArray(),db.investmentValuations.toArray(),db.investmentFlows.toArray()]);return {app:'cyberpulse-liquid',version:2,exportedAt:new Date().toISOString(),records,accounts,stocks,recurring,settings,investmentValuations,investmentFlows};}
+export async function snapshot(){const [records,accounts,stocks,recurring,settings,investmentValuations,investmentFlows,netWorthHistory]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.toArray(),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.netWorthHistory.toArray()]);return {app:'cyberpulse-liquid',version:2,exportedAt:new Date().toISOString(),records,accounts,stocks,recurring,settings,investmentValuations,investmentFlows,netWorthHistory};}
 export async function restore(data){
  if(data?.app!=='cyberpulse-liquid'||![1,2].includes(data.version)||!['records','accounts','stocks','recurring','settings'].every(k=>Array.isArray(data[k])))throw Error('備份格式或版本不正確');
  if(data.version===2&&(!Array.isArray(data.investmentValuations)||!Array.isArray(data.investmentFlows)))throw Error('備份缺少投資資金異動紀錄');
- const tables=[db.records,db.accounts,db.stocks,db.recurring,db.settings,db.investmentValuations,db.investmentFlows];
+ const tables=[db.records,db.accounts,db.stocks,db.recurring,db.settings,db.investmentValuations,db.investmentFlows,db.netWorthHistory];
  await db.transaction('rw',...tables,async()=>{
   for(const t of tables)await t.clear();
-  await Promise.all([db.records.bulkPut(data.records),db.accounts.bulkPut(data.accounts),db.stocks.bulkPut(data.stocks),db.recurring.bulkPut(data.recurring),db.settings.bulkPut(data.settings),db.investmentValuations.bulkPut(data.investmentValuations||[]),db.investmentFlows.bulkPut(data.investmentFlows||[])]);
+  await Promise.all([db.records.bulkPut(data.records),db.accounts.bulkPut(data.accounts),db.stocks.bulkPut(data.stocks),db.recurring.bulkPut(data.recurring),db.settings.bulkPut(data.settings),db.investmentValuations.bulkPut(data.investmentValuations||[]),db.investmentFlows.bulkPut(data.investmentFlows||[]),db.netWorthHistory.bulkPut(Array.isArray(data.netWorthHistory)?data.netWorthHistory:[])]);
  });
 }
 // 帳戶餘額從期初餘額與交易推導，避免刪改資料造成累積誤差。

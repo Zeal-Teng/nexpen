@@ -2136,3 +2136,19 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 .app-shell .account-setup-readonly{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--theme-line);background:var(--theme-surface2);color:var(--theme-muted);border-radius:12px;}
 .app-shell .account-setup-readonly strong{color:var(--theme-text);}
 .app-shell .account-investment-fx{display:flex;flex-direction:column;gap:8px;}
+
+
+/* v148: Net worth daily history chart; uses theme tokens in light/dark mode. */
+.app-shell .networth-trend-panel{margin:16px 0 23px;padding:18px 16px;border:1px solid var(--theme-line);border-radius:22px;background:var(--theme-surface);color:var(--theme-text);min-width:0;box-shadow:0 9px 24px rgba(8,20,28,.08);}
+.app-shell .networth-trend-heading h3{font-size:clamp(17px,4.1vw,21px);margin:0 0 5px;font-weight:760;color:var(--theme-text);}
+.app-shell .networth-trend-heading small{font-size:12px;color:var(--theme-muted);line-height:1.55;display:block;}
+.app-shell .networth-trend-ranges{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 12px;}
+.app-shell .networth-trend-ranges button{border:1px solid var(--theme-line);background:var(--theme-surface2);color:var(--theme-muted);padding:8px 11px;border-radius:11px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.app-shell .networth-trend-ranges button.active{border-color:var(--theme-accent);background:color-mix(in srgb,var(--theme-accent) 14%,var(--theme-surface));color:var(--theme-text);}
+.app-shell .networth-trend-selected{display:flex;flex-direction:column;gap:3px;margin:4px 0 6px;}
+.app-shell .networth-trend-selected small{color:var(--theme-muted);font-size:12px;}
+.app-shell .networth-trend-selected strong{font-size:clamp(21px,5vw,27px);color:var(--theme-text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+.app-shell .networth-trend-chart{width:100%;height:auto;display:block;min-height:140px;max-height:260px;overflow:visible;}
+.app-shell .networth-trend-chart circle{cursor:pointer;}
+.app-shell .networth-trend-note{color:var(--theme-muted);font-size:12px;line-height:1.6;margin:8px 0 3px;}
+@media(prefers-reduced-motion:reduce){.app-shell .networth-trend-ranges button{transition:none!important;}}

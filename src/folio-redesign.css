@@ -2895,3 +2895,33 @@ html .app-shell .category-section .category-stack-card.category-stack-expanded .
   .app-shell .accounts-group-section .account-stack-card > .account-stack-sort-handle{left:19px;}
   .app-shell .accounts-group-section .account-stack-card > .account-stack-peek > .account-stack-peek-top{padding-left:38px;}
 }
+
+
+/* v148: My Accounts handle uses the same bottom-left position and neutral
+   handle treatment as Category Management, without overlapping the heading. */
+html .app-shell .accounts-group-section .account-stack-card > .account-stack-sort-handle{
+  position:absolute!important;left:18px!important;right:auto!important;top:auto!important;bottom:47px!important;z-index:40!important;
+  width:32px!important;height:38px!important;min-width:32px!important;min-height:38px!important;
+  padding:6px!important;border:0!important;border-radius:9px!important;
+  background:transparent!important;color:var(--theme-muted)!important;box-shadow:none!important;
+}
+html .app-shell .accounts-group-section .account-stack-card > .account-stack-peek > .account-stack-peek-top{padding-left:0!important;}
+html .app-shell .accounts-group-section .account-stack-card.is-expanded > .account-stack-sort-handle{bottom:auto!important;top:62px!important;}
+@media(max-width:650px){
+ html .app-shell .accounts-group-section .account-stack-card > .account-stack-sort-handle{left:15px!important;bottom:43px!important;width:30px!important;min-width:30px!important;}
+ html .app-shell .accounts-group-section .account-stack-card.is-expanded > .account-stack-sort-handle{bottom:auto!important;top:62px!important;}
+}
+
+
+/* v149: align the My Accounts drag grip with the amount row rather than
+   the bottom edge of the colored stack backing. The expanded position keeps
+   the existing compact peek alignment. Geometry and drag handlers unchanged. */
+html .app-shell .accounts-group-section .account-stack-card:not(.is-expanded) > .account-stack-sort-handle {
+  top:auto!important;
+  bottom:85px!important;
+}
+@media(max-width:650px){
+  html .app-shell .accounts-group-section .account-stack-card:not(.is-expanded) > .account-stack-sort-handle {
+    bottom:81px!important;
+  }
+}
