@@ -8,7 +8,8 @@ import NativeDatePicker from './NativeDatePicker.jsx';
 
 const fmt=(n)=>Number(n||0).toLocaleString('zh-TW',{maximumFractionDigits:2});
 const percentage=(v,c)=>c>0?`${v-c>=0?'+':''}${((v-c)/c*100).toFixed(2)}%`:'—';
-const money=(v,c)=>`${c} ${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0})}`;
+const money=(v,c)=>`${c} ${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
+const summaryMoney=(v,c)=>`${c} ${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0})}`;
 const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
 const initialForm=()=>({kind:'contribution',date:today(),amount:'',units:'',sourceAccount:'',note:'',currentValue:'',valueDate:today()});
@@ -113,12 +114,12 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
    <div className="investment-stage-heading"><div><span className="investment-stage-kicker">NEXPEN · {type==='trust'?'TRUST':'POLICY'}</span><h2>{i18n(label[type])}</h2></div><span className="investment-stage-count">{items.length} {i18n("筆")}</span></div>
    <div className="stock-summary-v48 investment-performance-summary investment-stage-summary">
    <div className="stock-summary-pair">
-    <div className="stock-summary-item"><small>{i18n("持有成本")}</small><strong>{summary?money(summary.cost,items[0].currency):'—'}</strong></div>
-    <div className="stock-summary-item"><small>{i18n("估算現值")}</small><strong>{summary&&summary.value!==null?money(summary.value,items[0].currency):'—'}</strong></div>
+    <div className="stock-summary-item"><small>{i18n("持有成本")}</small><strong>{summary?summaryMoney(summary.cost,items[0].currency):'—'}</strong></div>
+    <div className="stock-summary-item"><small>{i18n("估算現值")}</small><strong>{summary&&summary.value!==null?summaryMoney(summary.value,items[0].currency):'—'}</strong></div>
    </div>
    <div className="stock-summary-profit"><small>{i18n("未實現損益")}</small>
     <div className="stock-pnl-result">
-     <strong className={summary&&summary.value!==null?(summary.value-summary.cost>=0?'income':'expense'):''}>{summary&&summary.value!==null?money(summary.value-summary.cost,items[0].currency):'—'}</strong>
+     <strong className={summary&&summary.value!==null?(summary.value-summary.cost>=0?'income':'expense'):''}>{summary&&summary.value!==null?summaryMoney(summary.value-summary.cost,items[0].currency):'—'}</strong>
      <span className={summary&&summary.value!==null?(summary.value-summary.cost>=0?'income':'expense'):''}>{summary&&summary.value!==null?percentage(summary.value,summary.cost):'—'}</span>
     </div>
    </div>

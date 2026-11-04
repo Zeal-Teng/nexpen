@@ -6,7 +6,7 @@ import {ArrowLeft, ChevronRight, TrendingUp, TrendingDown, Coins} from 'lucide-r
 function percent(value){return Number.isFinite(value)?`${value>=0?'+':''}${value.toFixed(2)}%`:'—';}
 function resultText(amount,fmt){return `${amount>=0?'+':'−'}${fmt(Math.abs(amount))}`;}
 
-export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtUnit,fmtTradeNative,language,selectedSymbol,onSelect,onEdit,onBack,baseAvailable,convert,nativeStockCurrency,quoteLoading,onRefresh,RefreshIcon}){
+export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtSummary=fmt,fmtUnit,fmtTradeNative,language,selectedSymbol,onSelect,onEdit,onBack,baseAvailable,convert,nativeStockCurrency,quoteLoading,onRefresh,RefreshIcon}){
   const tr=(tw,en)=>{const value=i18n(tw,language);return language==='en'&&value===tw?en:value;};
   const active=groups.find(g=>g.symbol===selectedSymbol);
   const currentHoldings=holdings.map(h=>({...h,details:groups.find(g=>g.symbol===h.symbol)}));
@@ -21,6 +21,8 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtUnit
   const stockProfit=stockVal-stockCost;
   const stockPct=stockCost>0?stockProfit/stockCost*100:null;
   const money=(n)=>baseAvailable?fmt(n):tr('匯率尚未取得','Exchange rate unavailable');
+  const summaryMoney=(n)=>baseAvailable?fmtSummary(n):tr('匯率尚未取得','Exchange rate unavailable');
+  const summaryResult=(n)=>baseAvailable?resultText(n,fmtSummary):'—';
   const result=(n)=>baseAvailable?resultText(n,fmt):'—';
   const showMoney = (n)=>money(n);
   const rate=(g)=>g.realizedBasis>0?percent(g.realizedPercent):'—';
@@ -56,8 +58,8 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtUnit
     <section className="investment-stage-hero investment-category-hero investment-stock-category-hero investment-unified-summary" aria-label={tr('股票績效總覽','Stock performance summary')}>
       <div className="investment-stage-heading"><div><span className="investment-stage-kicker">NEXPEN · STOCKS</span><h2>{tr('股票投資','Stock investments')}</h2></div><span className="investment-stage-count">{currentHoldings.length} {tr('檔持股','holdings')}</span></div>
       <div className="stock-summary-v48 investment-stage-summary">
-      <div className="stock-summary-pair"><div className="stock-summary-item"><small>{tr('持有成本','Cost basis')}</small><strong>{money(stockCost)}</strong></div><div className="stock-summary-item"><small>{tr('估算市值','Market value')}</small><strong>{allPriced?money(stockVal):tr('部分未取得','Partially unavailable')}</strong></div></div>
-      <div className="stock-summary-profit"><small>{tr('未實現損益','Unrealized P/L')}</small><div className="stock-pnl-result"><strong className={stockProfit>=0?'income':'expense'}>{allPriced?result(stockProfit):tr('待取得報價','Awaiting quotes')}</strong>{allPriced&&<span className={stockProfit>=0?'income':'expense'}>{percent(stockPct)}</span>}</div></div>
+      <div className="stock-summary-pair"><div className="stock-summary-item"><small>{tr('持有成本','Cost basis')}</small><strong>{summaryMoney(stockCost)}</strong></div><div className="stock-summary-item"><small>{tr('估算市值','Market value')}</small><strong>{allPriced?summaryMoney(stockVal):tr('部分未取得','Partially unavailable')}</strong></div></div>
+      <div className="stock-summary-profit"><small>{tr('未實現損益','Unrealized P/L')}</small><div className="stock-pnl-result"><strong className={stockProfit>=0?'income':'expense'}>{allPriced?summaryResult(stockProfit):tr('待取得報價','Awaiting quotes')}</strong>{allPriced&&<span className={stockProfit>=0?'income':'expense'}>{percent(stockPct)}</span>}</div></div>
       </div>
     </section>
     <p className="hint stock-price-explain">{tr('市值依最後成功收盤價估算，買進成本已含手續費；未實現損益不含未來賣出費稅。','Market value is based on the latest stored closing prices; unrealized P/L excludes future selling costs and tax.')}</p>

@@ -312,11 +312,12 @@ export default function App(){
  // Per-entry figures remain in their native currency; group totals and net worth retain explicit primary currency.
  const fmtEntryNumber=(amount,account)=>new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:precisionFor(account)}).format(Number(amount)||0);
  const fmtPrimaryNumber=n=>baseAvailable?new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:['JPY','KRW'].includes(primaryCurrency)?0:2}).format(inPrimary(n)):'匯率尚未取得';
- // v142: investment screens round displayed monetary values only; calculations retain full precision.
+ // v150: Only investment summary figures are rounded. Detailed amounts preserve cents.
  const fmtInvestmentMoney=n=>baseAvailable?new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(inPrimary(n)):'匯率尚未取得';
+ const fmtInvestmentDetail=n=>baseAvailable?new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:2}).format(inPrimary(n)):'匯率尚未取得';
  const fmtAccountFigure=(amount,account)=>`${nonPrimaryCode(account?.currency)?nonPrimaryCode(account?.currency)+' ':''}${fmtEntryNumber(amount,account)}`;
- const fmtStockUnit=n=>`${primaryCurrency==='TWD'?'':'TWD '}${new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0}).format(Number(n)||0)}`;
- const fmtStockTradeAmount=n=>`${primaryCurrency==='TWD'?'':'TWD '}${new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0}).format(Number(n)||0)}`;
+ const fmtStockUnit=n=>`${primaryCurrency==='TWD'?'':'TWD '}${new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:4}).format(Number(n)||0)}`;
+ const fmtStockTradeAmount=n=>`${primaryCurrency==='TWD'?'':'TWD '}${new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(n)||0)}`;
 
  const [rateLoading,setRateLoading]=useState(false);const [calculator,setCalculator]=useState(null);const [form,setForm]=useState({});const patch=(key,value)=>setForm(f=>({...f,[key]:value}));
  useEffect(()=>{if(dialog!=='stock'||form.action==='dividend'||form.feeMode!=='auto')return;
@@ -1077,7 +1078,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  {investSection==='stocks'&&<StockPerformanceView
    groups={stockPerformance} holdings={hs} quotes={quotes} selectedSymbol={selectedStockSymbol}
    onSelect={setSelectedStockSymbol} onBack={()=>setSelectedStockSymbol(null)} onEdit={item=>open('stock',item)}
-   fmt={fmtInvestmentMoney} fmtUnit={fmtStockUnit} fmtTradeNative={fmtStockTradeAmount} language={language} baseAvailable={baseAvailable} nativeStockCurrency={primaryCurrency==='TWD'?'':'TWD'}
+   fmt={fmtInvestmentDetail} fmtSummary={fmtInvestmentMoney} fmtUnit={fmtStockUnit} fmtTradeNative={fmtStockTradeAmount} language={language} baseAvailable={baseAvailable} nativeStockCurrency={primaryCurrency==='TWD'?'':'TWD'}
    quoteLoading={quoteLoading} onRefresh={()=>refreshQuotes({force:true})} RefreshIcon={RefreshCcw}
  />}{['trust','policy'].includes(investSection)&&<InvestmentAssets key={investSection} onBackOverview={()=>{setInvestSection('list');setSelectedStockSymbol(null);setInvestmentAssetDetailOpen(false)}} onDetailChange={onInvestmentDetailChange} backToListSignal={investmentBackToListSignal} type={investSection} items={accounts.filter(a=>a.type===investSection)} valuations={investmentValuations} flows={investmentFlows} cashAccounts={accounts.filter(a=>!['trust','policy'].includes(a.type))} quotes={quotes} primaryCurrency={primaryCurrency} onChanged={reload} onEditAccount={a=>open('account',a)} />}</>}
 
