@@ -1771,70 +1771,31 @@ html .app-shell .diary-search-filter>.smart-select.compact {
   .app-shell .sheet-body { padding-bottom: calc(120px + env(safe-area-inset-bottom,0px))!important; }
 }
 
-
-/* v111 — NEXPEN Neo-Tech floating controls.
-   All existing FAB handlers and theme accents are preserved. */
+/* v112 — Restore the original round circle-button appearance.
+   Preserve v111's vertical delete/save placement and form clearance. */
 .app-shell .fab,
-.app-shell .stock-quote-fab {
-  --neo-accent:var(--cp-action,var(--theme-accent,#418ce8));
-  --neo-ink:var(--cp-action-text,var(--theme-accent-contrast,#fff));
-  isolation:isolate;
-  overflow:hidden;
-  display:grid!important;
-  place-items:center!important;
+.app-shell .stock-quote-fab,
+.app-shell .sheet-floating-actions .sheet-action-fab {
   width:58px!important;
   height:58px!important;
-  min-width:58px;
-  min-height:58px;
+  min-width:58px!important;
+  min-height:58px!important;
+  border-radius:50%!important;
   padding:0!important;
-  border-radius:18px!important;
-  border:1px solid rgba(255,255,255,.34)!important;
-  background:linear-gradient(145deg,color-mix(in srgb,var(--neo-accent) 79%,white 21%),var(--neo-accent) 57%,color-mix(in srgb,var(--neo-accent) 78%,black 22%))!important;
-  color:var(--neo-ink)!important;
-  box-shadow:0 0 0 1px rgba(61,157,242,.13),0 10px 24px rgba(8,24,55,.27),0 3px 7px rgba(5,16,35,.18),inset 0 1px 0 rgba(255,255,255,.42),inset 0 -2px 5px rgba(0,0,0,.12)!important;
-  transition:transform .18s ease,box-shadow .2s ease,filter .2s ease!important;
-  -webkit-tap-highlight-color:transparent;
+  display:grid!important;
+  place-items:center!important;
+  overflow:visible!important;
+  background:var(--theme-chip)!important;
+  color:var(--theme-text)!important;
+  border:1px solid var(--theme-line)!important;
+  box-shadow:none!important;
+  transition:background .16s,transform .14s!important;
 }
-.app-shell .fab::before,
-.app-shell .stock-quote-fab::before {
-  content:"";
-  position:absolute;
-  inset:3px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.16);
-  background:linear-gradient(135deg,rgba(255,255,255,.19),transparent 43%);
-  pointer-events:none;
-}
-.app-shell .fab::after,
-.app-shell .stock-quote-fab::after {
-  content:"";
-  position:absolute;
-  width:25px;
-  height:3px;
-  top:5px;
-  left:50%;
-  transform:translateX(-50%);
-  border-radius:99px;
-  background:rgba(240,251,255,.6);
-  box-shadow:0 0 9px rgba(198,237,255,.48);
-  pointer-events:none;
-}
-.app-shell .fab svg,
-.app-shell .stock-quote-fab svg{position:relative;z-index:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.16));stroke-width:2.3}
-.app-shell .fab:hover:not(:disabled),
-.app-shell .stock-quote-fab:hover:not(:disabled) {
-  filter:brightness(1.07);
-  box-shadow:0 0 0 1px rgba(131,201,255,.3),0 13px 30px rgba(8,24,55,.34),0 0 23px color-mix(in srgb,var(--neo-accent) 26%,transparent),inset 0 1px 0 rgba(255,255,255,.48)!important;
-}
-.app-shell .fab:active:not(:disabled),
-.app-shell .stock-quote-fab:active:not(:disabled){transform:scale(.94)!important}
-.app-shell .fab:focus-visible,
-.app-shell .stock-quote-fab:focus-visible{outline:3px solid var(--theme-accent,#5aaaff)!important;outline-offset:4px}
-/* Make the quote-sync button part of the same component family, but smaller. */
-.app-shell .stock-quote-fab{width:50px!important;height:50px!important;min-width:50px;min-height:50px;border-radius:16px!important}
-.app-shell .stock-quote-fab::before{border-radius:12px}
-/* The modal's two actions are stacked vertically: destructive above, save below. */
-.app-shell .sheet-floating-actions{
+.app-shell .fab::before,.app-shell .fab::after,
+.app-shell .stock-quote-fab::before,.app-shell .stock-quote-fab::after {content:none!important;}
+.app-shell .fab svg,.app-shell .stock-quote-fab svg {filter:none!important;}
+.app-shell .stock-quote-fab {width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;}
+.app-shell .sheet-floating-actions {
   flex-direction:column!important;
   align-items:center!important;
   justify-content:flex-end!important;
@@ -1842,29 +1803,12 @@ html .app-shell .diary-search-filter>.smart-select.compact {
   right:18px!important;
   bottom:calc(18px + env(safe-area-inset-bottom,0px))!important;
 }
-.app-shell .sheet-floating-actions .sheet-action-fab{
-  position:relative!important;
-  flex-shrink:0!important;
-  width:58px!important;
-  height:58px!important;
-  border-radius:18px!important;
-}
-.app-shell .sheet-floating-actions .sheet-action-delete{
-  --neo-accent:#b92f58;
-  --neo-ink:#fff;
-  background:linear-gradient(145deg,#f26b89 0%,#c53a61 45%,#901f43 100%)!important;
-  color:white!important;
-}
-.app-shell .sheet-floating-actions .sheet-action-save{
-  background:linear-gradient(145deg,color-mix(in srgb,var(--neo-accent) 79%,white 21%),var(--neo-accent) 57%,color-mix(in srgb,var(--neo-accent) 78%,black 22%))!important;
-  color:var(--neo-ink)!important;
-}
-/* Keep every field scrollable above the two vertically stacked actions. */
-.app-shell .sheet-body{padding-bottom:calc(172px + env(safe-area-inset-bottom,0px))!important}
+.app-shell .sheet-floating-actions .sheet-action-fab{position:static!important;flex-shrink:0!important;}
+.app-shell .sheet-floating-actions .sheet-action-delete {color:#bc304b!important;}
+.app-shell .sheet-floating-actions .sheet-action-save {color:var(--theme-accent)!important;}
+.app-shell .fab:active:not(:disabled),.app-shell .stock-quote-fab:active:not(:disabled){transform:scale(.95)!important;}
+.app-shell .sheet-body {padding-bottom:calc(172px + env(safe-area-inset-bottom,0px))!important;}
 @media(max-width:800px){
-  .app-shell .sheet-floating-actions{right:17px!important;bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
-  .app-shell .sheet-body{padding-bottom:calc(176px + env(safe-area-inset-bottom,0px))!important}
-}
-@media(prefers-reduced-motion:reduce){
-  .app-shell .fab,.app-shell .stock-quote-fab{transition:none!important}
+  .app-shell .sheet-floating-actions{right:17px!important;bottom:calc(20px + env(safe-area-inset-bottom,0px))!important;}
+  .app-shell .sheet-body{padding-bottom:calc(176px + env(safe-area-inset-bottom,0px))!important;}
 }

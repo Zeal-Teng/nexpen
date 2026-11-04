@@ -13,7 +13,7 @@ const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
 const initialForm=()=>({kind:'contribution',date:today(),amount:'',units:'',sourceAccount:'',note:'',currentValue:'',valueDate:today()});
 
-export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],onChanged,onEditAccount}){
+export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],onChanged,onEditAccount,onBackOverview}){
  const [selected,setSelected]=useState(''),[dialog,setDialog]=useState(''),[editingEntry,setEditingEntry]=useState(null),[form,setForm]=useState(initialForm()),[error,setError]=useState(''),[busy,setBusy]=useState(false),[numberField,setNumberField]=useState(null);
  const patch=(k,v)=>setForm(f=>({...f,[k]:v}));
  const change=(action,asset)=>{setSelected(asset.id);setEditingEntry(null);setError('');setForm(initialForm());setNumberField(null);setDialog(action)};
@@ -106,6 +106,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
   }catch(e){setError(e.message)}finally{setBusy(false)}
  };
  return <div className="investment-assets-page">
+  {!active&&<button type="button" className="stock-back investment-upper-back investment-nav-back" onClick={onBackOverview}><ArrowLeft size={18}/>{i18n("返回投資總覽")}</button>}
   {!active&&<section className={`investment-stage-hero investment-category-hero investment-${type}-category-hero`} aria-label={`${i18n(label[type])}投資績效`}>
    <div className="investment-stage-heading"><div><span className="investment-stage-kicker">NEXPEN · {type==='trust'?'TRUST':'POLICY'}</span><h2>{i18n(label[type])}</h2></div><span className="investment-stage-count">{items.length} {i18n("筆")}</span></div>
    <div className="stock-summary-v48 investment-performance-summary investment-stage-summary">
@@ -122,7 +123,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
    </div>
   </section>}
   {active?<>
-   <button type="button" className="stock-back" onClick={()=>setSelected('')}><ArrowLeft size={17}/> {i18n("返回")}{i18n(label[type])}{i18n("列表")}</button>
+   <button type="button" className="stock-back investment-nav-back" onClick={()=>setSelected('')}><ArrowLeft size={17}/> {i18n("返回")}{i18n(label[type])}{i18n("列表")}</button>
    <InvestmentStack className="investment-third-level"><InvestmentStackCard accent={type==='trust'?'coral':'mint'} title={active.name} summary={i18n("個別資產績效")} amount={metrics(active).value===null?"—":money(metrics(active).value,active.currency)}><div className={`investment-stage-hero investment-deep-hero investment-${type}-deep-hero`}>
     <div className="investment-stage-kicker">NEXPEN · {i18n(label[type])}</div>
    <header className="stock-detail-header investment-detail-header">

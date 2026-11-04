@@ -1786,3 +1786,29 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
  :root[data-theme="portfolio"] .app-shell .investment-combined-row{padding:16px!important}
  :root[data-theme="portfolio"] .app-shell .hero{padding:20px!important}
 }
+
+/* v114: Investment back controls visually match Settings' mobile-back.
+   Intentionally shown on all viewports; the navigation handler remains unchanged. */
+.app-shell .investment-nav-back,
+.app-shell .investment-assets-page .investment-nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px 11px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--theme-icon, #6879da) !important;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: normal;
+  text-decoration: none;
+  cursor: pointer;
+  margin: 0 0 14px;
+}
+.app-shell .investment-nav-back svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}

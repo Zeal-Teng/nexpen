@@ -30,7 +30,7 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtUnit
     const priced=holding&&Number(quote?.price)>0;
     const unrealized=priced?holding.shares*Number(quote.price)-holding.cost:null;
     return <section className="stock-detail-view">
-      <button type="button" className="stock-back" onClick={onBack}><ArrowLeft size={18}/> {tr('返回股票','Back to stocks')}</button>
+      <button type="button" className="stock-back investment-nav-back" onClick={onBack}><ArrowLeft size={18}/> {tr('返回股票','Back to stocks')}</button>
       <InvestmentStack className="investment-third-level"><InvestmentStackCard accent="lavender" title={active.symbol+ (active.securityName?` · ${active.securityName}`:"")} summary={tr("個別持股績效","Security performance")} amount={unrealized===null?"—":result(unrealized)}><div className="investment-stage-hero investment-deep-hero investment-stock-deep-hero">
        <div className="investment-stage-kicker">NEXPEN · {tr('個別持股績效','SECURITY PERFORMANCE')}</div>
        <div className="stock-detail-header"><div><h2>{active.symbol}{active.securityName?` · ${active.securityName}`:''}</h2><small>{holding?`${holding.shares.toLocaleString('zh-TW')} 股 · ${tr('目前持有','Holding')}`:tr('已清倉','Closed position')}</small></div></div>
