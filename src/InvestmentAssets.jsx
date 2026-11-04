@@ -1,5 +1,6 @@
 import {t as i18n} from './i18n.js';
 import React,{useMemo,useState} from 'react';
+import {InvestmentStack,InvestmentStackCard,InvestmentStackAsset} from './InvestmentStack.jsx';
 import {ArrowLeft,Check,ChevronRight,Plus,RefreshCcw,Trash2,X,TrendingUp,Landmark,ShieldCheck,Coins} from 'lucide-react';
 import {db,today,uid} from './db.js';
 import InvestmentNumberPicker from './InvestmentNumberPicker.jsx';
@@ -105,7 +106,9 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
   }catch(e){setError(e.message)}finally{setBusy(false)}
  };
  return <div className="investment-assets-page">
-  {!active&&<section className="stock-summary-v48 investment-performance-summary" aria-label={`${i18n(label[type])}投資績效`}>
+  {!active&&<section className={`investment-stage-hero investment-category-hero investment-${type}-category-hero`} aria-label={`${i18n(label[type])}投資績效`}>
+   <div className="investment-stage-heading"><div><span className="investment-stage-kicker">NEXPEN · {type==='trust'?'TRUST':'POLICY'}</span><h2>{i18n(label[type])}</h2></div><span className="investment-stage-count">{items.length} {i18n("筆")}</span></div>
+   <div className="stock-summary-v48 investment-performance-summary investment-stage-summary">
    <div className="stock-summary-pair">
     <div className="stock-summary-item"><small>{i18n("持有成本")}</small><strong>{summary?money(summary.cost,items[0].currency):'—'}</strong></div>
     <div className="stock-summary-item"><small>{i18n("估算現值")}</small><strong>{summary&&summary.value!==null?money(summary.value,items[0].currency):'—'}</strong></div>
@@ -116,9 +119,12 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
      <span className={summary&&summary.value!==null?(summary.value-summary.cost>=0?'income':'expense'):''}>{summary&&summary.value!==null?percentage(summary.value,summary.cost):'—'}</span>
     </div>
    </div>
+   </div>
   </section>}
   {active?<>
    <button type="button" className="stock-back" onClick={()=>setSelected('')}><ArrowLeft size={17}/> {i18n("返回")}{i18n(label[type])}{i18n("列表")}</button>
+   <InvestmentStack className="investment-third-level"><InvestmentStackCard accent={type==='trust'?'coral':'mint'} title={active.name} summary={i18n("個別資產績效")} amount={metrics(active).value===null?"—":money(metrics(active).value,active.currency)}><div className={`investment-stage-hero investment-deep-hero investment-${type}-deep-hero`}>
+    <div className="investment-stage-kicker">NEXPEN · {i18n(label[type])}</div>
    <header className="stock-detail-header investment-detail-header">
     <div><h2>{active.name}</h2><small>{type==='trust'?`${active.trustSymbol} · ${fmt(metrics(active).lots)} ${i18n("張")}`:`${i18n("最後更新")} ${active.policyValueDate||'—'}`}</small></div>
     <button type="button" className="soft-btn small" onClick={()=>onEditAccount(active)}>{i18n("編輯帳戶")}</button>
@@ -128,15 +134,16 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
     <div className="stock-summary-profit"><small>{i18n("未實現損益")}</small><div className="stock-pnl-result"><strong className={metrics(active).pnl===null?'':metrics(active).pnl>=0?'income':'expense'}>{metrics(active).pnl===null?'—':money(metrics(active).pnl,active.currency)}</strong><span className={metrics(active).pnl===null?'':metrics(active).pnl>=0?'income':'expense'}>{metrics(active).pct}</span></div></div>
    </div>
    <p className="hint stock-price-explain investment-quote-note">{type==='trust'?`${i18n("最後更新")} ${metrics(active).quoteDate||'—'} · ${i18n("估算現值")}`:i18n("新增保費投入只增加投入成本；目前現值須依保險公司提供的數字更新。")}</p>
-   <section className="glass panel stock-trade-detail-list investment-valuation-history">
+   </div></InvestmentStackCard>
+   <InvestmentStackCard accent="lavender" title={i18n("資金異動／估值歷史")} summary={`${history.length} ${i18n("筆紀錄")}`} amount={null}><section className="glass panel stock-trade-detail-list investment-valuation-history investment-stage-history">
     <div className="investment-history-heading"><h3>{i18n("資金異動／估值歷史")}</h3><div className="investment-action-row"><button type="button" className="soft-btn small" onClick={()=>change('contribution',active)}><Plus size={16}/> {i18n("追加投入")}</button>{type==='policy'&&<button type="button" className="soft-btn small" onClick={()=>change('value',active)}><RefreshCcw size={16}/> {i18n("更新現值")}</button>}</div></div>
     {history.length?history.map(h=><button type="button" className="stock-detail-trade investment-history-button" key={`${h.entry}-${h.id}`} onClick={()=>editEntry(h)}>
       <div className={'transaction-icon '+(h.entry==='valuation'?'income':'transfer')}>{h.entry==='valuation'?<TrendingUp size={18}/>:<Coins size={18}/>}</div>
       <div className="row-main"><b>{h.entry==='valuation'?i18n("現值更新"):i18n("追加投入")}</b><small>{h.date}{h.entry==='flow'&&type==='trust'?` · ${fmt(h.units)} ${i18n("張")}`:''}</small>{h.entry==='flow'&&h.note&&<small>{h.note}</small>}</div>
       <div className="transaction-right"><strong>{money(h.entry==='valuation'?h.value:h.amount,active.currency)}</strong></div><ChevronRight size={17} className="faint"/>
      </button>):<p className="hint">{i18n("尚無異動紀錄")}</p>}
-   </section>
-  </>:<section className="glass panel stock-performance-section investment-list-section"><div className="stock-holdings-heading"><h2>{i18n(label[type])}</h2><small>{items.length} {i18n("筆")}</small></div>{items.length?items.map(a=>{const m=metrics(a);return <button type="button" key={a.id} className="list-row stock-performance-row" onClick={()=>setSelected(a.id)}><div className={'transaction-icon '+(m.pnl===null?'transfer':m.pnl>=0?'income':'expense')}>{type==='trust'?<Landmark size={18}/>:<ShieldCheck size={18}/>}</div><div className="row-main"><b>{a.name}</b><small>{type==='trust'?`${a.trustSymbol} · ${fmt(m.lots)} 張`:`最新保單現值：${a.policyValueDate||'未更新'}`}</small><small>{i18n("累計投入")} {money(m.cost,a.currency)}</small></div><div className="holding-right"><strong>{m.value===null?i18n("尚無報價"):money(m.value,a.currency)}</strong><div className={'holding-pnl '+(m.pnl===null?'':m.pnl>=0?'income':'expense')}><span className="holding-pnl-value">{m.pnl===null?'—':money(m.pnl,a.currency)}</span><span className="holding-pnl-rate">{m.pct}</span></div></div><ChevronRight size={17} className="faint"/></button>}):<p className="hint">{i18n("尚未建立")}{i18n(label[type])}{i18n("帳戶。請至「帳戶管理」新增，並選擇帳戶類型「")}{i18n(label[type])}」。</p>}</section>}
+   </section></InvestmentStackCard></InvestmentStack>
+  </>:<section className="glass panel stock-performance-section investment-list-section investment-stage-list"><div className="stock-holdings-heading"><h2>{i18n(label[type])}</h2><small>{items.length} {i18n("筆")}</small></div><div className="investment-tier-stack investment-second-level">{items.length?items.map(a=>{const m=metrics(a);return <InvestmentStackAsset key={a.id} accent={type==='trust'?'coral':'mint'} title={a.name} subtitle={type==='trust'?`${a.trustSymbol} · ${fmt(m.lots)} 張`:`${i18n("最後更新")} ${a.policyValueDate||"—"}`} amount={m.value===null?i18n("尚無報價"):money(m.value,a.currency)} profit={m.pnl===null?"—":money(m.pnl,a.currency)} rate={m.pct} onOpen={()=>setSelected(a.id)}><p className="hint">{i18n("累計投入")} {money(m.cost,a.currency)}</p></InvestmentStackAsset>}):<p className="hint">{i18n("尚未建立")}{i18n(label[type])}{i18n("帳戶。請至「帳戶管理」新增，並選擇帳戶類型「")}{i18n(label[type])}」。</p>}</div></section>}
   {dialog&&active&&<div className="modal-backdrop investment-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setDialog('')}}><div className="sheet glass investment-modal"><div className="grabber"/><div className="sheet-head"><h2>{editingEntry?i18n("編輯"):dialog==='contribution'?i18n("追加投入"):i18n("更新保單現值")} · {active.name}</h2><button type="button" className="circle-button" onClick={()=>setDialog('')}><X size={19}/></button></div><form className="sheet-body" onSubmit={submit}>
    <label className="investment-field">{i18n("日期")}<NativeDatePicker required value={dialog==='value'?form.valueDate:form.date} onChange={e=>patch(dialog==='value'?'valueDate':'date',e.target.value)}/></label>
    {dialog==='contribution'?<><label className="investment-field">{i18n("本次投入金額（")}{active.currency}）<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('amount')} aria-label={i18n("輸入本次投入金額")}>{form.amount!==''&&form.amount!==undefined?String(form.amount):i18n("點擊輸入數字")}</button></label>{type==='trust'&&<label className="investment-field">{i18n("本次新增張數（可為 0）")}<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('units')} aria-label={i18n("輸入本次新增張數")}>{form.units!==''&&form.units!==undefined?String(form.units):i18n("點擊輸入數字")}</button></label>}<label className="investment-field">{i18n("資金來源（選填）")}<select value={form.sourceAccount} onChange={e=>patch('sourceAccount',e.target.value)}><option value="">{i18n("外部資金／不連動銀行")}</option>{cashAccounts.filter(a=>a.currency===active.currency).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label><label className="investment-field">{i18n("備註")}<input value={form.note} onChange={e=>patch('note',e.target.value)}/></label></>:<label className="investment-field">{i18n("保單最新現值（")}{active.currency}）<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('currentValue')} aria-label={i18n("輸入保單最新現值")}>{form.currentValue!==''&&form.currentValue!==undefined?String(form.currentValue):i18n("點擊輸入數字")}</button></label>}
