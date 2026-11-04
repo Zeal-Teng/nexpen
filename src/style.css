@@ -2087,9 +2087,11 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 
 
 /* v130 — net worth summary stays outside; the two detail cards mirror investment overview level-one. */
-.app-shell .networth-section-title{margin:12px 1px 16px!important;}
-.app-shell .networth-section-title h3{font-size:clamp(18px,4.4vw,23px)!important;}
-.app-shell .networth-section-title small{font-size:13px!important;line-height:1.55!important;}
+/* v139: net-worth section title uses the exact same type scale as investment. */
+.app-shell .networth-section-title{margin:0 1px 13px!important;}
+.app-shell .networth-section-title h3{font-size:clamp(17px,3.5vw,22px)!important;line-height:normal!important;font-weight:760!important;margin:0 0 3px!important;}
+.app-shell .networth-section-title small{font-size:12px!important;line-height:1.3!important;}
+.app-shell .networth-section-title>span{font-size:13px!important;letter-spacing:.1em!important;}
 .app-shell .networth-stack-dashboard{padding:0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important;}
 .app-shell .networth-reference-stack{padding:8px 0 24px!important;}
 .app-shell .networth-reference-stack .networth-reference-layer{min-height:124px!important;}
@@ -2108,3 +2110,13 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
  .app-shell .networth-reference-stack .networth-card-expanded-body{margin-left:26px;padding:18px 12px;}
  .app-shell .networth-reference-stack .investment-reference-amount{flex-basis:53%;}
 }
+
+/* v139: opt-in PWA install guidance; user must initiate browser install. */
+.app-shell .nexpen-install-hint{position:relative;z-index:60;display:flex;align-items:center;gap:11px;box-sizing:border-box;margin:12px auto 0;padding:11px 12px;width:min(100% - 28px,940px);border:1px solid var(--theme-line);border-radius:16px;background:var(--theme-surface);color:var(--theme-text);box-shadow:0 7px 19px #00000017;}
+.app-shell .nexpen-install-symbol{flex-shrink:0;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--theme-surface2);color:var(--theme-accent);}
+.app-shell .nexpen-install-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.app-shell .nexpen-install-copy strong{font-size:13px;font-weight:760;}
+.app-shell .nexpen-install-copy small{font-size:12px;line-height:1.5;color:var(--theme-muted);}
+.app-shell .nexpen-install-action{flex-shrink:0;border:0;border-radius:10px;background:var(--theme-accent);color:var(--theme-accent-contrast,#fff);padding:9px 11px;font-size:12px;font-weight:750;cursor:pointer;}
+.app-shell .nexpen-install-dismiss{flex-shrink:0;display:grid;place-items:center;width:32px;height:32px;border:0;background:transparent;color:var(--theme-muted);cursor:pointer;}
+@media(max-width:450px){.app-shell .nexpen-install-hint{margin-top:8px;width:calc(100% - 20px);padding:9px 10px;gap:8px;}.app-shell .nexpen-install-symbol{width:32px;height:32px;}.app-shell .nexpen-install-copy small{font-size:11px;}}
