@@ -1691,3 +1691,98 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 .app-shell .sheet-head-actions .sheet-close-btn{background:var(--cp-raised,rgba(128,140,160,.14))!important;border:1px solid var(--cp-border,rgba(128,140,160,.25))!important;color:var(--cp-text,var(--text,#c8d5e0))!important}
 .app-shell .sheet-head-actions .circle-button:focus-visible{outline:2px solid var(--cp-accent,#4da6ce);outline-offset:3px}
 @media(max-width:420px){.app-shell .sheet-head-actions{gap:6px}.app-shell .sheet-head-actions .circle-button{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important}}
+
+
+/* v88 | Champagne Portfolio: calm editorial investment interface.
+   This theme affects visuals only; no financial calculations or persistence. */
+:root[data-theme="portfolio"] {
+ --theme-bg:#f8f4ea;--theme-surface:#fffdf8;--theme-surface2:#f0e9dc;
+ --theme-line:#e3d7c4;--theme-text:#322c25;--theme-muted:#867965;
+ --theme-accent:#164c40;--theme-accent-contrast:#ffffff;
+ --theme-chip:#f4eee4;--theme-outline:#d5c5ab;
+ --theme-income:#0c8b74;--theme-expense:#b65552;
+ --theme-icon:#92764e;--theme-circle:#e1c993;--theme-circle-text:#5e481f;
+ --theme-danger:#b65552;--theme-money-bg:#f4eee4;
+ color-scheme:light;
+}
+/* A dark luxurious investment highlight on ivory, inspired by the reference. */
+:root[data-theme="portfolio"] .app-shell .hero,
+:root[data-theme="portfolio"] .app-shell .compact-hero {
+ background:#181713!important;border:1px solid #8b7950!important;color:#fff9e9!important;
+ border-radius:24px!important;box-shadow:0 12px 25px rgba(55,43,22,.13)!important;
+ position:relative;overflow:hidden;
+}
+:root[data-theme="portfolio"] .app-shell .hero::after {
+ content:"";position:absolute;right:-48px;bottom:-76px;width:215px;height:215px;
+ border:1px solid rgba(210,178,104,.28);border-radius:50%;pointer-events:none;
+ box-shadow:0 0 0 18px rgba(210,178,104,.065),0 0 0 38px rgba(210,178,104,.055),0 0 0 60px rgba(210,178,104,.04);
+}
+:root[data-theme="portfolio"] .app-shell .hero span,
+:root[data-theme="portfolio"] .app-shell .hero small,
+:root[data-theme="portfolio"] .app-shell .hero strong,
+:root[data-theme="portfolio"] .app-shell .hero .expense,
+:root[data-theme="portfolio"] .app-shell .hero .income {
+ color:#fff8e7!important;position:relative;z-index:1;
+}
+:root[data-theme="portfolio"] .app-shell .hero span{color:#dbc28b!important;letter-spacing:.045em}
+:root[data-theme="portfolio"] .app-shell .hero small{color:#c1b59b!important}
+/* Lighter, subtle surfaces and gold hairline borders, fewer harsh shadows. */
+:root[data-theme="portfolio"] .app-shell .glass,
+:root[data-theme="portfolio"] .app-shell .account-group,
+:root[data-theme="portfolio"] .app-shell .category-group {
+ border-color:#e4d8c5!important;box-shadow:0 3px 12px rgba(73,50,20,.035)!important;
+}
+:root[data-theme="portfolio"] .app-shell .investment-combined {
+ background:#fffdf8!important;border:1px solid #e3d7c4!important;
+ box-shadow:0 8px 26px rgba(60,43,15,.065)!important;
+}
+:root[data-theme="portfolio"] .app-shell .investment-combined-row {
+ background:#f5efe5!important;border:1px solid #e8dbc7!important;
+ border-radius:17px!important;box-shadow:none!important;
+}
+:root[data-theme="portfolio"] .app-shell .investment-aggregate-summary,
+:root[data-theme="portfolio"] .app-shell .investment-performance-summary{
+ border-color:#e1d3be!important;
+}
+:root[data-theme="portfolio"] .app-shell .investment-combined-title b,
+:root[data-theme="portfolio"] .app-shell .investment-combined-heading h2,
+:root[data-theme="portfolio"] .app-shell .panel h2 {
+ letter-spacing:-.025em!important;
+}
+:root[data-theme="portfolio"] .app-shell .stats-three .stat,
+:root[data-theme="portfolio"] .app-shell .stats-two .stat {
+ border-color:#e1d3be!important;
+}
+:root[data-theme="portfolio"] .app-shell .stats-three .stat small,
+:root[data-theme="portfolio"] .app-shell .stats-two .stat small {
+ color:#816f55!important;
+}
+:root[data-theme="portfolio"] .app-shell .bottom-nav{
+ background:#fffdf8!important;border-color:#e4d6be!important;
+ box-shadow:0 8px 25px rgba(74,53,25,.08)!important;
+}
+:root[data-theme="portfolio"] .app-shell .bottom-nav button.active,
+:root[data-theme="portfolio"] .app-shell .side-link.selected {
+ background:#164c40!important;color:#fffdf7!important;
+}
+:root[data-theme="portfolio"] .app-shell .fab,
+:root[data-theme="portfolio"] .app-shell .sheet-save-btn{
+ background:#164c40!important;color:#fffdf7!important;
+ box-shadow:0 5px 14px rgba(22,76,64,.15)!important;
+}
+:root[data-theme="portfolio"] .app-shell .searchbox,
+:root[data-theme="portfolio"] .app-shell .field input,
+:root[data-theme="portfolio"] .app-shell .field .smart-select,
+:root[data-theme="portfolio"] .app-shell .money-trigger {
+ background:#f6f0e7!important;border-color:#e4d8c5!important;
+}
+:root[data-theme="portfolio"] .app-shell .transaction-icon {background:#f1e9db!important}
+:root[data-theme="portfolio"] .app-shell .page-head h1 {color:#29251f!important}
+/* Preserves visible amounts and error messages on the lighter palette. */
+:root[data-theme="portfolio"] .calculator-sheet .calc-display {
+ color:#322c25!important;-webkit-text-fill-color:#322c25!important;
+}
+@media(max-width:600px){
+ :root[data-theme="portfolio"] .app-shell .investment-combined-row{padding:16px!important}
+ :root[data-theme="portfolio"] .app-shell .hero{padding:20px!important}
+}

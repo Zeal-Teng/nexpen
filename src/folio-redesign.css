@@ -1,0 +1,823 @@
+/* NEXPEN v89 — editorial card-stack UI, inspired by calm financial dashboards.
+   Shared design system affects all themes; palette belongs to 'folio' and 'portfolio'.
+   Financial calculations, IndexedDB names, date logic and actions remain untouched. */
+:root[data-theme="folio"] {
+  --theme-bg:#f6f3eb; --theme-surface:#fffdf8; --theme-surface2:#eee7db;
+  --theme-line:#e5ddd0; --theme-text:#242921; --theme-muted:#847d70;
+  --theme-accent:#176c56; --theme-accent-contrast:#fffef9;
+  --theme-chip:#f1ece2; --theme-outline:#d7cbb8;
+  --theme-income:#137963; --theme-expense:#c15d53;
+  --theme-icon:#987e54; --theme-circle:#e5d3ad; --theme-circle-text:#664d2e;
+  --theme-danger:#c15d53; --theme-money-bg:#f3eee5;
+  color-scheme:light;
+}
+/* Establish a single token system for content density and interaction */
+:root {
+  --folio-radius-xl:26px;
+  --folio-radius-lg:20px;
+  --folio-radius-md:14px;
+  --folio-gap:16px;
+  --folio-shadow:0 7px 28px rgba(28,32,29,.035);
+  --folio-dark:#1f241e;
+  --folio-gold:#cfb780;
+}
+html,body,#root{min-width:0}
+.app-shell {
+  background:var(--theme-bg)!important;
+  color:var(--theme-text)!important;
+  line-height:1.55;
+  letter-spacing:-.009em;
+}
+.app-shell .ambient{display:none!important}
+.app-shell .layout {max-width:1320px;gap:28px;align-items:flex-start;padding:26px 24px 118px!important}
+.app-shell .main {max-width:920px;margin:0!important;min-width:0}
+.app-shell .page-head {align-items:center!important;margin:4px 0 22px!important}
+.app-shell .page-head h1{font-weight:780;letter-spacing:-.045em;line-height:1.2}
+.app-shell .eyebrow,.app-shell .side-caption{letter-spacing:.19em}
+.app-shell .panel,
+.app-shell .account-group,
+.app-shell .category-group,
+.app-shell .investment-list-section,
+.app-shell .investment-asset-detail {
+  border-radius:var(--folio-radius-xl)!important;
+}
+.app-shell .glass,
+.app-shell .account-group,
+.app-shell .category-group {
+  background:var(--theme-surface)!important;
+  border:1px solid var(--theme-line)!important;
+  box-shadow:var(--folio-shadow)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.app-shell .panel {padding:22px!important;margin-bottom:18px!important}
+.app-shell .panel h2,.app-shell .section-header h2 {letter-spacing:-.025em}
+/* Header / desktop side nav: compact editorial presentation */
+.app-shell .topbar {
+  background:var(--theme-bg)!important;
+  border-color:var(--theme-line)!important;
+  backdrop-filter:none!important;
+  box-shadow:none!important;
+}
+.app-shell .brand-icon {border-radius:14px!important;background:var(--theme-accent)!important;color:var(--theme-accent-contrast)!important;box-shadow:none!important}
+.app-shell .brand strong span{color:var(--theme-accent)!important}
+.app-shell .sidebar{background:var(--theme-surface)!important;border:1px solid var(--theme-line)!important;box-shadow:var(--folio-shadow)!important;border-radius:24px!important;padding:15px 10px!important}
+.app-shell .side-link{margin:2px 0!important;min-height:45px;border-radius:12px!important;transition:background .16s,color .16s}
+.app-shell .side-link.selected {background:var(--theme-accent)!important;color:var(--theme-accent-contrast)!important;box-shadow:none!important}
+.app-shell .sidebar-bottom{border-color:var(--theme-line)!important}
+/* Overview hero: dark and quiet, no purple neon glow */
+:root:is([data-theme="folio"],[data-theme="portfolio"]) .app-shell .hero {
+  background:var(--folio-dark)!important;
+  color:#fffdf6!important;
+  border:1px solid #454435!important;
+  border-radius:27px!important;
+  box-shadow:0 13px 24px rgba(45,39,20,.08)!important;
+  padding:30px!important;
+  min-height:165px!important;
+}
+:root:is([data-theme="folio"],[data-theme="portfolio"]) .app-shell .hero span,
+:root:is([data-theme="folio"],[data-theme="portfolio"]) .app-shell .hero small{
+  color:#d4bd86!important;opacity:1!important;
+}
+:root:is([data-theme="folio"],[data-theme="portfolio"]) .app-shell .hero strong{color:#fffdf6!important;font-size:clamp(28px,5vw,40px)!important;overflow-wrap:anywhere}
+:root:is([data-theme="folio"],[data-theme="portfolio"]) .app-shell .hero-orb{
+  width:205px;height:205px;top:auto;bottom:-110px;right:-50px;
+  border-color:#cbb47e77;box-shadow:0 0 0 22px #ccb47713,0 0 0 46px #ccb4770e;
+}
+/* Compact snapshots — stat stack on overview and diary */
+.app-shell .stats-three,.app-shell .stats-two {gap:11px!important;margin-bottom:14px!important;min-width:0}
+.app-shell .stat {min-width:0!important;border-radius:var(--folio-radius-lg)!important;padding:17px 18px!important;box-shadow:none!important;background:var(--theme-surface)!important;border:1px solid var(--theme-line)!important}
+.app-shell .stat small {color:var(--theme-muted)!important;letter-spacing:.015em}
+.app-shell .stat strong {letter-spacing:-.03em;line-height:1.32;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.app-shell .daily-compact .stats-three .stat{padding:14px 10px!important}
+.app-shell .daily-compact .stats-three .stat small{white-space:nowrap}
+/* Diary: one calm flow: date, statistics, transactions */
+.app-shell .calendar-panel{background:transparent!important;border:none!important;box-shadow:none!important;padding:3px 0 10px!important;margin-bottom:6px!important}
+.app-shell .calendar-header{margin-bottom:11px!important}
+.app-shell .week-strip{gap:3px!important}
+.app-shell .week-day{border:0!important;background:transparent!important;border-radius:16px!important;box-shadow:none!important;min-width:0}
+.app-shell .week-day.active{background:transparent!important}
+.app-shell .searchbox {border:1px solid var(--theme-line)!important;border-radius:var(--folio-radius-md)!important;background:var(--theme-surface)!important;padding:11px 14px!important}
+.app-shell .daily-transactions{margin-top:0!important}
+.app-shell .diary-search-filter{gap:9px!important;margin-bottom:5px!important}
+.app-shell .diary-plain-row{background:transparent!important}
+.app-shell .diary-listview-item,.app-shell .list-row {min-width:0;gap:13px!important;border-color:var(--theme-line)!important;padding:15px 3px!important}
+.app-shell .list-row .row-main{min-width:0;overflow:hidden}
+.app-shell .transaction-icon {width:46px!important;height:46px!important;border-radius:14px!important;background:var(--theme-chip)!important;box-shadow:none!important}
+.app-shell .transaction-right{min-width:0;max-width:43%;text-align:right}
+.app-shell .transaction-right strong{overflow-wrap:anywhere}
+/* Investment: a deep hero card sitting above three independently clickable stack cards */
+.app-shell .investment-aggregate-summary{
+  display:grid!important;grid-template-columns:1fr 1fr!important;
+  gap:0!important;margin:0 0 19px!important;padding:23px!important;
+  border:1px solid var(--theme-line)!important;border-radius:var(--folio-radius-xl)!important;
+  background:var(--theme-surface2)!important;
+  overflow:hidden;
+}
+.app-shell .investment-aggregate-summary > div {display:flex!important;flex-direction:column;gap:7px;padding:9px 14px!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+.app-shell .investment-aggregate-summary > div:first-child {border-right:1px solid var(--theme-line)!important}
+.app-shell .investment-aggregate-summary .investment-aggregate-pnl {
+  grid-column:1/-1!important;display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important;
+  flex-wrap:wrap;gap:8px!important;margin-top:15px;padding-top:18px!important;
+  border-top:1px solid var(--theme-line)!important;
+}
+.app-shell .investment-aggregate-summary small {color:var(--theme-muted)!important;font-weight:620}
+.app-shell .investment-aggregate-summary strong {font-size:clamp(20px,4.2vw,29px)!important;letter-spacing:-.04em;min-width:0;overflow-wrap:anywhere}
+.app-shell .investment-aggregate-summary .investment-aggregate-pnl strong {margin-left:auto}
+.app-shell .investment-aggregate-summary em{font-style:normal!important}
+:root:is([data-theme="folio"],[data-theme="portfolio"]) .app-shell .investment-aggregate-summary {
+  background:var(--folio-dark)!important;border-color:#464235!important;color:#fff8e7!important;
+}
+:root:is([data-theme="folio"],[data-theme="portfolio"]) .app-shell .investment-aggregate-summary small{color:#c9b783!important}
+:root:is([data-theme="folio"],[data-theme="portfolio"]) .app-shell .investment-aggregate-summary > div:first-child,
+:root:is([data-theme="folio"],[data-theme="portfolio"]) .app-shell .investment-aggregate-summary .investment-aggregate-pnl{border-color:#b6a07544!important}
+.app-shell .investment-combined {padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.app-shell .investment-combined-heading {padding:0 2px 13px!important}
+.app-shell .investment-combined-list{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px!important}
+.app-shell .investment-combined-row{
+  display:block!important;width:100%!important;min-width:0!important;height:100%;padding:18px!important;text-align:left;
+  background:var(--theme-surface)!important;border:1px solid var(--theme-line)!important;border-radius:22px!important;
+  box-shadow:var(--folio-shadow)!important;transition:transform .15s,box-shadow .15s!important;
+}
+.app-shell .investment-combined-row:active{transform:scale(.99)}
+@media(hover:hover){.app-shell .investment-combined-row:hover{transform:translateY(-3px);box-shadow:0 11px 25px rgba(20,35,25,.08)!important}}
+.app-shell .investment-combined-title{margin-bottom:14px!important;min-width:0}
+.app-shell .investment-combined-title b{font-size:1.12em!important;letter-spacing:-.025em}
+.app-shell .investment-combined-financials{padding:0 0 12px!important;gap:7px!important;border-bottom:1px solid var(--theme-line)!important}
+.app-shell .investment-combined-financials strong{font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.app-shell .investment-combined-pnl{padding-top:13px!important}
+/* Stocks/trusts/policies all share the same list and details surface hierarchy */
+.app-shell .investment-assets-page .investment-list-section,
+.app-shell .investment-assets-page .investment-asset-detail,
+.app-shell .stock-performance-view .glass,
+.app-shell .account-group {border-radius:24px!important}
+.app-shell .stock-performance-row,.app-shell .stock-detail-trade {border-color:var(--theme-line)!important}
+.app-shell .investment-assets-page .investment-history-heading{margin-bottom:14px!important}
+/* Account/card stacks are given the same tonal elevation */
+.app-shell .accounts-group-section .account-group{margin-bottom:14px!important;overflow:hidden}
+.app-shell .account-group-head{padding:17px 20px!important;background:var(--theme-surface2)!important}
+.app-shell .account-group-list{padding:0 16px!important}
+.app-shell .account-row{padding:16px 4px!important}
+.app-shell .category-group{overflow:hidden}
+/* All settings + management actions share one visual system */
+.app-shell .settings-menu .action-row,
+.app-shell .action-row{border-color:var(--theme-line)!important;border-radius:var(--folio-radius-md)!important;box-shadow:none!important}
+.app-shell .soft-btn,.app-shell .smart-select,
+.app-shell .compact,.app-shell .mini-btn,
+.app-shell .circle-button,.app-shell .primary-btn {
+  border-radius:var(--folio-radius-md)!important;
+  box-shadow:none!important;
+  transition:background .16s,transform .14s;
+}
+.app-shell .soft-btn{background:var(--theme-surface2)!important;border:1px solid var(--theme-line)!important;color:var(--theme-text)!important}
+.app-shell .primary-btn{background:var(--theme-accent)!important;color:var(--theme-accent-contrast)!important}
+.app-shell .circle-button{border-radius:50%!important}
+.app-shell .fab{
+  width:58px!important;height:58px!important;border-radius:18px!important;
+  background:var(--theme-accent)!important;color:var(--theme-accent-contrast)!important;
+  box-shadow:0 8px 20px rgba(24,45,32,.13)!important;
+  border:0!important;
+}
+/* Bottom sheets: preserve all existing forms and their controls */
+.app-shell .modal-backdrop{background:rgba(18,23,23,.45)!important;backdrop-filter:blur(3px)!important}
+.app-shell .sheet{background:var(--theme-surface)!important;border:1px solid var(--theme-line)!important;border-radius:27px!important;color:var(--theme-text)!important;box-shadow:0 24px 70px rgba(12,22,22,.19)!important}
+.app-shell .sheet-head{border-bottom:1px solid var(--theme-line)!important;padding:17px 19px!important}
+.app-shell .sheet-head h2{letter-spacing:-.028em}
+.app-shell .sheet-body{padding:17px 20px 28px!important;gap:17px!important}
+.app-shell .field>span{color:var(--theme-text)!important}
+.app-shell .field input,.app-shell .field select,
+.app-shell .money-trigger,.app-shell .smart-select {min-height:48px!important;border:1px solid var(--theme-line)!important;background:var(--theme-surface2)!important;color:var(--theme-text)!important;border-radius:13px!important}
+.app-shell .sheet-head-actions .sheet-save-btn {background:var(--theme-accent)!important;color:var(--theme-accent-contrast)!important}
+.app-shell .sheet-head-actions .sheet-close-btn{color:var(--theme-text)!important;background:var(--theme-surface2)!important}
+/* Toolbar and navigation: soft split-pill like native finance apps */
+.app-shell .bottom-nav {background:var(--theme-surface)!important;border:1px solid var(--theme-line)!important;border-radius:23px!important;box-shadow:0 8px 28px rgba(30,40,40,.07)!important}
+.app-shell .bottom-nav button{border-radius:16px!important}
+.app-shell .bottom-nav button.active{background:var(--theme-accent)!important;color:var(--theme-accent-contrast)!important;box-shadow:none!important}
+.app-shell .segmented{border:1px solid var(--theme-line)!important;border-radius:15px!important;background:var(--theme-surface2)!important}
+.app-shell .pill.active{background:var(--theme-accent)!important;color:var(--theme-accent-contrast)!important}
+/* End-to-end responsive layout, not merely theme colors */
+@media(max-width:800px){
+  .app-shell .layout{display:block!important;padding:9px 16px calc(125px + env(safe-area-inset-bottom))!important}
+  .app-shell .main{max-width:none;margin:0!important}
+  .app-shell .topbar{box-shadow:none!important}
+  .app-shell .page-head{margin:6px 0 17px!important}
+  .app-shell .panel{padding:18px!important;margin-bottom:13px!important;border-radius:23px!important}
+  .app-shell .hero{padding:22px!important;border-radius:24px!important}
+  .app-shell .investment-combined-list{grid-template-columns:1fr!important;gap:12px!important}
+  .app-shell .investment-combined-row{padding:17px 18px!important}
+  .app-shell .investment-aggregate-summary{padding:13px 10px!important;border-radius:24px!important}
+  .app-shell .investment-aggregate-summary > div{padding:9px 12px!important}
+  .app-shell .investment-aggregate-summary .investment-aggregate-pnl{padding-top:15px!important}
+  .app-shell .stats-three{gap:6px!important}
+  .app-shell .daily-compact .stats-three .stat{padding:11px 8px!important;border-radius:14px!important}
+  .app-shell .daily-compact .stats-three .stat strong{font-size:clamp(14px,3.8vw,19px)!important}
+  .app-shell .diary-plain-row .list-row{padding:15px 0!important}
+  .app-shell .bottom-nav{bottom:max(8px,env(safe-area-inset-bottom))!important;left:12px!important;right:12px!important;width:auto!important}
+  .app-shell .fab{bottom:calc(92px + env(safe-area-inset-bottom))!important;right:18px!important}
+  .app-shell .sheet{border-radius:27px 27px 0 0!important;max-height:min(93dvh,950px)!important}
+  .app-shell .sheet-head{padding:16px 18px!important}
+  .app-shell .sheet-body{padding:15px 18px calc(30px + env(safe-area-inset-bottom))!important}
+  .app-shell .form-grid>*{min-width:0!important}
+}
+@media(max-width:380px){
+  .app-shell .stats-three .stat small{font-size:11px!important}
+  .app-shell .investment-aggregate-summary strong{font-size:17px!important}
+  .app-shell .sheet-head-actions{gap:5px!important}
+}
+@media(prefers-reduced-motion:reduce){.app-shell *{transition:none!important;animation:none!important}}
+/* Specificity guard against the old portfolio-only investment wrapper. */
+:root[data-theme="portfolio"] .app-shell section.glass.panel.investment-combined,
+:root[data-theme="folio"] .app-shell section.glass.panel.investment-combined{
+  background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;
+}
+:root[data-theme="portfolio"] .app-shell .investment-combined-row,
+:root[data-theme="folio"] .app-shell .investment-combined-row{
+  background:var(--theme-surface)!important;border:1px solid var(--theme-line)!important;
+  box-shadow:0 7px 28px rgba(28,32,29,.045)!important;border-radius:22px!important;
+}
+/* Preserve text/icon colors against old cyber-only selectors. */
+:root[data-theme="folio"] .app-shell .panel h2,
+:root[data-theme="folio"] .app-shell .row-main b,
+:root[data-theme="folio"] .app-shell .account-group-title b,
+:root[data-theme="folio"] .app-shell .field>span{
+  color:var(--theme-text)!important;
+}
+:root[data-theme="folio"] .app-shell .hint,
+:root[data-theme="folio"] .app-shell .row-main small,
+:root[data-theme="folio"] .app-shell .action-row small{
+  color:var(--theme-muted)!important;
+}
+
+/* v90: real Tinder-style vertical card stack in Account Management.
+   Each later card visibly overlaps the previous card, leaving the category
+   title and converted-balance summary exposed. Tap a peek to reveal its rows. */
+.app-shell .accounts-group-section .account-stack{
+  display:flex;flex-direction:column;
+  isolation:isolate;
+  padding:6px 1px 30px;
+}
+.app-shell .accounts-group-section .account-stack-card{
+  --stack-overlap:52px;
+  position:relative;z-index:var(--stack-layer);
+  flex-shrink:0;
+  min-height:170px;
+  margin:0!important;
+  border:1px solid var(--theme-line)!important;
+  border-radius:24px!important;
+  background:var(--theme-surface)!important;
+  color:var(--theme-text)!important;
+  overflow:hidden;
+  box-shadow:0 9px 22px rgba(13,20,24,.11),0 2px 5px rgba(13,20,24,.05)!important;
+  transition:box-shadow .18s ease,transform .18s ease;
+}
+.app-shell .accounts-group-section .account-stack-card + .account-stack-card{
+  margin-top:calc(-1 * var(--stack-overlap))!important;
+}
+.app-shell .account-stack-card.stack-kind-bank{--stack-stripe:#69b5d5}
+.app-shell .account-stack-card.stack-kind-cash{--stack-stripe:#dab575}
+.app-shell .account-stack-card.stack-kind-credit{--stack-stripe:#e48b97}
+.app-shell .account-stack-card.stack-kind-ewallet{--stack-stripe:#a49bd8}
+.app-shell .account-stack-card.stack-kind-brokerage{--stack-stripe:#84c3a7}
+.app-shell .account-stack-card.stack-kind-trust{--stack-stripe:#87b8d9}
+.app-shell .account-stack-card.stack-kind-policy{--stack-stripe:#cba6a9}
+.app-shell .account-stack-peek{
+  display:flex;flex-direction:column;justify-content:space-between;
+  width:100%;min-height:170px;padding:20px 22px 67px;
+  background:transparent;border:0;text-align:left;
+  color:var(--theme-text);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.app-shell .account-stack-peek-top,.app-shell .account-stack-peek-bottom{
+  display:flex;align-items:center;gap:10px;min-width:0;width:100%;
+}
+.app-shell .account-stack-peek-top strong{font-size:clamp(16px,1.15rem,21px);font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-shell .account-stack-peek-top .group-marker{height:10px;width:10px;background:var(--stack-stripe,#81b4c7)}
+.app-shell .account-stack-peek-top svg:last-child{margin-left:auto;flex-shrink:0;transition:transform .18s ease;color:var(--theme-muted)}
+.app-shell .account-stack-peek-top .stack-open-chevron{transform:rotate(90deg)}
+.app-shell .account-stack-peek-bottom{justify-content:space-between;align-items:baseline;gap:12px}
+.app-shell .account-stack-peek-bottom small{font-size:12px;color:var(--theme-muted);white-space:nowrap}
+.app-shell .account-stack-peek-bottom b{font-size:clamp(17px,1.3rem,23px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-align:right}
+.app-shell .account-stack-card.is-expanded{
+  box-shadow:0 14px 32px rgba(13,20,24,.14)!important;
+}
+.app-shell .account-stack-card.is-expanded .account-stack-peek{
+  min-height:120px;padding-bottom:18px;
+}
+.app-shell .account-stack-details{
+  padding:0 18px 72px;
+  border-top:1px solid var(--theme-line);
+}
+.app-shell .account-stack-details[hidden]{display:none!important}
+.app-shell .account-stack-details-heading{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:15px 3px 5px;color:var(--theme-muted);font-size:12px;
+}
+.app-shell .account-stack-details .account-row{cursor:pointer;min-width:0}
+.app-shell .account-stack-details .account-row:focus-visible,
+.app-shell .account-stack-peek:focus-visible{outline:2px solid var(--theme-accent);outline-offset:-3px}
+.app-shell .account-stack-card:last-child .account-stack-peek{padding-bottom:22px}
+.app-shell .account-stack-card:last-child:not(.is-expanded){min-height:125px}
+@media(max-width:800px){
+  .app-shell .accounts-group-section .account-stack-card{--stack-overlap:54px;border-radius:23px!important}
+  .app-shell .account-stack-peek{padding:17px 17px 65px;min-height:165px}
+  .app-shell .account-stack-peek-top strong{font-size:17px}
+  .app-shell .account-stack-peek-bottom b{font-size:19px}
+  .app-shell .account-stack-card.is-expanded .account-stack-peek{padding-bottom:18px;min-height:112px}
+  .app-shell .account-stack-details{padding:0 13px 70px}
+}
+@media(prefers-reduced-motion:reduce){.app-shell .account-stack-card,.app-shell .account-stack-peek svg{transition:none!important}}
+
+
+/* v91 — interactive layered card system. The accounts stack is a real accordion:
+   tap an exposed card to expand; tap its title again to collapse. */
+.app-shell .account-stack-card{transition:box-shadow .2s ease,background-color .2s ease}
+/* Preserve normal layer order so the next card remains accessible while one is expanded. */
+.app-shell .account-stack-peek-top .stack-interaction-hint{margin-left:auto;font-size:12px;color:var(--theme-muted);white-space:nowrap}
+.app-shell .account-stack-peek-top svg:last-child{margin-left:0}
+.app-shell .account-stack-card.is-expanded .account-stack-peek{min-height:116px}
+.app-shell .account-stack-card.is-expanded .account-stack-details{padding-bottom:70px}
+/* A horizontal overlap is suited to comparable investment products,
+   whereas dated ledger rows remain a traditional list for scanning. */
+.app-shell .investment-combined-list.investment-horizontal-stack{
+  display:flex!important;align-items:stretch;
+  overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;
+  scroll-snap-type:x proximity;scroll-padding-inline:6px;
+  padding:10px 12px 22px!important;gap:0!important;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;isolation:isolate;
+}
+.app-shell .investment-combined-list.investment-horizontal-stack::-webkit-scrollbar{display:none}
+.app-shell .investment-horizontal-stack .investment-combined-row{
+  flex:0 0 min(76%,570px)!important;width:min(76%,570px)!important;
+  min-width:0!important;min-height:280px!important;
+  margin:0!important;padding:19px 21px!important;
+  align-self:stretch;scroll-snap-align:start;
+  position:relative;overflow:hidden;
+  box-shadow:0 12px 28px rgba(10,20,20,.10)!important;
+  border:1px solid var(--theme-line)!important;border-radius:24px!important;
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.app-shell .investment-horizontal-stack .investment-combined-row + .investment-combined-row{margin-left:-28%!important}
+.app-shell .investment-horizontal-stack .investment-combined-row:nth-child(1){z-index:1}
+.app-shell .investment-horizontal-stack .investment-combined-row:nth-child(2){z-index:2}
+.app-shell .investment-horizontal-stack .investment-combined-row:nth-child(3){z-index:3}
+.app-shell .investment-horizontal-stack .investment-combined-row:focus-visible{outline:3px solid var(--theme-accent);outline-offset:-4px}
+.app-shell .investment-horizontal-stack .investment-combined-row:hover{transform:translateY(-4px)}
+.app-shell .investment-horizontal-stack .investment-combined-title{min-width:0}
+.app-shell .investment-horizontal-stack .investment-combined-title b{font-size:clamp(16px,1.2rem,21px)}
+.app-shell .investment-horizontal-stack .investment-combined-title small{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-shell .investment-horizontal-stack .investment-combined-financials{min-width:0;gap:9px}
+.app-shell .investment-horizontal-stack .investment-combined-financials strong{font-size:clamp(15px,1.2rem,20px);overflow-wrap:anywhere}
+.app-shell .investment-horizontal-stack .investment-combined-pnl strong{overflow-wrap:anywhere}
+/* Two monthly metrics become a subtle lateral stack on dashboard. */
+.app-shell .horizontal-stat-stack{display:flex!important;gap:0!important;isolation:isolate;padding:4px 4px 12px}
+.app-shell .horizontal-stat-stack .stat{width:54%;flex:1 1 54%;position:relative;min-width:0;overflow:hidden}
+.app-shell .horizontal-stat-stack .stat + .stat{margin-left:-14px!important;z-index:1;box-shadow:-8px 5px 24px rgba(0,0,0,.06)!important}
+@media(max-width:680px){
+ .app-shell .investment-horizontal-stack .investment-combined-row{flex-basis:84%!important;width:84%!important;min-height:250px!important;padding:17px 17px!important}
+ .app-shell .investment-horizontal-stack .investment-combined-row + .investment-combined-row{margin-left:-38%!important}
+ .app-shell .investment-horizontal-stack .investment-combined-financials strong{font-size:15px!important}
+ .app-shell .investment-horizontal-stack .investment-combined-pnl strong{font-size:18px!important}
+ .app-shell .horizontal-stat-stack .stat{padding:15px 13px!important}
+ .app-shell .horizontal-stat-stack .stat + .stat{margin-left:-10px!important}
+}
+@media(prefers-reduced-motion:reduce){.app-shell .investment-horizontal-stack .investment-combined-row{transition:none!important}}
+
+/* Category stacks: press the title to compress/expand a group.
+   The sort handle and editing actions remain separate interactive controls. */
+.app-shell .category-section .category-list{display:flex;flex-direction:column;gap:0!important;isolation:isolate;padding:3px 1px 22px}
+.app-shell .category-section .category-group{position:relative;margin:0!important;box-shadow:0 10px 24px rgba(10,23,22,.07)!important}
+.app-shell .category-section .category-group + .category-group{margin-top:-13px!important}
+.app-shell .category-section .category-group-head{position:relative;z-index:1}
+.app-shell .category-section .category-group .category-subs{padding-bottom:17px}
+.app-shell .category-section .category-group .category-subs[hidden]{display:none!important}
+.app-shell .category-section .category-stack-toggle{background:transparent;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;min-width:0;display:flex;align-items:center;gap:8px;flex:1}
+.app-shell .category-section .category-stack-toggle svg:last-child{margin-left:auto;flex-shrink:0;transition:transform .18s}
+.app-shell .category-section .category-stack-toggle svg.stack-open-chevron{transform:rotate(90deg)}
+.app-shell .category-section .category-stack-toggle:focus-visible{outline:2px solid var(--theme-accent);outline-offset:3px;border-radius:5px}
+.app-shell .category-section .category-stack-collapsed{min-height:80px}
+.app-shell .category-section .category-group:last-child{margin-bottom:4px!important}
+
+
+/* v92: Investment cards match the vertical, colored-peek reference instead of
+   the previous horizontal overlapping carousel. Every card remains fully tappable. */
+.app-shell .investment-combined-list.investment-peek-stack{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ overflow:visible!important;isolation:isolate!important;gap:10px!important;
+ margin:0!important;padding:7px 3px 10px 0!important;
+ scroll-snap-type:none!important;
+}
+.app-shell .investment-peek-stack .investment-combined-row{
+ --invest-stripe:#d2b5e4;
+ position:relative!important;isolation:isolate!important;
+ display:block!important;flex:none!important;
+ width:calc(100% - 34px)!important;min-width:0!important;
+ height:auto!important;min-height:0!important;
+ margin:0 0 0 34px!important;padding:19px 20px!important;
+ background:var(--theme-surface)!important;color:var(--theme-text)!important;
+ border:1px solid var(--theme-line)!important;border-radius:22px!important;
+ box-shadow:0 5px 14px rgba(12,20,25,.045)!important;
+ overflow:visible!important;text-align:left;
+ transform:none!important;transition:box-shadow .15s ease,translate .15s ease!important;
+ scroll-snap-align:none!important;
+}
+.app-shell .investment-peek-stack .investment-combined-row::before{
+ content:"";position:absolute;z-index:-1;top:0;bottom:0;left:-34px;width:61px;
+ border-radius:21px 0 0 21px;background:var(--invest-stripe);pointer-events:none;
+}
+.app-shell .investment-peek-stack .invest-stack-stocks{--invest-stripe:#caa8dc}
+.app-shell .investment-peek-stack .invest-stack-trust{--invest-stripe:#ff9378}
+.app-shell .investment-peek-stack .invest-stack-policy{--invest-stripe:#32c9bc}
+.app-shell .investment-peek-stack .investment-combined-row:hover{box-shadow:0 8px 24px rgba(12,20,25,.10)!important;translate:0 -2px}
+.app-shell .investment-peek-stack .investment-combined-row:focus-visible{outline:3px solid var(--theme-accent)!important;outline-offset:3px}
+.app-shell .investment-peek-stack .investment-combined-title{gap:10px!important;margin-bottom:13px!important}
+.app-shell .investment-peek-stack .investment-combined-title b{font-size:clamp(17px,1.2rem,22px)!important}
+.app-shell .investment-peek-stack .investment-combined-financials{gap:10px!important;margin-bottom:12px!important}
+.app-shell .investment-peek-stack .investment-combined-pnl{padding-top:12px!important}
+/* The account-stack header exposes only its category and balance — no
+   expand/collapse label or redundant balance-summary caption. */
+.app-shell .account-stack-peek-bottom{justify-content:flex-end!important}
+.app-shell .account-stack-peek-bottom b{margin-left:auto!important}
+.app-shell .account-stack-peek-top svg:last-child{margin-left:auto!important}
+@media(max-width:680px){
+ .app-shell .investment-combined-list.investment-peek-stack{gap:9px!important;padding:6px 0 10px 0!important}
+ .app-shell .investment-peek-stack .investment-combined-row{width:calc(100% - 29px)!important;margin-left:29px!important;padding:16px 15px!important;border-radius:19px!important}
+ .app-shell .investment-peek-stack .investment-combined-row::before{left:-29px;width:48px;border-radius:19px 0 0 19px}
+ .app-shell .investment-peek-stack .investment-combined-financials strong{font-size:clamp(14px,3.5vw,19px)!important}
+ .app-shell .investment-peek-stack .investment-combined-pnl strong{font-size:clamp(17px,4vw,22px)!important}
+}
+@media(prefers-reduced-motion:reduce){.app-shell .investment-peek-stack .investment-combined-row{transition:none!important}}
+
+
+/* v93 — Reference-faithful investment cards: a color layer BEHIND each
+   compact white card, not a stripe painted over the card's text. */
+.app-shell .investment-combined-list.investment-reference-stack{
+ display:flex!important;flex-direction:column!important;gap:9px!important;
+ padding:0!important;margin:0!important;overflow:visible!important;
+}
+.app-shell .investment-reference-stack .investment-reference-layer{
+ --peek:#d1b0e3;
+ display:block;position:relative;isolation:isolate;
+ min-width:0;min-height:110px;padding:0 0 0 49px;
+}
+.app-shell .investment-reference-stack .investment-reference-layer.invest-stack-trust{--peek:#ff9579}
+.app-shell .investment-reference-stack .investment-reference-layer.invest-stack-policy{--peek:#23c5bf}
+.app-shell .investment-reference-layer::before{
+ content:"";position:absolute;z-index:0;left:0;top:0;bottom:-11px;
+ width:95px;border-radius:27px 29px 0 0;background:var(--peek);
+ pointer-events:none;
+}
+.app-shell .investment-reference-layer:last-child::before{bottom:0;border-radius:27px 29px 0 27px}
+.app-shell .investment-reference-stack .investment-reference-card{
+ display:flex!important;flex-direction:column!important;justify-content:center!important;
+ position:relative;z-index:1;width:100%!important;min-height:110px!important;
+ padding:17px 17px 13px 19px!important;margin:0!important;
+ text-align:left;cursor:pointer;min-width:0;overflow:hidden;
+ background:#fff!important;color:#25272c!important;
+ border:0!important;border-radius:19px!important;
+ box-shadow:none!important;
+ transition:transform .16s ease,box-shadow .16s ease!important;
+}
+.app-shell .investment-reference-card:hover{transform:translateX(2px);box-shadow:0 8px 18px rgba(25,25,25,.08)!important}
+.app-shell .investment-reference-card:focus-visible{outline:3px solid var(--theme-accent)!important;outline-offset:2px}
+.app-shell .investment-reference-main{display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0}
+.app-shell .investment-reference-copy,.app-shell .investment-reference-amount{display:flex;flex-direction:column;min-width:0;gap:4px}
+.app-shell .investment-reference-copy{flex:1 1 48%}
+.app-shell .investment-reference-copy b{font-size:clamp(17px,1.05rem,21px)!important;font-weight:650!important;color:#25272c!important;line-height:1.26}
+.app-shell .investment-reference-copy small{font-size:12px!important;line-height:1.4;color:#818187!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-shell .investment-reference-amount{flex:0 1 48%;text-align:right;align-items:end}
+.app-shell .investment-reference-amount strong{font-size:clamp(18px,1.3rem,24px)!important;line-height:1.18!important;letter-spacing:-.035em;color:#17191c!important;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.app-shell .investment-reference-amount small{font-size:12px!important;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.app-shell .investment-reference-amount .income{color:#168c70!important}
+.app-shell .investment-reference-amount .expense{color:#d54e65!important}
+.app-shell .investment-reference-footer{display:flex;align-items:center;justify-content:space-between;height:16px;margin-top:9px;color:#b3b4b9}
+.app-shell .investment-reference-dots{display:flex;gap:4px}
+.app-shell .investment-reference-dots i{width:5px;height:5px;border-radius:50%;background:#dedfe3}
+.app-shell .investment-reference-stack .investment-reference-layer .investment-combined-row{display:none!important}
+/* Reference layout takes precedence over the former v92 3-metric cards. */
+@media(max-width:680px){
+ .app-shell .investment-reference-stack .investment-reference-layer{padding-left:42px;min-height:105px}
+ .app-shell .investment-reference-layer::before{width:82px;border-radius:23px 25px 0 0}
+ .app-shell .investment-reference-stack .investment-reference-card{padding:15px 13px 11px 16px!important;min-height:105px!important;border-radius:17px!important}
+ .app-shell .investment-reference-main{gap:8px}
+ .app-shell .investment-reference-copy b{font-size:17px!important}
+ .app-shell .investment-reference-copy small{font-size:11.5px!important}
+ .app-shell .investment-reference-amount strong{font-size:clamp(16px,4vw,21px)!important}
+ .app-shell .investment-reference-amount small{font-size:11px!important}
+}
+@media(prefers-reduced-motion:reduce){.app-shell .investment-reference-stack .investment-reference-card{transition:none!important}}
+
+
+
+/* v94 — consistent investment colored-back cards and color-coded account stacks.
+   Investment reference: every card uses exactly the same rounded backing.
+   Previously the first two had square lower corners and bled into next row. */
+.app-shell .investment-reference-stack .investment-reference-layer{
+  position:relative!important;
+  min-height:0!important;
+  padding-left:42px!important;
+  margin:0!important;
+  isolation:isolate!important;
+}
+.app-shell .investment-reference-stack .investment-reference-layer::before,
+.app-shell .investment-reference-stack .investment-reference-layer:last-child::before{
+  content:""!important;
+  position:absolute!important;
+  z-index:0!important;
+  top:0!important;
+  bottom:0!important;
+  left:0!important;
+  width:86px!important;
+  height:auto!important;
+  border-radius:25px!important;
+  background:var(--peek)!important;
+  pointer-events:none!important;
+}
+.app-shell .investment-reference-stack .investment-reference-card{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  min-height:110px!important;
+  border-radius:21px!important;
+  background:#fff!important;
+  box-shadow:0 1px 3px rgba(20,20,20,.04)!important;
+}
+.app-shell .investment-reference-stack .investment-reference-main{
+  width:100%;min-width:0;align-items:center;
+}
+.app-shell .investment-reference-stack .investment-reference-amount{
+  min-width:0;
+}
+/* Account cards: the full colored backing is visible along the left, rather
+   than only a tiny colored dot. The front remains an accessible tappable card;
+   collapsed/expanded behavior and all balances are unchanged. */
+.app-shell .accounts-group-section .account-stack-card{
+  background:var(--stack-stripe,#8bb8d0)!important;
+  border-color:color-mix(in srgb,var(--stack-stripe,#8bb8d0) 65%,var(--theme-line))!important;
+  border-radius:24px!important;
+}
+.app-shell .accounts-group-section .account-stack-card .account-stack-peek{
+  position:relative!important;
+  margin-left:17px!important;
+  width:calc(100% - 17px)!important;
+  background:var(--theme-surface)!important;
+  border-radius:21px 0 0 0!important;
+  padding-left:20px!important;
+}
+.app-shell .accounts-group-section .account-stack-card .account-stack-details{
+  position:relative!important;
+  margin-left:17px!important;
+  width:calc(100% - 17px)!important;
+  background:var(--theme-surface)!important;
+  border-radius:0 0 0 18px;
+}
+.app-shell .accounts-group-section .account-stack-card:not(.is-expanded) .account-stack-peek{
+  border-radius:21px 0 0 21px!important;
+}
+/* Distinct, muted tones for the types used by existing account data. */
+.app-shell .account-stack-card.stack-kind-bank{--stack-stripe:#79bada}
+.app-shell .account-stack-card.stack-kind-cash{--stack-stripe:#e9ca8f}
+.app-shell .account-stack-card.stack-kind-credit{--stack-stripe:#eb93a2}
+.app-shell .account-stack-card.stack-kind-ewallet{--stack-stripe:#b2a0e4}
+.app-shell .account-stack-card.stack-kind-brokerage{--stack-stripe:#91cbb0}
+.app-shell .account-stack-card.stack-kind-trust{--stack-stripe:#8cbde2}
+.app-shell .account-stack-card.stack-kind-policy{--stack-stripe:#d6a5aa}
+.app-shell .account-stack-card.stack-kind-insurance{--stack-stripe:#c6acd8}
+@media(max-width:680px){
+  .app-shell .investment-reference-stack .investment-reference-layer{padding-left:34px!important}
+  .app-shell .investment-reference-stack .investment-reference-layer::before,
+  .app-shell .investment-reference-stack .investment-reference-layer:last-child::before{width:72px!important;border-radius:22px!important}
+  .app-shell .investment-reference-stack .investment-reference-card{min-height:105px!important;border-radius:19px!important}
+  .app-shell .accounts-group-section .account-stack-card .account-stack-peek{margin-left:14px!important;width:calc(100% - 14px)!important;padding-left:15px!important}
+  .app-shell .accounts-group-section .account-stack-card .account-stack-details{margin-left:14px!important;width:calc(100% - 14px)!important}
+}
+
+
+/* v95 | All themes: retain the dark net-worth hero and theme-accent rings.
+   The champagne visual hierarchy is now part of NEXPEN's shared design system.
+   This deliberately applies *after* theme-scoped rules in style.css. */
+.app-shell .hero.glass {
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  background:#1d251f!important;color:#fffaf0!important;
+  border:1px solid color-mix(in srgb,var(--theme-accent,#cfb780) 34%,#45443a)!important;
+  border-radius:26px!important;
+  box-shadow:0 11px 30px rgba(18,23,19,.13)!important;
+  padding:28px 30px!important;min-height:157px!important;
+}
+.app-shell .hero.glass::after {
+  content:"";position:absolute;z-index:0;right:-55px;bottom:-90px;
+  width:220px;height:220px;border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--theme-accent,#d0be8b) 40%,#bdab77);
+  box-shadow:0 0 0 18px color-mix(in srgb,var(--theme-accent,#d0be8b) 11%,transparent),
+             0 0 0 40px color-mix(in srgb,var(--theme-accent,#d0be8b) 8%,transparent),
+             0 0 0 65px color-mix(in srgb,var(--theme-accent,#d0be8b) 6%,transparent);
+  pointer-events:none;
+}
+.app-shell .hero.glass > span,
+.app-shell .hero.glass > strong,
+.app-shell .hero.glass > small {position:relative;z-index:1;max-width:100%}
+.app-shell .hero.glass > span {
+  display:block!important;line-height:1.4!important;letter-spacing:.045em!important;
+  font-weight:730!important;color:#e0c88c!important;
+}
+.app-shell .hero.glass > strong {
+  display:block!important;color:#fffdf6!important;
+  font-size:clamp(29px,4.7vw,42px)!important;line-height:1.18!important;
+  overflow-wrap:anywhere!important;font-variant-numeric:tabular-nums;
+}
+.app-shell .hero.glass > small {
+  display:block!important;color:#cbb88b!important;line-height:1.5!important;
+}
+/* v95 | Diary: compact colored peek layers instead of overlapped rows.
+   Each transaction stays fully visible, keyboard-accessible and individually editable. */
+html .app-shell .diary-listview .diary-plain-row {
+  --diary-peek:#8fc6e6;position:relative!important;isolation:isolate;
+  display:block!important;margin:8px 0!important;padding:0 0 0 13px!important;
+  border:0!important;background:transparent!important;
+}
+html .app-shell .diary-listview .diary-plain-row.diary-peek-expense {--diary-peek:#f2ab96}
+html .app-shell .diary-listview .diary-plain-row.diary-peek-income {--diary-peek:#8ed5b7}
+html .app-shell .diary-listview .diary-plain-row.diary-peek-transfer {--diary-peek:#90c7e1}
+html .app-shell .diary-listview .diary-plain-row.diary-peek-stock {--diary-peek:#c0a7df}
+html .app-shell .diary-listview .diary-plain-row::before {
+  content:"";position:absolute;inset:0 auto 0 0;width:35px;
+  background:var(--diary-peek);border-radius:17px;pointer-events:none;z-index:0;
+}
+html .app-shell .diary-listview .diary-plain-row > .diary-listview-item {
+  position:relative!important;z-index:1;min-height:68px!important;
+  display:flex!important;align-items:center!important;gap:11px!important;
+  width:100%!important;min-width:0!important;margin:0!important;
+  padding:10px 11px!important;background:var(--theme-surface)!important;
+  color:var(--theme-text)!important;border:1px solid var(--theme-line)!important;
+  border-radius:16px!important;box-shadow:0 2px 8px rgba(17,23,25,.035)!important;
+  text-align:left;transition:transform .16s ease,box-shadow .16s ease!important;
+}
+html .app-shell .diary-listview .diary-plain-row > .diary-listview-item:hover {
+  transform:translateX(2px);box-shadow:0 5px 16px rgba(17,23,25,.075)!important;
+}
+html .app-shell .diary-listview .diary-plain-row > .diary-listview-item:focus-visible {
+  outline:2px solid var(--theme-accent)!important;outline-offset:2px;
+}
+html .app-shell .diary-listview .diary-listview-item .transaction-icon {
+  flex:0 0 38px!important;width:38px!important;height:38px!important;
+  border-radius:12px!important;
+}
+html .app-shell .diary-listview .diary-listview-item .row-main {
+  min-width:0!important;overflow:hidden!important;flex:1 1 auto!important;
+}
+html .app-shell .diary-listview .diary-listview-item .row-main b,
+html .app-shell .diary-listview .diary-listview-item .row-main small {
+  display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+html .app-shell .diary-listview .diary-listview-item .transaction-right {
+  flex:0 1 auto!important;min-width:0!important;max-width:43%!important;
+}
+html .app-shell .diary-listview .diary-listview-item .transaction-right strong,
+html .app-shell .diary-listview .diary-listview-item .transaction-right small {
+  display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+@media(max-width:420px){
+  .app-shell .hero.glass{padding:23px 21px!important;min-height:146px!important}
+  .app-shell .hero.glass::after{right:-92px;bottom:-105px}
+  html .app-shell .diary-listview .diary-plain-row{padding-left:11px!important;margin:7px 0!important}
+  html .app-shell .diary-listview .diary-plain-row > .diary-listview-item{padding:9px 9px!important;gap:8px!important;min-height:64px!important}
+  html .app-shell .diary-listview .diary-listview-item .transaction-icon{width:34px!important;height:34px!important;flex-basis:34px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html .app-shell .diary-listview .diary-plain-row > .diary-listview-item{transition:none!important}
+}
+
+
+/* v96: theme-aware ornamental geometry for account type stack cards.
+   Decorative circles and diagonal grids live behind text/figures, with no
+   impact on pointer targets, expanded details or card ordering. */
+.app-shell .accounts-group-section .account-stack-card .account-stack-peek {
+  isolation:isolate!important;
+  overflow:hidden!important;
+}
+.app-shell .accounts-group-section .account-stack-card .account-stack-peek::before,
+.app-shell .accounts-group-section .account-stack-card .account-stack-peek::after {
+  content:"";position:absolute;pointer-events:none;z-index:-1;
+  opacity:.30;transition:transform .28s ease,opacity .28s ease;
+}
+/* Concentric rings, peeking from the upper right corner */
+.app-shell .accounts-group-section .account-stack-card .account-stack-peek::before {
+  right:-32px;top:-77px;width:210px;height:210px;border-radius:50%;
+  border:1.5px solid var(--stack-stripe,#8bb8d0);
+  box-shadow:0 0 0 18px color-mix(in srgb,var(--stack-stripe,#8bb8d0) 10%,transparent),
+             0 0 0 38px color-mix(in srgb,var(--stack-stripe,#8bb8d0) 8%,transparent),
+             0 0 0 63px color-mix(in srgb,var(--stack-stripe,#8bb8d0) 5%,transparent);
+}
+/* Gentle diagonal streaks in the bottom right, fade before text */
+.app-shell .accounts-group-section .account-stack-card .account-stack-peek::after {
+  right:-23px;bottom:-38px;width:180px;height:120px;
+  border-radius:42%;
+  background:repeating-linear-gradient(130deg,
+    transparent 0,transparent 14px,
+    color-mix(in srgb,var(--stack-stripe,#8bb8d0) 24%,transparent) 15px,
+    transparent 17px,transparent 28px);
+  opacity:.21;
+  -webkit-mask-image:linear-gradient(105deg,transparent 4%,#000 80%);
+  mask-image:linear-gradient(105deg,transparent 4%,#000 80%);
+}
+.app-shell .accounts-group-section .account-stack-card .account-stack-peek > * {
+  position:relative;z-index:1;
+}
+/* Each account type gets a distinct motif placement so the deck looks
+   deliberately composed rather than repeating the same decoration. */
+.app-shell .account-stack-card.stack-kind-credit .account-stack-peek::before,
+.app-shell .account-stack-card.stack-kind-policy .account-stack-peek::before {
+  top:-50px;right:-94px;width:195px;height:195px;
+}
+.app-shell .account-stack-card.stack-kind-trust .account-stack-peek::before,
+.app-shell .account-stack-card.stack-kind-ewallet .account-stack-peek::before {
+  top:-94px;right:-10px;width:230px;height:230px;
+}
+.app-shell .accounts-group-section .account-stack-card.is-expanded .account-stack-peek::before {
+  transform:scale(1.08) translateX(-5px);opacity:.42;
+}
+@media (max-width:680px){
+  .app-shell .accounts-group-section .account-stack-card .account-stack-peek::before {
+    right:-74px;top:-70px;width:175px;height:175px;opacity:.23;
+  }
+  .app-shell .accounts-group-section .account-stack-card .account-stack-peek::after {
+    right:-35px;bottom:-38px;width:120px;height:90px;opacity:.17;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .app-shell .accounts-group-section .account-stack-card .account-stack-peek::before,
+  .app-shell .accounts-group-section .account-stack-card .account-stack-peek::after {transition:none!important}
+}
+
+
+/* v97 — one unified portfolio dashboard: aggregate metrics LIVE INSIDE investment-combined.
+   Consistent with the all-theme geometric net-worth hero; no duplicate summary panel. */
+html .app-shell .investment-dashboard.glass.panel.investment-combined,
+:root[data-theme="portfolio"] .app-shell .investment-dashboard.glass.panel.investment-combined,
+:root[data-theme="folio"] .app-shell .investment-dashboard.glass.panel.investment-combined {
+  display:block!important;overflow:visible!important;min-width:0!important;
+  background:transparent!important;border:none!important;box-shadow:none!important;
+  margin:0 0 24px!important;padding:0!important;
+}
+.app-shell .investment-dashboard-hero {
+  position:relative;isolation:isolate;overflow:hidden;
+  background:#1e241f;color:#fdf9ef;border:1px solid #474738;
+  border-radius:27px;padding:25px 26px 23px;margin-bottom:26px;
+  box-shadow:0 12px 26px rgba(20,29,23,.10);
+}
+.app-shell .investment-dashboard-hero::before {
+  content:"";position:absolute;z-index:-1;right:-87px;top:-84px;
+  width:275px;height:275px;border-radius:50%;border:1px solid #c9b98550;
+  box-shadow:0 0 0 25px #c9b98513,0 0 0 55px #c9b9850c,0 0 0 85px #c9b98508;
+  pointer-events:none;
+}
+.app-shell .investment-dashboard-hero-glow {position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 100% 5%,color-mix(in srgb,var(--theme-accent,#c9b985) 11%,transparent),transparent 54%)}
+.app-shell .investment-dashboard-hero-top {display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:21px}
+.app-shell .investment-dashboard-headline {min-width:0}
+.app-shell .investment-dashboard-kicker {font-size:10px;letter-spacing:.19em;font-weight:800;color:#c8b782}
+.app-shell .investment-dashboard-headline h2 {font-size:clamp(20px,3.6vw,26px)!important;line-height:1.2!important;margin:7px 0 0!important;color:#fff9ea!important}
+.app-shell .investment-dashboard-status {flex:none;display:grid;place-items:center;width:36px;height:36px;border:1px solid #b7a77166;border-radius:12px;color:#d5bc83;background:#c6b37d15}
+.app-shell .investment-dashboard-total {display:flex;flex-direction:column;gap:6px;min-width:0;margin-bottom:24px}
+.app-shell .investment-dashboard-total>span {font-size:clamp(13px,2vw,16px);color:#cabb98;font-weight:600}
+.app-shell .investment-dashboard-total>strong {font-size:clamp(27px,5.3vw,43px);line-height:1.12;font-weight:800;letter-spacing:-.05em;color:#fffaf2;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.app-shell .investment-dashboard-metrics {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border-top:1px solid #b5a88445;padding-top:17px;gap:16px}
+.app-shell .investment-dashboard-metric {display:flex;flex-direction:column;min-width:0;gap:4px}
+.app-shell .investment-dashboard-metric + .investment-dashboard-metric {border-left:1px solid #b5a88445;padding-left:17px}
+.app-shell .investment-dashboard-metric small {font-size:clamp(12px,2vw,14px);color:#cabb98;font-weight:600}
+.app-shell .investment-dashboard-metric strong {font-size:clamp(16px,3vw,23px);font-weight:750;color:#fff9f0;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.app-shell .investment-dashboard-metric em {font-size:clamp(12px,2vw,14px);font-style:normal;font-weight:730}
+.app-shell .investment-dashboard-hero .income {color:#85d8b5!important}
+.app-shell .investment-dashboard-hero .expense {color:#f3a3a2!important}
+.app-shell .investment-dashboard-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 1px 13px!important}
+.app-shell .investment-dashboard-section-title h3 {font-size:clamp(17px,3.5vw,22px);font-weight:760;margin:0 0 3px!important;color:var(--theme-text)}
+.app-shell .investment-dashboard-section-title small {font-size:12px;color:var(--theme-muted);line-height:1.3}
+.app-shell .investment-dashboard-section-title>span {flex:none;color:var(--theme-muted);opacity:.6;font-size:13px;font-weight:780;letter-spacing:.1em}
+/* Investment category cards: equally sized content, fully rounded colored backs, no clipped edge. */
+.app-shell .investment-dashboard .investment-reference-stack{display:flex!important;flex-direction:column!important;gap:12px!important;padding:0!important;margin:0!important}
+.app-shell .investment-dashboard .investment-reference-layer{min-width:0!important;padding-left:32px!important;isolation:isolate!important}
+.app-shell .investment-dashboard .investment-reference-layer::before,
+.app-shell .investment-dashboard .investment-reference-layer:last-child::before{left:0!important;top:0!important;bottom:0!important;width:70px!important;border-radius:23px!important;background:var(--peek)!important}
+.app-shell .investment-dashboard .investment-reference-card{
+  min-height:117px!important;width:100%!important;padding:19px 20px 14px!important;
+  border-radius:21px!important;display:flex!important;justify-content:space-between!important;
+  background:#fff!important;color:#242424!important;box-shadow:0 1px 5px #1515150a!important
+}
+.app-shell .investment-dashboard .investment-reference-copy b{font-size:clamp(17px,3vw,21px)!important}
+.app-shell .investment-dashboard .investment-reference-amount strong{font-size:clamp(17px,3.2vw,23px)!important}
+.app-shell .investment-dashboard .investment-reference-footer{margin-top:8px}
+@media(max-width:540px){
+ .app-shell .investment-dashboard-hero{padding:21px 19px 20px;border-radius:24px;margin-bottom:21px}
+ .app-shell .investment-dashboard-total{margin-bottom:19px}
+ .app-shell .investment-dashboard-metrics{gap:10px;padding-top:15px}
+ .app-shell .investment-dashboard-metric + .investment-dashboard-metric{padding-left:11px}
+ .app-shell .investment-dashboard .investment-reference-layer{padding-left:26px!important}
+ .app-shell .investment-dashboard .investment-reference-layer::before,
+ .app-shell .investment-dashboard .investment-reference-layer:last-child::before{width:60px!important;border-radius:19px!important}
+ .app-shell .investment-dashboard .investment-reference-card{padding:15px 12px 11px 14px!important;border-radius:18px!important;min-height:108px!important}
+ .app-shell .investment-dashboard .investment-reference-copy{flex-basis:47%}
+ .app-shell .investment-dashboard .investment-reference-amount{flex-basis:49%}
+ .app-shell .investment-dashboard .investment-reference-copy b{font-size:16px!important}
+ .app-shell .investment-dashboard .investment-reference-amount strong{font-size:clamp(15px,3.6vw,20px)!important}
+ .app-shell .investment-dashboard .investment-reference-copy small{font-size:11px!important}
+ .app-shell .investment-dashboard .investment-reference-amount small{font-size:11px!important}
+}
+@media(prefers-reduced-motion:reduce){.app-shell .investment-dashboard .investment-reference-card{transition:none!important}}

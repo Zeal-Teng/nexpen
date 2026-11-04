@@ -1,6 +1,9 @@
 // NEXPEN UI localization. Keys use the original Traditional Chinese source labels.
 // Account names, custom categories and transaction notes are never translated automatically.
 const catalog={
+  "香檳投資":{"en":"Champagne Portfolio","ja":"シャンパン・ポートフォリオ","zh-CN":"香槟投资"},
+  "儲存完成":{"en":"Saved","ja":"保存しました","zh-CN":"保存完成"},
+  "確定刪除？":{"en":"Delete?","ja":"削除しますか？","zh-CN":"确定删除？"},
   "奶霜咖啡": {"en":"Cream Coffee","ja":"クリームコーヒー","zh-CN":"奶霜咖啡"},
   "暖陽橘杏": {"en":"Warm Apricot","ja":"ウォームアプリコット","zh-CN":"暖阳橘杏"},
   "預設帳戶": {"en":"Default account","ja":"既定の口座","zh-CN":"默认账户"},
