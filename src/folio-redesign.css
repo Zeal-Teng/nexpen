@@ -1974,7 +1974,7 @@ html .app-shell .diary-search-filter>.smart-select.compact {
   min-width:0;
 }
 .app-shell .diary-transaction-list .diary-list-name b {
-  font-size:14px;
+  font-size:17px;
   font-weight:650;
   overflow:hidden;
   white-space:nowrap;
@@ -1983,7 +1983,7 @@ html .app-shell .diary-search-filter>.smart-select.compact {
 .app-shell .diary-transaction-list .diary-list-name small,
 .app-shell .diary-transaction-list .diary-list-amount small {
   display:block;
-  font-size:11px;
+  font-size:13px;
   line-height:1.4;
   color:var(--theme-muted, #8590a2);
   overflow:hidden;
@@ -2002,7 +2002,7 @@ html .app-shell .diary-search-filter>.smart-select.compact {
   font-variant-numeric:tabular-nums;
 }
 .app-shell .diary-transaction-list .diary-list-amount strong {
-  font-size:14px;
+  font-size:17px;
   font-weight:700;
   line-height:1.2;
   white-space:nowrap;
@@ -2023,5 +2023,5 @@ html .app-shell .diary-search-filter>.smart-select.compact {
   .app-shell .diary-transaction-list .diary-list-main {gap:8px;}
   .app-shell .diary-transaction-list .diary-list-main .transaction-icon {width:32px;height:32px;flex-basis:32px;}
   .app-shell .diary-transaction-list .diary-list-name b,
-  .app-shell .diary-transaction-list .diary-list-amount strong {font-size:13px;}
+  .app-shell .diary-transaction-list .diary-list-amount strong {font-size:16px;}
 }
