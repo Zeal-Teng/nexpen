@@ -2854,3 +2854,44 @@ html .app-shell .category-section .category-stack-card.category-stack-expanded .
  .app-shell .daily-compact .stats-three.diary-finance-summary > .stat::before,
  .app-shell .daily-compact .stats-three.diary-finance-summary > .stat::after{transition:none!important}
 }
+
+/* v146: drag sorting in My Accounts without changing existing Card Stack geometry. */
+.app-shell .accounts-group-section .account-stack-card{position:relative;}
+.app-shell .account-stack-sort-handle{
+  position:absolute;z-index:35;left:23px;right:auto;top:15px;
+  display:grid;place-items:center;width:34px;height:34px;
+  padding:0;border:1px solid var(--theme-line);border-radius:11px;
+  background:var(--theme-surface2);color:var(--theme-muted);
+  cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.app-shell .account-entry-sort-handle{
+  display:grid;place-items:center;flex:0 0 28px;width:28px;height:34px;
+  margin-left:-4px;padding:0;border:0;border-radius:9px;
+  background:transparent;color:var(--theme-muted);cursor:grab;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.app-shell .account-stack-sort-handle:active,
+.app-shell .account-entry-sort-handle:active{cursor:grabbing;}
+.app-shell .account-stack-sort-handle:focus-visible,
+.app-shell .account-entry-sort-handle:focus-visible{outline:2px solid var(--theme-accent);outline-offset:2px;}
+.app-shell .account-stack-card.account-sort-target > .account-stack-peek,
+.app-shell .account-row.account-sort-target{
+  outline:2px dashed var(--theme-accent)!important;outline-offset:-4px;
+}
+.app-shell .account-stack-card.account-sort-dragging > .account-stack-peek,
+.app-shell .account-row.account-sort-dragging{opacity:.66;}
+@media(prefers-reduced-motion:reduce){
+ .app-shell .account-stack-card.account-sort-dragging,
+ .app-shell .account-row.account-sort-dragging{transition:none!important;}
+}
+
+/* v147: account-type drag handle stays at the left; reserve space for it
+   without moving the expand arrow or changing card height/animation. */
+.app-shell .accounts-group-section .account-stack-card > .account-stack-peek > .account-stack-peek-top {
+  padding-left:39px;
+  box-sizing:border-box;
+}
+@media(max-width:680px){
+  .app-shell .accounts-group-section .account-stack-card > .account-stack-sort-handle{left:19px;}
+  .app-shell .accounts-group-section .account-stack-card > .account-stack-peek > .account-stack-peek-top{padding-left:38px;}
+}
