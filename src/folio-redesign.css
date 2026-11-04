@@ -1812,3 +1812,28 @@ html .app-shell .diary-search-filter>.smart-select.compact {
   .app-shell .sheet-floating-actions{right:17px!important;bottom:calc(20px + env(safe-area-inset-bottom,0px))!important;}
   .app-shell .sheet-body{padding-bottom:calc(176px + env(safe-area-inset-bottom,0px))!important;}
 }
+
+/* v117 — User-configurable FAB placement. Default remains right.
+   Use an explicit parent attribute to override earlier mobile !important positions. */
+.app-shell[data-fab-position="left"] > .fab,
+.app-shell[data-fab-position="left"] .fab:not(.sheet-action-fab) {
+  left: 18px!important;
+  right: auto!important;
+}
+.app-shell[data-fab-position="left"] .stock-quote-fab {
+  left: 18px!important;
+  right: auto!important;
+}
+.app-shell[data-fab-position="left"] .sheet-floating-actions {
+  left: 18px!important;
+  right: auto!important;
+}
+@media(min-width:801px) {
+  .app-shell[data-fab-position="left"] .fab:not(.sheet-action-fab),
+  .app-shell[data-fab-position="left"] .stock-quote-fab {left: 33px!important;right: auto!important;}
+}
+@media(max-width:800px) {
+  .app-shell[data-fab-position="left"] .fab:not(.sheet-action-fab),
+  .app-shell[data-fab-position="left"] .stock-quote-fab {left: 18px!important;right: auto!important;}
+  .app-shell[data-fab-position="left"] .sheet-floating-actions {left:17px!important;right:auto!important;}
+}

@@ -67,7 +67,22 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtUnit
       {sold.length?<><div className="stock-realized-total"><small>{tr('累計已實現買賣損益','Total realized trading P/L')}</small><div className="stock-pnl-result"><strong className={sumRealized>=0?'income':'expense'}>{result(sumRealized)}</strong><span className={sumRealized>=0?'income':'expense'}>{percent(sumBasis>0?sumRealized/sumBasis*100:null)}</span></div></div>
         <div className="investment-tier-stack investment-asset-substack">{sold.map(g=><InvestmentStackAsset key={g.symbol} accent="coral" title={`${g.symbol}${g.securityName?` · ${g.securityName}`:''}`} subtitle={`${g.isClosed?tr("已清倉","Closed"):tr("部分賣出","Partially sold")} · ${g.soldShares.toLocaleString()} ${i18n("股")}`} amount={result(g.realized)} profit={result(g.realized)} rate={rate(g)} onOpen={()=>onSelect(g.symbol)}><p className="hint">{tr("最近賣出","Last sale")} {g.lastSaleDate}</p></InvestmentStackAsset>)}</div>
       </>:<p className="hint">{tr('尚未有賣出交易，賣出後會自動計算實際損益。','No sales yet. Realized P/L will appear after selling.')}</p>}
-    </section></InvestmentStackCard></InvestmentStack>
-    {other.length>0&&<section className="glass panel stock-performance-section investment-stage-list"><h2>{tr('其他股票紀錄','Other stock records')}</h2>{other.map(g=><button type="button" className="list-row stock-performance-row investment-stage-asset-row" key={g.symbol} onClick={()=>onSelect(g.symbol)}><div className="transaction-icon income"><Coins size={18}/></div><div className="row-main"><b>{g.symbol}{g.securityName?` · ${g.securityName}`:''}</b><small>{g.transactions.length} {tr('筆紀錄','records')}</small></div><ChevronRight size={16} className="faint"/></button>)}</section>}
+    </section></InvestmentStackCard>
+    {other.length>0&&<InvestmentStackCard accent="mint" title={tr('其他股票紀錄','Other stock records')} summary={`${other.length} ${tr('檔','symbols')}`} amount={null}>
+      <section className="glass panel stock-performance-section investment-stage-list">
+        <h2>{tr('其他股票紀錄','Other stock records')}</h2>
+        <div className="investment-tier-stack investment-asset-substack">
+          {other.map(g=><InvestmentStackAsset
+            key={g.symbol}
+            accent="mint"
+            title={`${g.symbol}${g.securityName?` · ${g.securityName}`:''}`}
+            subtitle={`${g.transactions.length} ${tr('筆紀錄','records')}`}
+            amount={null}
+            onOpen={()=>onSelect(g.symbol)}
+          />)}
+        </div>
+      </section>
+    </InvestmentStackCard>}
+    </InvestmentStack>
   </>;
 }
