@@ -2120,3 +2120,9 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 .app-shell .nexpen-install-action{flex-shrink:0;border:0;border-radius:10px;background:var(--theme-accent);color:var(--theme-accent-contrast,#fff);padding:9px 11px;font-size:12px;font-weight:750;cursor:pointer;}
 .app-shell .nexpen-install-dismiss{flex-shrink:0;display:grid;place-items:center;width:32px;height:32px;border:0;background:transparent;color:var(--theme-muted);cursor:pointer;}
 @media(max-width:450px){.app-shell .nexpen-install-hint{margin-top:8px;width:calc(100% - 20px);padding:9px 10px;gap:8px;}.app-shell .nexpen-install-symbol{width:32px;height:32px;}.app-shell .nexpen-install-copy small{font-size:11px;}}
+
+/* v140: Account type usage and asset allocation get independent, readable rows. */
+.app-shell .account-type-item .row-main{flex:1 1 0;min-width:0;}
+.app-shell .account-type-item .account-type-subtitles{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:6px;min-width:0;}
+.app-shell .account-type-item .account-type-subtitles small{display:block;margin:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.45;}
+@media(max-width:480px){.app-shell .account-type-item .account-type-subtitles{gap:3px;}}
