@@ -23,18 +23,12 @@ export function InvestmentStackCard({title,summary,amount,accent='lavender',chil
   {expanded&&<div className="investment-tier-body">{children}</div>}
  </article>;
 }
+// Detail rows inside an expanded investment card match the Account Management
+// ListView: no nested cards, and one tap opens the asset detail screen.
 export function InvestmentStackAsset({title,subtitle,amount,profit,rate,accent='lavender',onOpen,children}){
- const [expanded,setExpanded]=useState(false);
- return <article className={'investment-tier-card tier-'+accent+(expanded?' tier-expanded':'')}>
-  <button type="button" className="investment-tier-peek" onClick={()=>setExpanded(v=>!v)} aria-expanded={expanded}>
-   <span className="investment-tier-top"><span className="investment-tier-marker"/><strong>{title}</strong><ChevronRight size={18} className="tier-chevron"/></span>
-   {subtitle&&<span className="investment-tier-subtitle">{subtitle}</span>}
-   <span className="investment-tier-bottom"><b>{amount}</b>{profit&&<small className="investment-tier-pnl">{profit}{rate?` · ${rate}`:""}</small>}</span>
-  </button>
-  {expanded&&<div className="investment-tier-body investment-tier-asset-body">
-   {profit&&<div className="investment-tier-profit"><span>{tr('未實現損益')}</span><b>{profit}</b>{rate&&<small>{rate}</small>}</div>}
-   {children}
-   {onOpen&&<button type="button" className="investment-tier-open" onClick={onOpen}>{tr('查看明細')} <ChevronRight size={17}/></button>}
-  </div>}
- </article>;
+ return <button type="button" className={'investment-account-list-row tier-'+accent} onClick={onOpen}>
+   <span className="investment-account-list-info"><strong>{title}</strong>{subtitle&&<small>{subtitle}</small>}{children&&<span className="investment-account-list-extra">{children}</span>}</span>
+   <span className="investment-account-list-values"><b>{amount}</b>{profit&&<small className="investment-tier-pnl">{profit}{rate?` · ${rate}`:''}</small>}</span>
+   <ChevronRight size={18} aria-hidden="true" className="investment-account-list-chevron"/>
+ </button>;
 }

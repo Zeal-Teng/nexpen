@@ -965,7 +965,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
      </div>;
    })()}
    <div className="investment-dashboard-section-title"><div><h3>{i18n("投資分類與績效")}</h3><small>{i18n("點選類別查看資產及交易紀錄")}</small></div><span aria-hidden="true">03</span></div>
-   <div className="investment-combined-list investment-peek-stack investment-reference-stack" role="group" aria-label={i18n("投資分類與績效")}>{investmentOverview.map(item=>{
+   <div className="investment-combined-list investment-peek-stack investment-reference-stack investment-first-level-stack" role="group" aria-label={i18n("投資分類與績效")}>{investmentOverview.map(item=>{
     const pnl=item.valueTwd===null?null:item.valueTwd-item.costTwd;
     const pct=pnl!==null&&item.costTwd>0?pnl/item.costTwd*100:null;
     const detail={stocks:'股票持股、買賣與股利',trust:'持股信託與追加投入',policy:'投資保單與現值紀錄'}[item.id];

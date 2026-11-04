@@ -1333,3 +1333,276 @@ html .app-shell .investment-dashboard.glass.panel.investment-combined,
   .app-shell .diary-stack-main{gap:7px!important}
   .app-shell .diary-stack-main .transaction-icon{width:32px!important;height:32px!important;flex-basis:32px!important}
 }
+
+
+/* v103: transaction cards prioritize readable titles and complete amounts on iPhone.
+   Keep the account-style color layers, two-sided information and one-tap edit. */
+.app-shell .diary-transaction-stack .diary-stack-card{
+  min-height:126px!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-card + .diary-stack-card{
+  margin-top:-16px!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-peek,
+.app-shell .diary-transaction-stack .diary-stack-card:last-child .diary-stack-peek{
+  box-sizing:border-box!important;
+  display:flex!important;justify-content:center!important;
+  min-height:125px!important;
+  padding:14px 13px 25px!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-main{
+  display:grid!important;
+  grid-template-columns:36px minmax(0,1fr) minmax(0,auto) 15px;
+  align-items:center!important;gap:9px!important;
+  width:100%;min-width:0!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-main .transaction-icon{
+  width:36px!important;height:36px!important;min-width:0!important;
+  flex:none!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-name{
+  display:flex!important;flex-direction:column!important;min-width:0!important;
+  flex:initial!important;overflow:visible!important;gap:5px!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-name b{
+  display:-webkit-box!important;-webkit-box-orient:vertical!important;
+  -webkit-line-clamp:2!important;line-clamp:2!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;
+  font-size:clamp(14px,3.7vw,18px)!important;line-height:1.27!important;
+  letter-spacing:-.015em!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-name small{
+  display:block!important;max-width:100%;min-width:0;
+  font-size:clamp(11px,2.8vw,13px)!important;
+  line-height:1.4!important;white-space:nowrap!important;overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-amount{
+  display:flex!important;flex-direction:column!important;align-items:flex-end!important;
+  flex:initial!important;width:max-content!important;max-width:100%!important;
+  min-width:0!important;gap:5px!important;overflow:visible!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-amount strong{
+  display:block!important;width:max-content;max-width:100%!important;
+  white-space:nowrap!important;overflow:visible!important;overflow-wrap:normal!important;
+  font-size:clamp(13px,3.6vw,19px)!important;
+  font-variant-numeric:tabular-nums!important;letter-spacing:-.035em!important;
+  line-height:1.25!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-amount small{
+  display:block!important;width:100%!important;max-width:100%!important;
+  font-size:clamp(11px,2.8vw,13px)!important;line-height:1.3!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-chevron{
+  width:15px!important;min-width:0!important;flex:none!important;
+}
+/* iPhone SE and other narrow viewports: gain room without obscuring digits. */
+@media(max-width:390px){
+  .app-shell .diary-transaction-stack .diary-stack-peek,
+  .app-shell .diary-transaction-stack .diary-stack-card:last-child .diary-stack-peek{
+    padding:12px 8px 24px!important;
+  }
+  .app-shell .diary-transaction-stack .diary-stack-main{
+    grid-template-columns:30px minmax(0,1fr) minmax(0,auto) 11px!important;
+    gap:6px!important;
+  }
+  .app-shell .diary-transaction-stack .diary-stack-main .transaction-icon{
+    width:30px!important;height:30px!important;flex:none!important;
+  }
+  .app-shell .diary-transaction-stack .diary-stack-name b{
+    font-size:clamp(13px,3.6vw,15px)!important;
+  }
+  .app-shell .diary-transaction-stack .diary-stack-amount strong{
+    font-size:clamp(12px,3.4vw,15px)!important;
+  }
+  .app-shell .diary-transaction-stack .diary-stack-chevron{width:11px!important;}
+}
+
+
+/* v104 — tighter daily cards; account-like ListView INSIDE expanded investment cards. */
+/* Increase overlap without clipping the name, money, or account lines. */
+.app-shell .diary-transaction-stack .diary-stack-card {
+  min-height:116px!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-card + .diary-stack-card {
+  margin-top:-39px!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-peek,
+.app-shell .diary-transaction-stack .diary-stack-card:last-child .diary-stack-peek {
+  min-height:115px!important;
+  padding-top:11px!important;
+  padding-bottom:19px!important;
+}
+@media(max-width:420px){
+  .app-shell .diary-transaction-stack .diary-stack-card{min-height:113px!important}
+  .app-shell .diary-transaction-stack .diary-stack-card + .diary-stack-card{margin-top:-36px!important}
+  .app-shell .diary-transaction-stack .diary-stack-peek,
+  .app-shell .diary-transaction-stack .diary-stack-card:last-child .diary-stack-peek{
+    min-height:112px!important;padding-top:10px!important;padding-bottom:18px!important;
+  }
+}
+
+/* Rows in expanded stock/trust/policy stacks: NO extra investment cards. */
+.app-shell .investment-tier-body .investment-asset-substack,
+.app-shell .investment-tier-body .investment-second-level,
+.app-shell .investment-stage-list .investment-asset-substack {
+  display:block!important;padding:0!important;margin:0!important;
+  border:0!important;box-shadow:none!important;background:transparent!important;
+}
+.app-shell .investment-account-list-row {
+  appearance:none;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto) 18px;
+  align-items:center;gap:10px;width:100%;min-width:0;
+  padding:15px 3px!important;margin:0!important;
+  background:transparent!important;border:0!important;border-bottom:1px solid var(--theme-line)!important;
+  color:var(--theme-text)!important;text-align:left;box-shadow:none!important;
+  border-radius:0!important;cursor:pointer;
+}
+.app-shell .investment-account-list-row:last-child {border-bottom:0!important}
+.app-shell .investment-account-list-info,
+.app-shell .investment-account-list-values {
+  display:flex;flex-direction:column;min-width:0;gap:5px;
+}
+.app-shell .investment-account-list-info strong{
+  font-size:clamp(15px,3.7vw,19px);line-height:1.35;font-weight:750;
+  overflow-wrap:anywhere;
+}
+.app-shell .investment-account-list-info small,
+.app-shell .investment-account-list-extra,
+.app-shell .investment-account-list-values small {
+  font-size:clamp(11px,2.7vw,13px);line-height:1.35;color:var(--theme-muted);
+}
+.app-shell .investment-account-list-extra .hint{margin:0!important;padding:0!important;font-size:inherit!important}
+.app-shell .investment-account-list-values{align-items:flex-end;text-align:right;max-width:min(43vw,235px)}
+.app-shell .investment-account-list-values b{
+  font-size:clamp(14px,3.6vw,19px);font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;line-height:1.2;
+}
+.app-shell .investment-account-list-chevron {color:var(--theme-muted);flex:none}
+.app-shell .investment-account-list-row:focus-visible{outline:2px solid var(--theme-accent);outline-offset:-2px}
+/* Flatten the secondary panel inside a tier body, just as accounts show detail rows
+   directly under their category header. Do not create another nested rounded card. */
+.app-shell .investment-tier-body > .investment-stage-list,
+.app-shell .investment-tier-body > .investment-stage-history,
+.app-shell .investment-tier-body > .investment-deep-hero,
+.app-shell .investment-tier-body > .investment-stage-hero,
+.app-shell .investment-tier-body > section.glass.panel,
+.app-shell .investment-tier-body > div.investment-stage-hero {
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  border-radius:0!important;margin:0!important;padding:8px 0 12px!important;
+}
+.app-shell .investment-tier-body > .investment-deep-hero,
+.app-shell .investment-tier-body > .investment-stage-hero {
+  color:var(--theme-text)!important;
+}
+.app-shell .investment-tier-body .investment-deep-hero :is(h2,strong),
+.app-shell .investment-tier-body .investment-deep-hero .stock-detail-header h2 {
+  color:var(--theme-text)!important;
+}
+.app-shell .investment-tier-body .investment-deep-hero :is(small,.investment-stage-kicker,.hint){
+  color:var(--theme-muted)!important;
+}
+.app-shell .investment-tier-body .investment-deep-hero .stock-detail-metrics > div,
+.app-shell .investment-tier-body .investment-deep-hero .stock-summary-v48,
+.app-shell .investment-tier-body .investment-deep-hero .stock-summary-item {
+  background:transparent!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;padding:9px 0!important;
+}
+.app-shell .investment-tier-body .investment-stage-history .stock-detail-trade,
+.app-shell .investment-tier-body .investment-stage-list .stock-detail-trade {
+  background:transparent!important;border-radius:0!important;box-shadow:none!important;
+  border:0!important;border-bottom:1px solid var(--theme-line)!important;
+  padding:14px 0!important;margin:0!important;
+}
+.app-shell .investment-tier-body .investment-stage-history .stock-detail-trade:last-child {border-bottom:0!important}
+@media(max-width:390px){
+  .app-shell .investment-account-list-row{gap:7px;padding:13px 1px!important}
+  .app-shell .investment-account-list-values{max-width:42vw}
+}
+
+
+/* v105: Center transactions in the visibly exposed portion of the vertical stack.
+   The next card overlaps the bottom, so the apparent center is ABOVE the full card center. */
+.app-shell .diary-transaction-stack .diary-stack-card {
+  border-color:var(--diary-peek)!important;
+  border-width:1.5px!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-peek {
+  /* Keep the full accessible tap target; move just the content, not the button. */
+  align-items:stretch!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-main {
+  transform:translateY(-13px);
+  transform-origin:center;
+  position:relative;
+  z-index:2;
+}
+@media(max-width:420px){
+  .app-shell .diary-transaction-stack .diary-stack-main{transform:translateY(-11px)}
+}
+/* The last card is not covered; keep its content centered in the whole card. */
+.app-shell .diary-transaction-stack .diary-stack-card:last-child .diary-stack-main{
+  transform:none;
+}
+
+/* v105: Investment first level uses a REAL overlapping vertical Card Stack.
+   It stays a one-tap navigation surface; no expand/collapse and no nested stack. */
+.app-shell .investment-dashboard .investment-combined-list.investment-first-level-stack {
+  display:flex!important;
+  flex-direction:column!important;
+  gap:0!important;
+  padding:8px 0 16px!important;
+  isolation:isolate;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-layer {
+  position:relative!important;
+  isolation:isolate!important;
+  margin:0!important;
+  min-height:125px!important;
+  padding-left:32px!important;
+  z-index:1;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-layer + .investment-reference-layer {
+  margin-top:-20px!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-layer:nth-child(2){z-index:2}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-layer:nth-child(3){z-index:3}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-layer:nth-child(4){z-index:4}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-layer::before {
+  top:0!important;bottom:0!important;border-radius:24px!important;
+  border:1px solid color-mix(in srgb,var(--peek) 80%,transparent)!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card {
+  min-height:125px!important;
+  border-radius:23px!important;
+  border:1px solid color-mix(in srgb,var(--peek) 48%,var(--theme-line))!important;
+  position:relative;z-index:1;
+  padding:18px 17px 24px!important;
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card:focus-visible{
+  outline:3px solid var(--theme-accent)!important;outline-offset:2px;
+}
+@media(hover:hover){
+  .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card:hover{
+    transform:translateY(-2px);
+  }
+}
+@media(max-width:540px){
+  .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-layer {
+    padding-left:26px!important;
+    min-height:118px!important;
+  }
+  .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card {
+    min-height:118px!important;
+    border-radius:20px!important;
+    padding:14px 13px 23px!important;
+  }
+  .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-layer + .investment-reference-layer{
+    margin-top:-18px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card{transition:none!important}
+}
