@@ -1606,3 +1606,60 @@ html .app-shell .investment-dashboard.glass.panel.investment-combined,
 @media(prefers-reduced-motion:reduce){
   .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card{transition:none!important}
 }
+
+
+/* v106 — geometric decoration belongs to the DAILY SUMMARY, not the transaction list.
+   Preserve the three metrics in a single row on mobile and all existing P&L color settings. */
+.app-shell .daily-compact .stats-three.diary-finance-summary{
+  position:relative!important;
+  isolation:isolate;
+}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .stat{
+  position:relative!important;
+  isolation:isolate;
+  overflow:hidden!important;
+}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .stat::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  width:94px;
+  height:94px;
+  top:-54px;
+  right:-52px;
+  border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--diary-metric-accent,var(--theme-accent)) 35%,transparent);
+  background:color-mix(in srgb,var(--diary-metric-accent,var(--theme-accent)) 5%,transparent);
+  box-shadow:0 0 0 15px color-mix(in srgb,var(--diary-metric-accent,var(--theme-accent)) 7%,transparent),
+             0 0 0 30px color-mix(in srgb,var(--diary-metric-accent,var(--theme-accent)) 4%,transparent);
+  pointer-events:none;
+}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-out{--diary-metric-accent:var(--theme-expense)}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-in{--diary-metric-accent:var(--theme-income)}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-net{--diary-metric-accent:var(--theme-accent)}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .stat > small,
+.app-shell .daily-compact .stats-three.diary-finance-summary > .stat > strong{
+  position:relative;
+  z-index:1;
+}
+/* Earlier layouts had a special orb on the net column: use only the unified shape. */
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-net::after{
+  content:none!important;
+  display:none!important;
+}
+
+/* Diary transaction cards: no arcs, rings or geometric overlays. Keep colored
+   edge and add a hairline BLACK outline outside the colored stroke. */
+.app-shell .diary-transaction-stack .diary-stack-card{
+  border:1.5px solid var(--diary-peek)!important;
+  box-shadow:0 0 0 .75px #111111,
+             0 7px 18px rgba(12,18,22,.10)!important;
+  background:var(--diary-peek)!important;
+}
+.app-shell .diary-transaction-stack .diary-stack-peek::before,
+.app-shell .diary-transaction-stack .diary-stack-peek::after{
+  content:none!important;
+  display:none!important;
+  box-shadow:none!important;
+  background:none!important;
+}
