@@ -1812,3 +1812,65 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
   height: 19px;
   flex-shrink: 0;
 }
+
+
+/* v122: trade/dividend history layout redesign for mobile + theme-aware investment action sheet + amount color consistency */
+.app-shell .investment-account-list-values .investment-tier-pnl.income,
+.app-shell .investment-account-list-values .investment-tier-pnl.expense,
+.app-shell .stock-trade-inline-result.income,
+.app-shell .stock-trade-inline-result.expense{
+  -webkit-text-fill-color:currentColor;
+}
+
+.app-shell .stock-detail-trade{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:start;
+  gap:12px;
+  padding:16px 0;
+}
+.app-shell .stock-detail-trade-copy{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.app-shell .stock-detail-trade-header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 10px;min-width:0;}
+.app-shell .stock-detail-trade-header b{font-size:1.02rem;line-height:1.3;}
+.app-shell .stock-detail-trade-header small{margin:0;color:var(--theme-muted);font-size:.78rem;white-space:nowrap;}
+.app-shell .stock-detail-trade-meta{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.app-shell .stock-detail-trade-meta small{display:block;margin:0;color:var(--theme-muted);font-size:.84rem;line-height:1.45;overflow-wrap:anywhere;}
+.app-shell .stock-detail-trade-side{display:flex;align-items:flex-start;gap:8px;min-width:0;}
+.app-shell .stock-detail-trade .transaction-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:0;max-width:none;text-align:right;}
+.app-shell .stock-detail-trade .transaction-right strong{font-size:clamp(1rem,3.5vw,1.34rem);line-height:1.2;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;}
+.app-shell .stock-trade-inline-result{font-size:.82rem;line-height:1.35;overflow-wrap:anywhere;}
+.app-shell .stock-detail-trade .faint{margin-top:3px;flex-shrink:0;}
+@media(max-width:640px){
+  .app-shell .stock-detail-trade{grid-template-columns:auto minmax(0,1fr);gap:10px 12px;padding:14px 0;}
+  .app-shell .stock-detail-trade .transaction-icon{grid-row:1 / span 2;}
+  .app-shell .stock-detail-trade-copy{grid-column:2;grid-row:1;}
+  .app-shell .stock-detail-trade-side{grid-column:2;grid-row:2;justify-content:space-between;align-items:flex-start;border-top:1px dashed color-mix(in srgb,var(--theme-line) 78%,transparent);padding-top:10px;}
+  .app-shell .stock-detail-trade .transaction-right{align-items:flex-start;text-align:left;max-width:100%;}
+  .app-shell .stock-detail-trade-header{align-items:flex-start;flex-direction:column;gap:3px;}
+}
+
+.investment-action-sheet{
+  background:var(--theme-surface)!important;
+  color:var(--theme-text)!important;
+  border:1px solid var(--theme-line)!important;
+  box-shadow:0 -18px 42px rgba(0,0,0,.28)!important;
+}
+.investment-action-sheet h3{color:var(--theme-text)!important;}
+.investment-action-sheet button{
+  color:var(--theme-text)!important;
+  border-bottom:1px solid var(--theme-line)!important;
+  background:transparent!important;
+}
+.investment-action-sheet button:hover,
+.investment-action-sheet button:active{background:var(--theme-surface2)!important;}
+.investment-action-sheet .investment-action-option svg:first-child{
+  color:var(--theme-accent)!important;
+  background:color-mix(in srgb,var(--theme-accent) 14%,var(--theme-surface));
+  border:1px solid color-mix(in srgb,var(--theme-accent) 26%,transparent);
+  border-radius:12px;
+  padding:8px;
+  width:18px;height:18px;box-sizing:content-box;
+}
+.investment-action-sheet .investment-action-option svg:last-child{color:var(--theme-muted)!important;}
+.investment-action-sheet .investment-action-option span{color:var(--theme-text)!important;min-width:0;flex:1;}
+.investment-action-sheet .investment-action-cancel{justify-content:center;color:var(--theme-muted)!important;}

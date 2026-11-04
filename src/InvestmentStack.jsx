@@ -25,10 +25,10 @@ export function InvestmentStackCard({title,summary,amount,accent='lavender',chil
 }
 // Detail rows inside an expanded investment card match the Account Management
 // ListView: no nested cards, and one tap opens the asset detail screen.
-export function InvestmentStackAsset({title,subtitle,amount,profit,rate,accent='lavender',onOpen,children}){
+export function InvestmentStackAsset({title,subtitle,amount,profit,rate,profitTone='',accent='lavender',onOpen,children}){
  return <button type="button" className={'investment-account-list-row tier-'+accent} onClick={onOpen}>
    <span className="investment-account-list-info"><strong>{title}</strong>{subtitle&&<small>{subtitle}</small>}{children&&<span className="investment-account-list-extra">{children}</span>}</span>
-   <span className="investment-account-list-values"><b>{amount}</b>{profit&&<small className="investment-tier-pnl">{profit}{rate?` · ${rate}`:''}</small>}</span>
+   <span className="investment-account-list-values"><b>{amount}</b>{profit&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{profit}{rate?` · ${rate}`:''}</small>}</span>
    <ChevronRight size={18} aria-hidden="true" className="investment-account-list-chevron"/>
  </button>;
 }

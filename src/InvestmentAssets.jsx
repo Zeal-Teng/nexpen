@@ -154,7 +154,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
     <section className="glass panel stock-performance-section investment-list-section investment-stage-list">
      <div className="stock-holdings-heading"><h2>{i18n(label[type])}</h2><small>{items.length} {i18n("筆")}</small></div>
      <div className="investment-asset-substack">
-      {items.length?items.map(a=>{const m=metrics(a);return <InvestmentStackAsset key={a.id} accent={type==='trust'?'coral':'mint'} title={a.name} subtitle={type==='trust'?`${a.trustSymbol} · ${fmt(m.lots)} 張`:`${i18n("最後更新")} ${a.policyValueDate||"—"}`} amount={m.value===null?i18n("尚無報價"):money(m.value,a.currency)} profit={m.pnl===null?"—":money(m.pnl,a.currency)} rate={m.pct} onOpen={()=>setSelected(a.id)}><p className="hint">{i18n("累計投入")} {money(m.cost,a.currency)}</p></InvestmentStackAsset>}):<p className="hint">{i18n("尚未建立")}{i18n(label[type])}{i18n("帳戶。請至「帳戶管理」新增，並選擇帳戶類型「")}{i18n(label[type])}」。</p>}
+      {items.length?items.map(a=>{const m=metrics(a);return <InvestmentStackAsset key={a.id} accent={type==='trust'?'coral':'mint'} title={a.name} subtitle={type==='trust'?`${a.trustSymbol} · ${fmt(m.lots)} 張`:`${i18n("最後更新")} ${a.policyValueDate||"—"}`} amount={m.value===null?i18n("尚無報價"):money(m.value,a.currency)} profit={m.pnl===null?"—":money(m.pnl,a.currency)} rate={m.pct} profitTone={m.pnl===null?'':m.pnl>=0?'income':'expense'} onOpen={()=>setSelected(a.id)}><p className="hint">{i18n("累計投入")} {money(m.cost,a.currency)}</p></InvestmentStackAsset>}):<p className="hint">{i18n("尚未建立")}{i18n(label[type])}{i18n("帳戶。請至「帳戶管理」新增，並選擇帳戶類型「")}{i18n(label[type])}」。</p>}
      </div>
     </section>
    </InvestmentStackCard>

@@ -2025,3 +2025,120 @@ html .app-shell .diary-search-filter>.smart-select.compact {
   .app-shell .diary-transaction-list .diary-list-name b,
   .app-shell .diary-transaction-list .diary-list-amount strong {font-size:16px;}
 }
+
+
+/* v123 — Category Management adopts the same overlapping anatomy as My Accounts.
+   The main category controls stay separate: dragging never opens a card. */
+.app-shell .category-section .category-card-stack{
+  display:flex!important;flex-direction:column!important;gap:0!important;
+  isolation:isolate;padding:6px 1px 30px!important;
+}
+.app-shell .category-section .category-stack-card{
+  --stack-overlap:52px;
+  --stack-stripe:var(--theme-accent);
+  position:relative!important;z-index:1;
+  flex-shrink:0;min-height:164px;
+  margin:0!important;padding:0!important;
+  border:1px solid color-mix(in srgb,var(--stack-stripe) 65%,var(--theme-line))!important;
+  border-radius:24px!important;
+  background:var(--stack-stripe)!important;
+  color:var(--theme-text)!important;
+  overflow:hidden!important;
+  box-shadow:0 9px 22px rgba(13,20,24,.13),0 2px 6px rgba(13,20,24,.08)!important;
+  transition:box-shadow .18s ease;
+}
+.app-shell .category-section .category-stack-card:nth-child(6n+1){--stack-stripe:#70b5d5}
+.app-shell .category-section .category-stack-card:nth-child(6n+2){--stack-stripe:#e1bb82}
+.app-shell .category-section .category-stack-card:nth-child(6n+3){--stack-stripe:#e49ba4}
+.app-shell .category-section .category-stack-card:nth-child(6n+4){--stack-stripe:#b2a1de}
+.app-shell .category-section .category-stack-card:nth-child(6n+5){--stack-stripe:#83c3a9}
+.app-shell .category-section .category-stack-card:nth-child(6n+6){--stack-stripe:#7fc7bf}
+.app-shell .category-section .category-stack-card + .category-stack-card{
+  margin-top:calc(-1 * var(--stack-overlap))!important;
+}
+.app-shell .category-section .category-stack-card.category-stack-expanded{
+  z-index:2;box-shadow:0 14px 30px rgba(13,20,24,.17)!important;
+}
+.app-shell .category-section .category-stack-peek{
+  position:relative!important;isolation:isolate;overflow:hidden;
+  width:calc(100% - 15px)!important;min-height:164px;
+  margin:0 0 0 15px!important;
+  display:flex;align-items:flex-start!important;justify-content:space-between;
+  flex-wrap:wrap;gap:7px 9px;
+  padding:20px 15px 62px!important;
+  border:0!important;border-radius:21px 0 0 21px!important;
+  background:var(--theme-surface)!important;
+}
+.app-shell .category-section .category-stack-peek::before{
+  content:"";position:absolute;pointer-events:none;z-index:-1;
+  top:-78px;right:-43px;width:200px;height:200px;border-radius:50%;
+  border:1.5px solid var(--stack-stripe);
+  box-shadow:0 0 0 18px color-mix(in srgb,var(--stack-stripe) 10%,transparent),
+             0 0 0 38px color-mix(in srgb,var(--stack-stripe) 8%,transparent),
+             0 0 0 60px color-mix(in srgb,var(--stack-stripe) 5%,transparent);
+  opacity:.32;
+}
+.app-shell .category-section .category-stack-peek > *{position:relative;z-index:1}
+.app-shell .category-section .category-stack-toggle{
+  flex:1 1 145px!important;min-width:0!important;gap:9px!important;
+  align-items:center!important;
+}
+.app-shell .category-section .category-stack-toggle strong{
+  font-size:clamp(16px,3.7vw,21px)!important;font-weight:800;
+  min-width:0;overflow-wrap:anywhere;
+}
+.app-shell .category-section .category-stack-toggle .category-count{
+  color:var(--theme-muted)!important;font-size:12px!important;
+  white-space:nowrap;
+}
+.app-shell .category-section .category-stack-toggle svg:last-child{color:var(--theme-muted)!important}
+.app-shell .category-section .category-stack-peek .category-tools{
+  flex:none;align-self:center;gap:4px;
+}
+.app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek{
+  min-height:112px;padding-bottom:16px!important;border-radius:21px 0 0 0!important;
+}
+.app-shell .category-section .category-stack-details{
+  position:relative!important;z-index:1;
+  display:flex!important;flex-direction:column!important;
+  margin:0 0 0 15px!important;
+  width:calc(100% - 15px)!important;
+  padding:4px 13px 66px!important;
+  border-top:1px solid var(--theme-line)!important;
+  border-radius:0 0 0 18px;
+  background:var(--theme-surface)!important;
+  gap:0!important;
+}
+.app-shell .category-section .category-stack-details[hidden]{display:none!important}
+.app-shell .category-section .category-stack-details .category-sub{
+  min-height:58px!important;display:flex!important;flex-wrap:nowrap!important;
+  gap:8px!important;padding:7px 3px!important;
+  border:0!important;border-bottom:1px solid var(--theme-line)!important;
+  border-radius:0!important;background:transparent!important;
+  box-shadow:none!important;
+}
+.app-shell .category-section .category-stack-details .category-sub > span{
+  flex:1!important;min-width:0!important;font-size:15px!important;
+  text-overflow:ellipsis;white-space:nowrap;overflow:hidden;
+}
+.app-shell .category-section .category-stack-details .category-sub-icon{flex-shrink:0;color:var(--theme-accent)}
+.app-shell .category-section .category-add-sub{
+  margin-top:12px;min-height:43px;
+  color:var(--theme-accent)!important;
+}
+.app-shell .category-section .category-stack-card:last-child:not(.category-stack-expanded){min-height:125px}
+.app-shell .category-section .category-stack-card:last-child:not(.category-stack-expanded) .category-stack-peek{
+  min-height:125px;padding-bottom:24px!important;
+}
+.app-shell .category-section .category-stack-card.category-dragging{opacity:.68;transform:scale(.99)}
+.app-shell .category-section .category-stack-card.category-drop-target{outline:2px solid var(--theme-accent);outline-offset:2px}
+@media(max-width:650px){
+  .app-shell .category-section .category-stack-card{--stack-overlap:52px;border-radius:23px!important}
+  .app-shell .category-section .category-stack-peek{padding:17px 10px 60px!important;gap:6px!important}
+  .app-shell .category-section .category-stack-toggle{flex-basis:130px!important;gap:6px!important}
+  .app-shell .category-section .category-stack-toggle strong{font-size:17px!important}
+  .app-shell .category-section .category-stack-peek .category-tools{gap:1px}
+  .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek{padding-bottom:13px!important}
+  .app-shell .category-section .category-stack-details{padding:4px 9px 62px!important}
+}
+@media(prefers-reduced-motion:reduce){.app-shell .category-section .category-stack-card{transition:none!important}}
