@@ -1837,3 +1837,30 @@ html .app-shell .diary-search-filter>.smart-select.compact {
   .app-shell[data-fab-position="left"] .stock-quote-fab {left: 18px!important;right: auto!important;}
   .app-shell[data-fab-position="left"] .sheet-floating-actions {left:17px!important;right:auto!important;}
 }
+
+/* v118 — Save above delete; soft warning rose with dimensional shadow.
+   Keep v117 left/right FAB setting and the classic round circle-button. */
+.app-shell .sheet-floating-actions .sheet-action-delete {
+  background: #ffe1e7!important;
+  color: #b53e5b!important;
+  border: 1px solid #f3aebb!important;
+  box-shadow: 0 7px 18px rgba(156, 39, 69, .26),
+              0 2px 6px rgba(117, 30, 54, .16),
+              inset 0 1px 0 rgba(255,255,255,.85)!important;
+}
+.app-shell .sheet-floating-actions .sheet-action-delete:active:not(:disabled) {
+  transform:scale(.95)!important;
+  box-shadow:0 3px 9px rgba(156,39,69,.22)!important;
+}
+.app-shell .sheet-floating-actions .sheet-action-delete:focus-visible {
+  outline:2px solid #bc526b!important;
+  outline-offset:3px;
+}
+[data-theme=dark] .app-shell .sheet-floating-actions .sheet-action-delete {
+  background:#633544!important;
+  color:#ffb9c8!important;
+  border-color:#a55b70!important;
+  box-shadow:0 7px 19px rgba(0,0,0,.38),
+             0 3px 12px rgba(208,89,116,.18),
+             inset 0 1px 0 rgba(255,255,255,.10)!important;
+}
