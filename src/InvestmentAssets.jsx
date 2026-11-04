@@ -109,7 +109,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
  };
  return <div className="investment-assets-page">
   {!active&&<button type="button" className="stock-back investment-upper-back investment-nav-back" onClick={onBackOverview}><ArrowLeft size={18}/>{i18n("返回投資總覽")}</button>}
-  {!active&&<section className={`investment-stage-hero investment-category-hero investment-${type}-category-hero`} aria-label={`${i18n(label[type])}投資績效`}>
+  {!active&&<section className={`investment-stage-hero investment-category-hero investment-unified-summary investment-${type}-category-hero`} aria-label={`${i18n(label[type])}投資績效`}>
    <div className="investment-stage-heading"><div><span className="investment-stage-kicker">NEXPEN · {type==='trust'?'TRUST':'POLICY'}</span><h2>{i18n(label[type])}</h2></div><span className="investment-stage-count">{items.length} {i18n("筆")}</span></div>
    <div className="stock-summary-v48 investment-performance-summary investment-stage-summary">
    <div className="stock-summary-pair">

@@ -53,7 +53,7 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtUnit
     </section>;
   }
   return <>
-    <section className="investment-stage-hero investment-category-hero investment-stock-category-hero" aria-label={tr('股票績效總覽','Stock performance summary')}>
+    <section className="investment-stage-hero investment-category-hero investment-stock-category-hero investment-unified-summary" aria-label={tr('股票績效總覽','Stock performance summary')}>
       <div className="investment-stage-heading"><div><span className="investment-stage-kicker">NEXPEN · STOCKS</span><h2>{tr('股票投資','Stock investments')}</h2></div><span className="investment-stage-count">{currentHoldings.length} {tr('檔持股','holdings')}</span></div>
       <div className="stock-summary-v48 investment-stage-summary">
       <div className="stock-summary-pair"><div className="stock-summary-item"><small>{tr('持有成本','Cost basis')}</small><strong>{money(stockCost)}</strong></div><div className="stock-summary-item"><small>{tr('估算市值','Market value')}</small><strong>{allPriced?money(stockVal):tr('部分未取得','Partially unavailable')}</strong></div></div>
