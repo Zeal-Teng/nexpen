@@ -2142,3 +2142,403 @@ html .app-shell .diary-search-filter>.smart-select.compact {
   .app-shell .category-section .category-stack-details{padding:4px 9px 62px!important}
 }
 @media(prefers-reduced-motion:reduce){.app-shell .category-section .category-stack-card{transition:none!important}}
+
+/* v131 — One consistent Card Stack visual language, matched to My Accounts.
+   Investment level 1, level 2/3 accordion cards and Overview share the same
+   account-style coloured backing, front face, typography and overlap.
+   This is presentation only; navigation, totals and expanded content stay intact. */
+.app-shell .investment-dashboard .investment-first-level-stack,
+.app-shell .networth-stack-dashboard .networth-reference-stack {
+  display:flex!important;flex-direction:column!important;gap:0!important;
+  padding:7px 0 22px!important;isolation:isolate!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer,
+.app-shell .networth-stack-dashboard .networth-reference-stack>.networth-reference-layer {
+  --account-like-overlap:52px;
+  position:relative!important;isolation:isolate!important;
+  padding:0!important;margin:0!important;
+  min-height:170px!important;border-radius:24px!important;
+  border:1px solid color-mix(in srgb,var(--peek) 65%,var(--theme-line))!important;
+  background:var(--peek)!important;
+  overflow:hidden!important;
+  box-shadow:0 9px 22px rgba(13,20,24,.11),0 2px 5px rgba(13,20,24,.05)!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer + .investment-reference-layer,
+.app-shell .networth-stack-dashboard .networth-reference-stack>.networth-reference-layer + .networth-reference-layer {
+  margin-top:calc(-1 * var(--account-like-overlap))!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer::before,
+.app-shell .networth-stack-dashboard .networth-reference-stack>.networth-reference-layer::before {content:none!important;display:none!important}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card,
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card {
+  position:relative!important;z-index:1!important;
+  margin:0 0 0 17px!important;width:calc(100% - 17px)!important;
+  min-height:170px!important;
+  padding:20px 22px 67px!important;
+  border:0!important;border-radius:21px 0 0 21px!important;
+  background:var(--theme-surface)!important;color:var(--theme-text)!important;
+  box-shadow:none!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:stretch!important;justify-content:space-between!important;
+  text-align:left!important;isolation:isolate!important;overflow:hidden!important;
+  transform:none!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card::before,
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card::before {
+  content:"";pointer-events:none;position:absolute;z-index:0;
+  right:-32px;top:-77px;width:210px;height:210px;border-radius:50%;
+  border:1.5px solid var(--peek);
+  box-shadow:0 0 0 18px color-mix(in srgb,var(--peek) 10%,transparent),
+             0 0 0 38px color-mix(in srgb,var(--peek) 8%,transparent),
+             0 0 0 63px color-mix(in srgb,var(--peek) 5%,transparent);
+  opacity:.3;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-main,
+.app-shell .networth-stack-dashboard .networth-reference-stack .investment-reference-main {
+  position:relative;z-index:1;width:100%!important;min-height:85px;
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  justify-content:space-between!important;gap:10px!important;flex:1;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-copy,
+.app-shell .networth-stack-dashboard .networth-reference-stack .investment-reference-copy {
+  flex:0 0 auto!important;min-width:0!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-copy b,
+.app-shell .networth-stack-dashboard .networth-reference-stack .investment-reference-copy b {
+  color:var(--theme-text)!important;font-weight:800!important;
+  font-size:clamp(17px,1.15rem,21px)!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-copy small,
+.app-shell .networth-stack-dashboard .networth-reference-stack .investment-reference-copy small {
+  color:var(--theme-muted)!important;font-size:13px!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount,
+.app-shell .networth-stack-dashboard .networth-reference-stack .investment-reference-amount {
+  flex:0 0 auto!important;min-width:0!important;max-width:100%!important;
+  width:100%!important;display:flex!important;flex-direction:column!important;
+  align-items:flex-end!important;text-align:right!important;gap:4px!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-net,
+.app-shell .networth-stack-dashboard .networth-reference-stack .investment-reference-net {
+  color:var(--theme-text)!important;font-weight:800!important;
+  font-size:clamp(18px,1.3rem,23px)!important;
+  max-width:100%!important;overflow-wrap:anywhere!important;white-space:normal!important;
+  text-overflow:clip!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-footer,
+.app-shell .networth-stack-dashboard .networth-reference-stack .investment-reference-footer {
+  position:relative;z-index:1;margin:0!important;height:auto!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-dots,
+.app-shell .networth-stack-dashboard .networth-reference-stack .investment-reference-dots {display:none!important;}
+/* Overview's expanding details should be continuous with the front surface. */
+.app-shell .networth-stack-dashboard .networth-reference-stack>.networth-layer-expanded {
+  z-index:20!important;box-shadow:0 14px 32px rgba(13,20,24,.14)!important;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack>.networth-layer-expanded>.networth-reference-card {
+  min-height:116px!important;padding-bottom:18px!important;border-radius:21px 0 0 0!important;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-expanded-body {
+  position:relative!important;z-index:2!important;margin:0 0 0 17px!important;
+  width:calc(100% - 17px)!important;box-sizing:border-box!important;
+  padding:16px 18px 72px!important;background:var(--theme-surface)!important;
+  color:var(--theme-text)!important;border:0!important;
+  border-top:1px solid var(--theme-line)!important;
+  border-radius:0 0 0 20px!important;box-shadow:none!important;
+}
+/* Second/third level: account stack geometry rather than bespoke investment proportions. */
+.app-shell .investment-tier-stack{padding:7px 0 22px!important;}
+.app-shell .investment-tier-card {
+  --investment-overlap:52px!important;
+  border-radius:24px!important;
+  min-height:170px!important;
+  box-shadow:0 9px 22px rgba(13,20,24,.11),0 2px 5px rgba(13,20,24,.05)!important;
+}
+.app-shell .investment-tier-card>.investment-tier-peek {
+  width:calc(100% - 17px)!important;margin-left:17px!important;
+  min-height:170px!important;padding:20px 22px 67px!important;
+  border-radius:21px 0 0 21px!important;
+}
+.app-shell .investment-tier-card>.investment-tier-peek::after {
+  right:-32px!important;top:-77px!important;width:210px!important;height:210px!important;
+  border:1.5px solid var(--tier-color)!important;
+  box-shadow:0 0 0 18px color-mix(in srgb,var(--tier-color) 10%,transparent),
+             0 0 0 38px color-mix(in srgb,var(--tier-color) 8%,transparent),
+             0 0 0 63px color-mix(in srgb,var(--tier-color) 5%,transparent)!important;
+  opacity:.3;
+}
+.app-shell .investment-tier-card>.investment-tier-body{
+  width:calc(100% - 17px)!important;margin-left:17px!important;
+  padding:16px 18px 70px!important;
+}
+.app-shell .investment-tier-card.tier-expanded>.investment-tier-peek {min-height:116px!important;padding-bottom:18px!important;}
+@media(max-width:800px){
+  .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer,
+  .app-shell .networth-stack-dashboard .networth-reference-stack>.networth-reference-layer {
+    --account-like-overlap:54px;min-height:165px!important;border-radius:23px!important;
+  }
+  .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card,
+  .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card {
+    margin-left:14px!important;width:calc(100% - 14px)!important;
+    min-height:165px!important;padding:17px 17px 65px!important;
+    border-radius:21px 0 0 21px!important;
+  }
+  .app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-expanded-body {
+    margin-left:14px!important;width:calc(100% - 14px)!important;padding:15px 13px 68px!important;
+  }
+  .app-shell .networth-stack-dashboard .networth-reference-stack>.networth-layer-expanded>.networth-reference-card{
+    min-height:112px!important;padding-bottom:18px!important;
+  }
+  .app-shell .investment-tier-card{--investment-overlap:54px!important;min-height:165px!important;border-radius:23px!important;}
+  .app-shell .investment-tier-card>.investment-tier-peek{
+    width:calc(100% - 14px)!important;margin-left:14px!important;min-height:165px!important;
+    padding:17px 17px 65px!important;border-radius:21px 0 0 21px!important;
+  }
+  .app-shell .investment-tier-card>.investment-tier-body{
+    width:calc(100% - 14px)!important;margin-left:14px!important;padding:15px 13px 68px!important;
+  }
+  .app-shell .investment-tier-card.tier-expanded>.investment-tier-peek{min-height:112px!important;padding-bottom:18px!important;}
+}
+@media(prefers-reduced-motion:reduce){
+ .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card,
+ .app-shell .investment-tier-card{transition:none!important;}
+}
+
+
+/* v132 — Overview stack: same upper-right chevron and accordion motion as My Accounts. */
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-peek-heading {
+ display:flex!important;align-items:center!important;gap:10px!important;width:100%!important;min-width:0;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-peek-heading .networth-peek-dot {
+ flex:0 0 10px;width:10px;height:10px;border-radius:50%;background:var(--peek,var(--theme-accent));
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-peek-heading b {
+ flex:1;min-width:0;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-peek-heading .networth-card-chevron {
+ position:static!important;display:block!important;flex:0 0 auto!important;margin-left:auto!important;
+ color:var(--theme-muted)!important;transform:rotate(0deg);
+ transition:transform .22s ease!important;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-peek-heading .networth-card-chevron.is-open {
+ transform:rotate(90deg)!important;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack>.networth-reference-layer {
+ transition:box-shadow .24s ease,margin-top .32s cubic-bezier(.22,.75,.25,1),min-height .32s ease!important;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card {
+ transition:min-height .3s cubic-bezier(.22,.75,.25,1),padding .3s cubic-bezier(.22,.75,.25,1)!important;
+}
+/* Keep the body mounted so closing animates instead of disappearing immediately. */
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-expanded-body {
+ display:grid!important;grid-template-rows:0fr!important;opacity:0;visibility:hidden;
+ padding:0!important;border-top-width:0!important;overflow:hidden!important;
+ transition:grid-template-rows .34s cubic-bezier(.22,.75,.25,1),opacity .25s ease,visibility 0s linear .34s,border-top-width .2s ease!important;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-expanded-body.is-open {
+ grid-template-rows:1fr!important;opacity:1;visibility:visible;
+ border-top-width:1px!important;
+ transition:grid-template-rows .34s cubic-bezier(.22,.75,.25,1),opacity .26s ease,visibility 0s,border-top-width .2s ease!important;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-expanded-inner {
+ min-height:0;overflow:hidden;box-sizing:border-box;padding:0 18px;
+}
+.app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-expanded-body.is-open .networth-card-expanded-inner {
+ padding:16px 18px 72px;
+}
+@media(max-width:800px){
+ .app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-expanded-inner {padding:0 13px;}
+ .app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-expanded-body.is-open .networth-card-expanded-inner{padding:15px 13px 68px;}
+}
+@media(prefers-reduced-motion:reduce){
+ .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-layer,
+ .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card,
+ .app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-expanded-body,
+ .app-shell .networth-stack-dashboard .networth-reference-stack .networth-card-chevron{transition:none!important;}
+}
+
+
+/* v134 — preserve v132 card geometry while animating mounted details.
+   Collapsed inner content has zero padding/borders so it cannot stretch the
+   backing color or push the next overlapping card down. */
+.app-shell .accounts-group-section .account-stack-card,
+.app-shell .category-section .category-stack-card,
+.app-shell .investment-tier-stack > .investment-tier-card {
+  transition: margin .34s cubic-bezier(.22,.75,.25,1),
+              box-shadow .3s ease,transform .3s ease!important;
+}
+.app-shell .accounts-group-section .account-stack-peek,
+.app-shell .category-section .category-stack-peek,
+.app-shell .investment-tier-card > .investment-tier-peek{
+  transition: min-height .34s cubic-bezier(.22,.75,.25,1),
+              padding .34s cubic-bezier(.22,.75,.25,1),
+              border-radius .34s ease!important;
+}
+.app-shell .account-stack-peek-top svg:last-child,
+.app-shell .category-stack-toggle svg:last-child,
+.app-shell .investment-tier-card .tier-chevron{
+  transition:transform .3s cubic-bezier(.22,.75,.25,1)!important;
+}
+/* Account and category detail wrappers have no height, padding or border when closed. */
+.app-shell .accounts-group-section .account-stack-card .account-stack-details,
+.app-shell .category-section .category-stack-card .category-stack-details{
+  display:grid!important;
+  grid-template-rows:0fr;
+  visibility:hidden;
+  opacity:0;
+  overflow:hidden!important;
+  min-height:0!important;
+  padding:0!important;
+  border-top-width:0!important;
+  transition:grid-template-rows .36s cubic-bezier(.22,.75,.25,1),
+             opacity .24s ease,visibility 0s linear .36s!important;
+}
+.app-shell .accounts-group-section .account-stack-card .account-stack-details.is-open,
+.app-shell .category-section .category-stack-card .category-stack-details.is-open{
+  grid-template-rows:1fr;
+  visibility:visible;
+  opacity:1;
+  border-top-width:1px!important;
+  transition:grid-template-rows .36s cubic-bezier(.22,.75,.25,1),
+             opacity .28s ease,visibility 0s!important;
+}
+.app-shell .accounts-group-section .account-stack-details-inner,
+.app-shell .category-section .category-stack-details-inner{
+  min-height:0!important;
+  overflow:hidden!important;
+  box-sizing:border-box;
+  padding:0!important;
+  border:0!important;
+  transition:padding .36s cubic-bezier(.22,.75,.25,1)!important;
+}
+.app-shell .accounts-group-section .account-stack-details.is-open .account-stack-details-inner{
+  padding:0 18px 72px!important;
+}
+.app-shell .category-section .category-stack-details.is-open .category-stack-details-inner{
+  display:flex;flex-direction:column;
+  padding:4px 13px 66px!important;
+}
+/* Investment tier: use the ORIGINAL expanded body geometry, with a zero-height
+   wrapper when closed. Do not force the collapsed content's padding to stay. */
+.app-shell .investment-tier-card > .investment-tier-collapse{
+  display:grid!important;
+  grid-template-rows:0fr;
+  visibility:hidden;
+  opacity:0;
+  min-height:0!important;
+  overflow:hidden!important;
+  transition:grid-template-rows .36s cubic-bezier(.22,.75,.25,1),
+             opacity .24s ease,visibility 0s linear .36s!important;
+}
+.app-shell .investment-tier-card > .investment-tier-collapse.is-open{
+  grid-template-rows:1fr;
+  visibility:visible;
+  opacity:1;
+  transition:grid-template-rows .36s cubic-bezier(.22,.75,.25,1),
+             opacity .28s ease,visibility 0s!important;
+}
+.app-shell .investment-tier-card > .investment-tier-collapse > .investment-tier-body{
+  position:relative!important;z-index:1!important;
+  display:flex!important;flex-direction:column!important;gap:9px!important;
+  min-height:0!important;min-width:0!important;
+  overflow:hidden!important;
+  width:calc(100% - 17px)!important;
+  margin:0 0 0 17px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0 0 0 20px!important;
+  background:var(--theme-surface)!important;
+  box-sizing:border-box;
+  transition:padding .36s cubic-bezier(.22,.75,.25,1)!important;
+}
+.app-shell .investment-tier-card > .investment-tier-collapse.is-open > .investment-tier-body{
+  padding:16px 18px 70px!important;
+  border-top:1px solid var(--theme-line)!important;
+}
+.app-shell .investment-tier-collapse .investment-tier-body > section{
+  min-width:0;max-width:100%;
+}
+@media(max-width:800px){
+  .app-shell .accounts-group-section .account-stack-details.is-open .account-stack-details-inner{
+    padding:0 13px 70px!important;
+  }
+  .app-shell .investment-tier-card > .investment-tier-collapse > .investment-tier-body{
+    width:calc(100% - 14px)!important;
+    margin-left:14px!important;
+  }
+  .app-shell .investment-tier-card > .investment-tier-collapse.is-open > .investment-tier-body{
+    padding:15px 13px 68px!important;
+  }
+}
+@media(max-width:650px){
+  .app-shell .category-section .category-stack-details.is-open .category-stack-details-inner{
+    padding:4px 9px 62px!important;
+  }
+}
+/* Animate the EXISTING motifs without changing their size or initial position. */
+.app-shell .accounts-group-section .account-stack-peek::before,
+.app-shell .accounts-group-section .account-stack-peek::after,
+.app-shell .category-section .category-stack-peek::before,
+.app-shell .investment-tier-card > .investment-tier-peek::after,
+.app-shell .networth-stack-dashboard .networth-reference-card::before{
+  transform-origin:67% 32%;
+  transition:transform .48s cubic-bezier(.22,.75,.25,1),opacity .36s ease!important;
+}
+.app-shell .accounts-group-section .account-stack-card.is-expanded .account-stack-peek::before{
+  transform:translate(-9px,13px) rotate(13deg) scale(1.11)!important;
+  opacity:.43!important;
+}
+.app-shell .accounts-group-section .account-stack-card.is-expanded .account-stack-peek::after{
+  transform:translate(-6px,-6px) rotate(-9deg) scale(1.08)!important;
+  opacity:.27!important;
+}
+.app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek::before{
+  transform:translate(-10px,14px) rotate(14deg) scale(1.1)!important;
+  opacity:.43!important;
+}
+.app-shell .investment-tier-card.tier-expanded > .investment-tier-peek::after{
+  transform:translate(-10px,13px) rotate(13deg) scale(1.1)!important;
+  opacity:.44!important;
+}
+.app-shell .networth-stack-dashboard .networth-reference-layer.networth-layer-expanded .networth-reference-card::before{
+  transform:translate(-10px,13px) rotate(13deg) scale(1.1)!important;
+  opacity:.43!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .app-shell .accounts-group-section .account-stack-card,
+  .app-shell .category-section .category-stack-card,
+  .app-shell .investment-tier-stack > .investment-tier-card,
+  .app-shell .accounts-group-section .account-stack-peek,
+  .app-shell .category-section .category-stack-peek,
+  .app-shell .investment-tier-card > .investment-tier-peek,
+  .app-shell .account-stack-details,.app-shell .category-stack-details,
+  .app-shell .investment-tier-collapse,
+  .app-shell .account-stack-details-inner,.app-shell .category-stack-details-inner,
+  .app-shell .investment-tier-body,
+  .app-shell .account-stack-peek-top svg:last-child,
+  .app-shell .category-stack-toggle svg:last-child,
+  .app-shell .investment-tier-card .tier-chevron,
+  .app-shell .accounts-group-section .account-stack-peek::before,
+  .app-shell .accounts-group-section .account-stack-peek::after,
+  .app-shell .category-section .category-stack-peek::before,
+  .app-shell .investment-tier-card > .investment-tier-peek::after,
+  .app-shell .networth-stack-dashboard .networth-reference-card::before{
+    transition:none!important;
+  }
+}
+
+/* v135: Third-level investment detail content stays visually clean.
+   The card peek retains its geometry and interactive animations; only the
+   ornamental circle behind the expanded performance panel is removed. */
+.app-shell .investment-third-level .investment-tier-body .investment-deep-hero::before,
+.app-shell .investment-third-level .investment-tier-body .investment-deep-hero::after,
+.app-shell .investment-third-level .investment-tier-body .investment-stage-hero::before,
+.app-shell .investment-third-level .investment-tier-body .investment-stage-hero::after {
+  content:none!important;
+  display:none!important;
+  box-shadow:none!important;
+}
+.app-shell .investment-third-level .investment-tier-body .investment-deep-hero,
+.app-shell .investment-third-level .investment-tier-body .investment-stage-hero {
+  background-image:none!important;
+}

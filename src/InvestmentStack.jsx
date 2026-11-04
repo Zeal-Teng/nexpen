@@ -20,7 +20,7 @@ export function InvestmentStackCard({title,summary,amount,accent='lavender',chil
    {summary&&<span className="investment-tier-subtitle">{summary}</span>}
    <span className="investment-tier-bottom">{amount&&<b>{amount}</b>}</span>
   </button>
-  {expanded&&<div className="investment-tier-body">{children}</div>}
+  <div className={"investment-tier-collapse"+(expanded?" is-open":"")} aria-hidden={!expanded} inert={!expanded}><div className="investment-tier-body">{children}</div></div>
  </article>;
 }
 // Detail rows inside an expanded investment card match the Account Management

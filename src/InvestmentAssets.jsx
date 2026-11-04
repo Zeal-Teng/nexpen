@@ -1,5 +1,5 @@
 import {t as i18n} from './i18n.js';
-import React,{useMemo,useState} from 'react';
+import React,{useEffect,useMemo,useState} from 'react';
 import {InvestmentStack,InvestmentStackCard,InvestmentStackAsset} from './InvestmentStack.jsx';
 import {ArrowLeft,Check,ChevronRight,Plus,RefreshCcw,Trash2,X,TrendingUp,Landmark,ShieldCheck,Coins} from 'lucide-react';
 import {db,today,uid} from './db.js';
@@ -13,8 +13,10 @@ const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
 const initialForm=()=>({kind:'contribution',date:today(),amount:'',units:'',sourceAccount:'',note:'',currentValue:'',valueDate:today()});
 
-export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],onChanged,onEditAccount,onBackOverview}){
+export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],onChanged,onEditAccount,onBackOverview,onDetailChange,backToListSignal=0}){
  const [selected,setSelected]=useState(''),[dialog,setDialog]=useState(''),[editingEntry,setEditingEntry]=useState(null),[form,setForm]=useState(initialForm()),[error,setError]=useState(''),[busy,setBusy]=useState(false),[numberField,setNumberField]=useState(null);
+ useEffect(()=>{onDetailChange?.(Boolean(selected));},[selected,onDetailChange]);
+ useEffect(()=>{if(backToListSignal>0){setSelected('');setDialog('');setNumberField(null);}},[backToListSignal]);
  const patch=(k,v)=>setForm(f=>({...f,[k]:v}));
  const change=(action,asset)=>{setSelected(asset.id);setEditingEntry(null);setError('');setForm(initialForm());setNumberField(null);setDialog(action)};
  const editEntry=(entry)=>{
