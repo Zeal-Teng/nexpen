@@ -973,9 +973,13 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
       <button type="button" className="investment-reference-card" onClick={()=>{setInvestSection(item.id);setSelectedStockSymbol(null)}} aria-label={`${item.title}，${i18n('目前現值')} ${item.valueTwd===null?i18n('尚無報價'):fmtPrimaryNumber(item.valueTwd)}`}>
        <div className="investment-reference-main">
         <div className="investment-reference-copy"><b>{item.title}</b><small>{detail} · {item.count} {i18n("筆")}</small></div>
-        <div className="investment-reference-amount"><strong>{item.valueTwd===null?i18n("尚無報價"):fmtPrimaryNumber(item.valueTwd)}</strong><small className={pnl===null?'':pnl>=0?'income':'expense'}>{pnl===null?'—':`${pnl>=0?'+':''}${fmtPrimaryNumber(pnl)}`}{pct===null?'':` · ${pct>=0?'+':''}${pct.toFixed(2)}%`}</small></div>
+        <div className="investment-reference-amount" aria-label={`${i18n('目前現值')}、${i18n('未實現損益')}、${i18n('損益百分比')}`}>
+         <strong className="investment-reference-net">{item.valueTwd===null?i18n("尚無報價"):fmtPrimaryNumber(item.valueTwd)}</strong>
+         <small className={'investment-reference-profit '+(pnl===null?'':pnl>=0?'income':'expense')}>{pnl===null?'—':`${pnl>=0?'+':''}${fmtPrimaryNumber(pnl)}`}</small>
+         <small className={'investment-reference-rate '+(pct===null?'':pct>=0?'income':'expense')}>{pct===null?'—':`${pct>=0?'+':''}${pct.toFixed(2)}%`}</small>
+        </div>
        </div>
-       <div className="investment-reference-footer"><span className="investment-reference-dots" aria-hidden="true"><i/><i/><i/></span><ChevronRight size={19} aria-hidden="true"/></div>
+       <div className="investment-reference-footer"><span className="investment-reference-dots" aria-hidden="true"><i/><i/><i/></span></div>
       </button>
     </div>;
    })}</div>

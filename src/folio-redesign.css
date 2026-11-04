@@ -1648,12 +1648,12 @@ html .app-shell .investment-dashboard.glass.panel.investment-combined,
   display:none!important;
 }
 
-/* Diary transaction cards: no arcs, rings or geometric overlays. Keep colored
-   edge and add a hairline BLACK outline outside the colored stroke. */
+/* v107: keep the transaction-type colored edge, replacing the harsh outer
+   dark outline with a soft elevation shadow that works on light/dark themes. */
 .app-shell .diary-transaction-stack .diary-stack-card{
   border:1.5px solid var(--diary-peek)!important;
-  box-shadow:0 0 0 .75px #111111,
-             0 7px 18px rgba(12,18,22,.10)!important;
+  box-shadow:0 3px 8px rgba(12,18,22,.12),
+             0 10px 24px rgba(12,18,22,.09)!important;
   background:var(--diary-peek)!important;
 }
 .app-shell .diary-transaction-stack .diary-stack-peek::before,
@@ -1662,4 +1662,48 @@ html .app-shell .investment-dashboard.glass.panel.investment-combined,
   display:none!important;
   box-shadow:none!important;
   background:none!important;
+}
+
+
+/* v108 — deeper layered elevation without a hard black outline.
+   Keep the original transaction-type colored border and card stacking. */
+.app-shell .diary-transaction-stack .diary-stack-card{
+  box-shadow:0 4px 11px rgba(8,13,22,.24),
+             0 13px 29px rgba(8,13,22,.30)!important;
+}
+/* First-level investments navigate directly; three separate right-aligned
+   metrics replace the former combined gain/rate line. */
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card{
+  box-shadow:0 4px 11px rgba(8,13,22,.22),
+             0 12px 27px rgba(8,13,22,.28)!important;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  gap:5px!important;
+  min-width:0;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount > *{
+  display:block;
+  max-width:100%;
+  line-height:1.2!important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-variant-numeric:tabular-nums;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount .investment-reference-profit,
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount .investment-reference-rate{
+  font-size:12px!important;
+  font-weight:650;
+}
+.app-shell .investment-dashboard .investment-first-level-stack .investment-reference-footer{
+  justify-content:flex-start!important;
+}
+@media(max-width:540px){
+  .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount{gap:4px!important}
+  .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount .investment-reference-profit,
+  .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount .investment-reference-rate{font-size:11px!important}
 }
