@@ -8,7 +8,7 @@ import NativeDatePicker from './NativeDatePicker.jsx';
 
 const fmt=(n)=>Number(n||0).toLocaleString('zh-TW',{maximumFractionDigits:2});
 const percentage=(v,c)=>c>0?`${v-c>=0?'+':''}${((v-c)/c*100).toFixed(2)}%`:'—';
-const money=(v,c)=>`${c} ${fmt(v)}`;
+const money=(v,c)=>`${c} ${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0})}`;
 const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
 const initialForm=()=>({kind:'contribution',date:today(),amount:'',units:'',sourceAccount:'',note:'',currentValue:'',valueDate:today()});
