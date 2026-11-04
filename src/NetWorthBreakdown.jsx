@@ -1,6 +1,7 @@
 import React,{useState} from 'react';
 import {Wallet,Landmark,ChartNoAxesCombined,Shield,Layers3,Coins,AlertCircle,ChevronRight} from 'lucide-react';
 import {ASSET_GROUPS} from './netWorth.js';
+import SummaryHero from './SummaryHero.jsx';
 
 const translations={
  'zh-TW':{title:'資產配置',gross:'總資產',debt:'總負債',net:'淨資產',ratio:'資產比例',liabilities:'負債明細',none:'目前沒有負債',empty:'尚未有可計算的資產',unknown:'部分投資缺少有效報價，以下為已知估值；淨資產可能低估。',cash:'現金',deposit:'存款',securities:'證券',trust:'持股信託',insurance:'保險',other:'其他資產',credit:'信用卡欠款',overdraft:'帳戶透支'},
@@ -18,11 +19,10 @@ export default function NetWorthBreakdown({data,format,language='zh-TW',currency
  const money=value=>currency==='TWD'?format(value):`${currency} ${format(value)}`;
  const formatPct=value=>`${value.toFixed(1)}%`;
  return <section className="networth-breakdown" aria-label={t.title}>
-   <div className="networth-overview-hero" aria-label={t.net}>
-    <div className="networth-overview-eyebrow">{t.net} · NET WORTH</div>
-    <strong className="networth-overview-value">{money(data.netWorth)}</strong>
-    <small className="networth-overview-description">{language==='en'?'Cash, deposits, securities, trusts and insurance, minus liabilities':language==='ja'?'現金・預金・証券・信託・保険から負債を控除':language==='zh-CN'?'现金、存款、证券、信托与保险，扣除负债':'現金、存款、證券、信託與保險，扣除負債'}</small>
-   </div>
+   <SummaryHero className="networth-overview-hero" eyebrow="NEXPEN · NET WORTH" title={t.net} label={t.net} value={money(data.netWorth)} detailId="networth-hero-details">
+     <p className="summary-hero-description">{language==='en'?'Cash, deposits, securities, trusts and insurance, minus liabilities':language==='ja'?'現金・預金・証券・信託・保険から負債を控除':language==='zh-CN'?'现金、存款、证券、信托与保险，扣除负债':'現金、存款、證券、信託與保險，扣除負債'}</p>
+     <div className="summary-hero-metrics"><div><small>{t.gross}</small><strong>{money(data.totalAssets)}</strong></div><div><small>{t.debt}</small><strong className={data.totalLiabilities>0?'expense':''}>{money(data.totalLiabilities)}</strong></div></div>
+   </SummaryHero>
    {data.missingQuotes.length>0&&<p className="networth-quote-warning"><AlertCircle size={16}/><span>{t.unknown} ({[...new Set(data.missingQuotes)].join('、')})</span></p>}
    <div className="investment-dashboard-section-title networth-section-title">
      <div><h3>{language==='en'?'Asset allocation & liabilities':language==='ja'?'資産構成と負債':language==='zh-CN'?'资产配置与负债':'資產配置與負債'}</h3><small>{language==='en'?'Tap a card to see allocation ratios and account details':language==='ja'?'カードをタップして資産比率と負債の内訳を表示':language==='zh-CN'?'点选卡片查看资产比例与负债明细':'點選卡片查看資產比例、各類金額與負債明細'}</small></div>
@@ -47,7 +47,7 @@ export default function NetWorthBreakdown({data,format,language='zh-TW',currency
       <button type="button" className="investment-reference-card networth-reference-card" aria-expanded={openCard==='debt'} onClick={()=>setOpenCard(v=>v==='debt'?null:'debt')}>
        <span className="investment-reference-main"><span className="investment-reference-copy"><span className="networth-peek-heading"><span className="networth-peek-dot" aria-hidden="true"/><b>{t.liabilities}</b><ChevronRight size={19} aria-hidden="true" className={'networth-card-chevron'+(openCard==='debt'?' is-open':'')}/></span><small>{data.liabilities.length} {language==='en'?'liabilities':'筆負債'}</small></span><span className="investment-reference-amount"><strong className="investment-reference-net">{money(data.totalLiabilities)}</strong></span></span>
       </button>
-      <div className={'networth-card-expanded-body'+(openCard==='debt'?' is-open':'')} aria-hidden={openCard!=='debt'} inert={openCard!=='debt'}><div className="networth-card-expanded-inner"><div className="networth-liability-header"><h3>{t.liabilities}</h3><strong className={data.totalLiabilities>0?'expense':''}>{money(data.totalLiabilities)}</strong></div>
+      <div className={'networth-card-expanded-body'+(openCard==='debt'?' is-open':'')} aria-hidden={openCard!=='debt'} inert={openCard!=='debt'}><div className="networth-card-expanded-inner">
        {data.liabilities.length?<div className="networth-liability-list">{data.liabilities.map(a=><div key={a.id} className="networth-liability-row"><span><b>{a.name}</b><small>{a.type==='credit'?t.credit:t.overdraft}</small></span><strong className="expense">{money(a.amount)}</strong></div>)}</div>:<p className="hint networth-no-debt">{t.none}</p>}</div></div>
      </article>
     </div>

@@ -2692,3 +2692,165 @@ html .app-shell .diary-search-filter>.smart-select.compact {
    transition:none!important;
  }
 }
+
+
+/* v137 — One shared Summary in Investment / Overview, collapsed by default. */
+html .app-shell .summary-hero,
+html .app-shell .summary-hero.investment-dashboard-hero,
+html .app-shell .summary-hero.networth-overview-hero {
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  display:block!important;min-height:0!important;
+  box-sizing:border-box!important;width:100%!important;
+  background:#1e241f!important;color:#fffaf1!important;
+  border:1px solid #455447!important;border-radius:26px!important;
+  padding:0!important;margin:0 0 23px!important;
+  box-shadow:0 12px 26px rgba(12,28,25,.14)!important;
+}
+html .app-shell .summary-hero::before,
+html .app-shell .summary-hero.investment-dashboard-hero::before,
+html .app-shell .summary-hero.networth-overview-hero::before {
+  content:"";position:absolute;z-index:-1;pointer-events:none;
+  right:-90px;top:-108px;width:260px;height:260px;border-radius:50%;
+  border:1px solid #c9b98555;
+  box-shadow:0 0 0 25px #c9b98512,0 0 0 54px #c9b98509;
+  transition:transform .38s ease;
+}
+html .app-shell .summary-hero.summary-hero-open::before {transform:rotate(12deg) scale(1.07)}
+html .app-shell .summary-hero-trigger {
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+  width:100%!important;min-height:190px!important;
+  padding:22px 23px 23px!important;margin:0!important;
+  border:0!important;background:transparent!important;color:inherit!important;
+  font:inherit!important;text-align:left!important;cursor:pointer!important;
+  align-content:start!important;gap:14px 8px!important;
+}
+html .app-shell .summary-hero-heading {min-width:0;display:flex;flex-direction:column;gap:6px;}
+html .app-shell .summary-hero-eyebrow{font-size:11px!important;letter-spacing:.18em!important;font-weight:800!important;color:#cbbb8d!important;}
+html .app-shell .summary-hero-title{font-size:clamp(19px,4vw,25px)!important;font-weight:790!important;color:#fffaf2!important;line-height:1.25!important;}
+html .app-shell .summary-hero-arrow{display:grid;place-items:center;width:37px;height:37px;border:1px solid #c9b98565;border-radius:12px;color:#d8bf87;background:#c9b98512;}
+html .app-shell .summary-hero-arrow svg{transition:transform .35s ease}
+html .app-shell .summary-hero-open .summary-hero-arrow svg{transform:rotate(90deg)}
+html .app-shell .summary-hero-value{grid-column:1/-1;display:flex;flex-direction:column;gap:7px;min-width:0;align-self:end;margin-top:3px;}
+html .app-shell .summary-hero-value small{color:#cbbb8d!important;font-size:clamp(12px,3vw,14px);font-weight:650;}
+html .app-shell .summary-hero-value strong{color:#fffaf2!important;font-size:clamp(28px,6.9vw,43px)!important;font-weight:810;line-height:1.13;letter-spacing:-.045em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;}
+html .app-shell .summary-hero-collapse{display:grid!important;grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .4s ease,opacity .35s ease,visibility 0s linear .4s;}
+html .app-shell .summary-hero-collapse.is-open{grid-template-rows:1fr;opacity:1;visibility:visible;transition:grid-template-rows .4s ease,opacity .35s ease,visibility 0s;}
+html .app-shell .summary-hero-inner{min-height:0;overflow:hidden;padding:0 23px;}
+html .app-shell .summary-hero-collapse.is-open .summary-hero-inner{padding-bottom:21px;}
+html .app-shell .summary-hero-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid #c9b9854a;padding-top:17px;gap:0;}
+html .app-shell .summary-hero-metrics>div{min-width:0;display:flex;flex-direction:column;gap:7px;padding-right:10px;}
+html .app-shell .summary-hero-metrics>div+div{border-left:1px solid #c9b9854a;padding:0 0 0 14px;}
+html .app-shell .summary-hero-metrics small{color:#cbbb8d!important;font-size:13px;font-weight:650;}
+html .app-shell .summary-hero-metrics strong{color:#fffaf2;font-size:clamp(15px,3.8vw,22px);font-weight:780;overflow-wrap:anywhere;line-height:1.25;font-variant-numeric:tabular-nums;}
+html .app-shell .summary-hero-metrics em{font-style:normal;font-weight:720;font-size:13px;}
+html .app-shell .summary-hero-description{margin:0 0 15px;color:#cbbb8d;line-height:1.5;font-size:13px;}
+html .app-shell[data-color-scheme] .summary-hero-metrics .income{color:var(--user-income)!important;-webkit-text-fill-color:var(--user-income)!important;}
+html .app-shell[data-color-scheme] .summary-hero-metrics .expense{color:var(--user-expense)!important;-webkit-text-fill-color:var(--user-expense)!important;}
+@media(max-width:430px){
+ html .app-shell .summary-hero-trigger{min-height:172px!important;padding:19px 17px 20px!important;}
+ html .app-shell .summary-hero-inner{padding-left:17px;padding-right:17px;}
+}
+@media(prefers-reduced-motion:reduce){html .app-shell .summary-hero::before,html .app-shell .summary-hero-arrow svg,html .app-shell .summary-hero-collapse{transition:none!important}}
+
+/* Category Card Stack: account-like full-surface toggle and upper-right chevron.
+   Drag/edit/delete controls remain independent accessible targets. */
+html .app-shell .category-section .category-stack-peek{position:relative!important;min-height:164px!important;display:block!important;padding:0!important;}
+html .app-shell .category-section .category-stack-toggle{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ display:flex!important;align-items:flex-start!important;flex-basis:auto!important;
+ padding:20px 16px!important;gap:11px!important;
+ border:0!important;background:transparent!important;
+ cursor:pointer!important;z-index:1!important;
+}
+html .app-shell .category-section .category-stack-toggle>svg:first-child{flex-shrink:0;margin-top:1px;}
+html .app-shell .category-section .category-stack-toggle strong{flex:1;min-width:0;}
+html .app-shell .category-section .category-stack-toggle>svg:last-child{position:absolute!important;right:18px!important;top:21px!important;margin:0!important;width:19px;height:19px;}
+html .app-shell .category-section .category-stack-toggle strong{padding-right:32px;}
+html .app-shell .category-section .category-stack-peek>.category-drag-handle{
+ position:absolute!important;left:15px!important;bottom:45px!important;z-index:3!important;
+}
+html .app-shell .category-section .category-stack-peek>.category-tools{
+ position:absolute!important;right:13px!important;bottom:47px!important;z-index:3!important;
+}
+html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek{min-height:112px!important;}
+html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek>.category-drag-handle,
+html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek>.category-tools{bottom:8px!important;}
+@media(max-width:650px){
+ html .app-shell .category-section .category-stack-peek{padding:0!important;min-height:154px!important;}
+ html .app-shell .category-section .category-stack-toggle{padding:18px 13px!important;}
+ html .app-shell .category-section .category-stack-toggle>svg:last-child{right:15px!important;top:20px!important;}
+}
+
+/* v138 — Three distinct theme-aware geometric motifs for the diary stats-three.
+   Expense: diagonal triangle; income: layered diamond; net: orbital rings.
+   Decorations stay behind labels/amounts and never change layout or calculations. */
+.app-shell .daily-compact .stats-three.diary-finance-summary > .stat{
+  isolation:isolate!important;
+  overflow:hidden!important;
+}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .stat::before,
+.app-shell .daily-compact .stats-three.diary-finance-summary > .stat::after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  pointer-events:none!important;
+  z-index:0!important;
+  box-sizing:border-box!important;
+  transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .35s ease!important;
+}
+/* Spending: two triangular cut planes, not a circle */
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-out::before{
+  width:92px!important;height:92px!important;right:-34px!important;top:-48px!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  clip-path:polygon(100% 0,100% 100%,0 0)!important;
+  background:color-mix(in srgb,var(--diary-metric-accent) 13%,transparent)!important;
+  transform:rotate(-10deg)!important;
+}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-out::after{
+  width:67px!important;height:67px!important;right:-9px!important;top:-37px!important;
+  border:1px solid color-mix(in srgb,var(--diary-metric-accent) 30%,transparent)!important;
+  border-radius:0!important;box-shadow:none!important;
+  clip-path:polygon(100% 0,100% 100%,0 0)!important;
+  background:color-mix(in srgb,var(--diary-metric-accent) 5%,transparent)!important;
+  transform:rotate(-10deg)!important;
+}
+/* Income: two offset diamonds */
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-in::before{
+  width:65px!important;height:65px!important;right:-19px!important;top:-39px!important;
+  border:1px solid color-mix(in srgb,var(--diary-metric-accent) 37%,transparent)!important;
+  border-radius:9px!important;box-shadow:none!important;
+  background:color-mix(in srgb,var(--diary-metric-accent) 9%,transparent)!important;
+  transform:rotate(45deg)!important;
+}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-in::after{
+  width:42px!important;height:42px!important;right:15px!important;top:-27px!important;
+  border:1px solid color-mix(in srgb,var(--diary-metric-accent) 23%,transparent)!important;
+  border-radius:5px!important;box-shadow:none!important;
+  background:transparent!important;
+  transform:rotate(45deg)!important;
+}
+/* Net: fine orbital rings, clearly different from the first two */
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-net::before{
+  width:91px!important;height:91px!important;right:-46px!important;top:-53px!important;
+  border:1px solid color-mix(in srgb,var(--diary-metric-accent) 37%,transparent)!important;
+  border-radius:50%!important;
+  box-shadow:0 0 0 12px color-mix(in srgb,var(--diary-metric-accent) 6%,transparent),
+             0 0 0 25px color-mix(in srgb,var(--diary-metric-accent) 3%,transparent)!important;
+  background:transparent!important;transform:none!important;
+}
+.app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-net::after{
+  width:11px!important;height:11px!important;right:30px!important;top:12px!important;
+  border:0!important;border-radius:50%!important;box-shadow:none!important;
+  background:color-mix(in srgb,var(--diary-metric-accent) 24%,transparent)!important;
+  transform:none!important;
+}
+/* Respect motion preferences, while offering a tiny interaction response. */
+@media(hover:hover){
+  .app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-out:hover::before{transform:rotate(-4deg) translate(-3px,3px)!important}
+  .app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-in:hover::before{transform:rotate(52deg) scale(1.04)!important}
+  .app-shell .daily-compact .stats-three.diary-finance-summary > .diary-stat-net:hover::before{transform:scale(1.08)!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .app-shell .daily-compact .stats-three.diary-finance-summary > .stat::before,
+ .app-shell .daily-compact .stats-three.diary-finance-summary > .stat::after{transition:none!important}
+}
