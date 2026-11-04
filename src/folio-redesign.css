@@ -1900,3 +1900,128 @@ html .app-shell .diary-search-filter>.smart-select.compact {
 :root[data-theme] .app-shell .sheet-floating-actions .fab.sheet-action-delete:focus-visible {
   outline:2px solid #bc526b!important;outline-offset:3px;
 }
+
+
+/* v120 — Journal transaction ListView: intentionally separate from old diary stack styles. */
+.app-shell .daily-transactions .diary-transaction-list {
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  margin:0;
+  padding:0;
+  isolation:isolate;
+}
+.app-shell .diary-transaction-list .diary-list-row {
+  position:relative;
+  margin:0!important;
+  min-height:0!important;
+  padding:0;
+  transform:none!important;
+  filter:none!important;
+  background:transparent;
+  border:0;
+  box-shadow:none!important;
+  list-style:none;
+}
+.app-shell .diary-transaction-list .diary-list-row + .diary-list-row {
+  border-top:1px solid var(--theme-border,rgba(128,128,128,.16));
+}
+.app-shell .diary-transaction-list .diary-list-action {
+  display:block;
+  position:relative;
+  width:100%;
+  min-height:66px;
+  padding:12px 8px;
+  margin:0;
+  text-align:left;
+  color:var(--theme-text,inherit);
+  font:inherit;
+  background:transparent;
+  border:0;
+  border-radius:10px;
+  box-shadow:none;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.app-shell .diary-transaction-list .diary-list-action:active {
+  background:var(--theme-soft,rgba(128,128,128,.08));
+}
+.app-shell .diary-transaction-list .diary-list-action:focus-visible {
+  outline:2px solid var(--theme-accent,#7186ee);
+  outline-offset:-2px;
+}
+.app-shell .diary-transaction-list .diary-list-main {
+  display:flex;
+  align-items:center;
+  width:100%;
+  gap:10px;
+  min-width:0;
+}
+.app-shell .diary-transaction-list .diary-list-main .transaction-icon {
+  flex:0 0 36px;
+  width:36px;
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.app-shell .diary-transaction-list .diary-list-name {
+  display:flex;
+  flex:1 1 0;
+  flex-direction:column;
+  justify-content:center;
+  gap:4px;
+  min-width:0;
+}
+.app-shell .diary-transaction-list .diary-list-name b {
+  font-size:14px;
+  font-weight:650;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.app-shell .diary-transaction-list .diary-list-name small,
+.app-shell .diary-transaction-list .diary-list-amount small {
+  display:block;
+  font-size:11px;
+  line-height:1.4;
+  color:var(--theme-muted, #8590a2);
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.app-shell .diary-transaction-list .diary-list-amount {
+  flex:0 1 auto;
+  min-width:0;
+  max-width:47%;
+  display:flex;
+  align-items:flex-end;
+  flex-direction:column;
+  gap:4px;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.app-shell .diary-transaction-list .diary-list-amount strong {
+  font-size:14px;
+  font-weight:700;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.app-shell .diary-transaction-list .diary-list-amount small {
+  max-width:100%;
+}
+.app-shell .diary-transaction-list .diary-list-chevron {
+  flex:0 0 15px;
+  width:15px;
+  color:var(--theme-muted,#8590a2);
+}
+.app-shell .diary-transaction-list .diary-month-date-heading {
+  margin:12px 0 5px;
+}
+@media (max-width:480px) {
+  .app-shell .diary-transaction-list .diary-list-action {padding:11px 4px;min-height:62px;}
+  .app-shell .diary-transaction-list .diary-list-main {gap:8px;}
+  .app-shell .diary-transaction-list .diary-list-main .transaction-icon {width:32px;height:32px;flex-basis:32px;}
+  .app-shell .diary-transaction-list .diary-list-name b,
+  .app-shell .diary-transaction-list .diary-list-amount strong {font-size:13px;}
+}

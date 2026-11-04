@@ -913,7 +913,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  </div>
  <div className="stats-three diary-finance-summary" aria-label={i18n('收支統計')}><div className="glass stat diary-stat-out"><small>{diaryView==='month'?tr('本月支出'):tr('當日支出')}</small><strong className="expense">{fmtPrimaryNumber(dayExpense)}</strong></div><div className="glass stat diary-stat-in"><small>{diaryView==='month'?tr('本月收入'):tr('當日收入')}</small><strong className="income">{fmtPrimaryNumber(dayIncome)}</strong></div><div className="glass stat diary-stat-net"><small>{diaryView==='month'?i18n('本月淨額'):tr('當日淨額')}</small><strong className={dayIncome-dayExpense>=0?'income':'expense'}>{fmtPrimaryNumber(dayIncome-dayExpense)}</strong></div></div>
  {diaryView==='day'&&<div className="week-strip" role="group" aria-label={i18n("選擇一週中的日期；左右滑動切換週別")} onTouchStart={onWeekTouchStart} onTouchEnd={onWeekTouchEnd}>{week.map((d,i)=><button type="button" key={d} aria-label={`${d} 星期${'日一二三四五六'[i]}`} aria-pressed={d===date} className={'week-day '+(d===date?'active':'')+(d===today()?' is-today':'')} onClick={()=>setDate(d)}><small>{'日一二三四五六'[i]}</small><b>{Number(d.slice(-2))}</b><i className={diaryRecords.some(x=>x.date===d)?'dot visible':'dot'}/></button>)}</div>}
-</section><section className="daily-transactions diary-listview" aria-label={i18n("交易明細")}><div className="diary-search-filter"><div className="searchbox"><Search size={17}/><input placeholder={i18n("搜尋備註、分類、金額")} aria-label={i18n("搜尋交易")} value={query} onChange={e=>setQuery(e.target.value)}/></div><SmartSelect className="compact" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">{i18n("全部")}</option><option value="expense">{i18n("支出")}</option><option value="income">{i18n("收入")}</option><option value="transfer">{i18n("轉帳")}</option><option value="stock">{i18n("股票交易")}</option></SmartSelect></div><div className="diary-transaction-stack" role="list" aria-label={i18n('交易明細')}>
+</section><section className="daily-transactions diary-listview" aria-label={i18n("交易明細")}><div className="diary-search-filter"><div className="searchbox"><Search size={17}/><input placeholder={i18n("搜尋備註、分類、金額")} aria-label={i18n("搜尋交易")} value={query} onChange={e=>setQuery(e.target.value)}/></div><SmartSelect className="compact" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">{i18n("全部")}</option><option value="expense">{i18n("支出")}</option><option value="income">{i18n("收入")}</option><option value="transfer">{i18n("轉帳")}</option><option value="stock">{i18n("股票交易")}</option></SmartSelect></div><div className="diary-transaction-list" role="list" aria-label={i18n('交易明細')}>
 {dayTx.length?dayTx.map((x,i)=>{
   const account=accounts.find(a=>a.id===x.account);
   const accountLabel=x.type==='transfer'?`${accounts.find(a=>a.id===x.fromAccount)?.name||i18n('未指定轉出帳戶')} → ${accounts.find(a=>a.id===x.toAccount)?.name||i18n('未指定轉入帳戶')}`:(account?.name||i18n('未指定帳戶'));
@@ -921,13 +921,13 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   const Icon=CATEGORY_ICONS[x.type==='stock'?'trend':x.type==='transfer'?'transfer':categoryIcons[`${x.type}/sub/${x.mainCategory}/${x.subCategory}`]||categoryIcons[`${x.type}/main/${x.mainCategory}`]||suggestedIcon(x.mainCategory||'')]||Tags;
   return <React.Fragment key={x.id}>
     {diaryView==='month'&&(i===0||dayTx[i-1].date!==x.date)&&<div className="diary-month-date-heading">{x.date.replaceAll('-','/')} <small>{['日','一','二','三','四','五','六'][parseDate(x.date).getDay()]}</small></div>}
-    <article role="listitem" className={`diary-stack-card diary-peek-${x.type}`} style={{'--diary-layer':i}}>
-      <button type="button" className="diary-stack-peek" aria-label={`${x.note||x.subCategory||x.mainCategory||picker[x.type]} · ${signedAmount} · ${accountLabel} · ${i18n('編輯')}`} onClick={()=>(x.isStockDividend||x.isStockTrade)?open('stock',stocks.find(s=>s.id===x.stockId)):open('transaction',x)}>
-        <span className="diary-stack-main">
+    <article role="listitem" className={`diary-list-row diary-type-${x.type}`}>
+      <button type="button" className="diary-list-action" aria-label={`${x.note||x.subCategory||x.mainCategory||picker[x.type]} · ${signedAmount} · ${accountLabel} · ${i18n('編輯')}`} onClick={()=>(x.isStockDividend||x.isStockTrade)?open('stock',stocks.find(s=>s.id===x.stockId)):open('transaction',x)}>
+        <span className="diary-list-main">
           <span className={'transaction-icon '+x.type}><Icon size={20}/></span>
-          <span className="diary-stack-name"><b>{x.note||x.subCategory||x.mainCategory||picker[x.type]}</b><small>{x.type==='transfer'?i18n('帳戶轉帳'):x.mainCategory||picker[x.type]}{x.projectId&&projects.some(p=>p.id===x.projectId)?' · '+projects.find(p=>p.id===x.projectId).name:''}</small></span>
-          <span className="diary-stack-amount"><strong className={x.type==='expense'?'expense':x.type==='income'?'income':''}>{signedAmount}</strong><small>{accountLabel}</small></span>
-          <ChevronRight size={18} className="diary-stack-chevron" aria-hidden="true"/>
+          <span className="diary-list-name"><b>{x.note||x.subCategory||x.mainCategory||picker[x.type]}</b><small>{x.type==='transfer'?i18n('帳戶轉帳'):x.mainCategory||picker[x.type]}{x.projectId&&projects.some(p=>p.id===x.projectId)?' · '+projects.find(p=>p.id===x.projectId).name:''}</small></span>
+          <span className="diary-list-amount"><strong className={x.type==='expense'?'expense':x.type==='income'?'income':''}>{signedAmount}</strong><small>{accountLabel}</small></span>
+          <ChevronRight size={18} className="diary-list-chevron" aria-hidden="true"/>
         </span>
       </button>
     </article>
