@@ -1,80 +1,115 @@
 import React, {useEffect, useRef} from 'react';
-import {Edit3, Trash2} from 'lucide-react';
+import {Pencil, Trash2} from 'lucide-react';
 
-// Mobile-friendly swipe-to-reveal: swipe left for Delete, right for Edit.
-// Keeping the actions behind the row prevents accidental destructive gestures.
-const REVEAL = 84;
-const COMMIT_THRESHOLD = 49;
-const INTENT_THRESHOLD = 9;
+// Swiping to the fully labelled action and releasing triggers it immediately.
+// The action is NOT triggered by merely crossing the threshold while still dragging.
+export const SWIPE_REVEAL_PX = 108;
+export const SWIPE_COMMIT_PX = 82;
+const INTENT_PX = 8;
+export function swipeSideForDistance(distance) {
+  return distance >= SWIPE_COMMIT_PX ? 'edit' : distance <= -SWIPE_COMMIT_PX ? 'delete' : null;
+}
 
-export default function SwipeableDiaryRow({children, id, openSide, onReveal, onEdit, onDelete, editLabel, deleteLabel}) {
-  const card = useRef(null);
-  const gesture = useRef(null);
-  const blockClick = useRef(false);
-  const resetTimer = useRef(null);
-  const offset = openSide === 'edit' ? REVEAL : openSide === 'delete' ? -REVEAL : 0;
+export default function SwipeableDiaryRow({children, id, onEdit, onDelete, editLabel, deleteLabel}) {
+  const surfaceRef = useRef(null);
+  const gestureRef = useRef(null);
+  const callbacksRef = useRef({onEdit,onDelete});
+  callbacksRef.current = {onEdit,onDelete};
+  const suppressClickRef = useRef(false);
+  const suppressTimerRef = useRef(null);
 
-  function position(value, animate = true) {
-    if (!card.current) return;
-    card.current.style.transition = animate ? '' : 'none';
-    card.current.style.transform = `translate3d(${value}px,0,0)`;
+  function position(value, animate=true) {
+    const node=surfaceRef.current;
+    if(!node)return;
+    node.style.transition = animate ? '' : 'none';
+    node.style.transform = `translate3d(${value}px,0,0)`;
   }
-  useEffect(() => {
-    if (!gesture.current) position(offset);
-  }, [offset]);
-  useEffect(() => () => {if(resetTimer.current)clearTimeout(resetTimer.current)}, []);
-
-  function start(e) {
-    if(e.pointerType === 'mouse' && e.button !== 0) return;
-    if(e.target.closest('.diary-swipe-reveal-action')) return;
-    gesture.current = {pointerId:e.pointerId,x:e.clientX,y:e.clientY,origin:offset,axis:null,moved:false};
+  function suppressNextClick(){
+    suppressClickRef.current=true;
+    if(suppressTimerRef.current)clearTimeout(suppressTimerRef.current);
+    suppressTimerRef.current=setTimeout(()=>{suppressClickRef.current=false;},650);
   }
-  function move(e) {
-    const g=gesture.current;
-    if(!g || g.pointerId !== e.pointerId) return;
-    const dx=e.clientX-g.x,dy=e.clientY-g.y;
-    if(!g.axis) {
-      if(Math.abs(dx)<INTENT_THRESHOLD && Math.abs(dy)<INTENT_THRESHOLD) return;
-      g.axis = Math.abs(dx)>Math.abs(dy)*1.25 ? 'horizontal' : 'vertical';
-      if(g.axis==='vertical') {gesture.current=null;return;}
-      try{e.currentTarget.setPointerCapture(e.pointerId)}catch{}
+  useEffect(()=>{
+    const node=surfaceRef.current;
+    if(!node)return;
+    let pendingAction=null;
+    function start(x,y,input){
+      if(pendingAction)return;
+      gestureRef.current={x,y,lastX:x,lastY:y,axis:null,input};
     }
-    if(g.axis!=='horizontal') return;
-    g.moved=true;
-    const next = Math.max(-REVEAL,Math.min(REVEAL,g.origin+dx));
-    position(next,false);
-  }
-  function end(e, cancelled=false) {
-    const g=gesture.current;
-    if(!g || (e && g.pointerId!==e.pointerId)) return;
-    gesture.current=null;
-    if(g.axis==='horizontal' && g.moved) {
-      blockClick.current=true;
-      if(resetTimer.current) clearTimeout(resetTimer.current);
-      resetTimer.current=setTimeout(()=>{blockClick.current=false},350);
-      const displacement=cancelled ? g.origin : Math.max(-REVEAL,Math.min(REVEAL,g.origin+(e.clientX-g.x)));
-      const newSide = cancelled ? openSide : displacement>=COMMIT_THRESHOLD ? 'edit' : displacement<=-COMMIT_THRESHOLD ? 'delete' : null;
-      onReveal(newSide);
-      position(newSide==='edit'?REVEAL:newSide==='delete'?-REVEAL:0);
-    } else if(cancelled) position(offset);
-  }
-  function handleContentClick(e) {
-    if(blockClick.current || openSide) {
-      e.preventDefault();e.stopPropagation();
-      blockClick.current=false;
-      if(openSide){onReveal(null);position(0)}
+    function move(x,y,event){
+      const g=gestureRef.current;
+      if(!g)return;
+      const dx=x-g.x,dy=y-g.y;
+      g.lastX=x;g.lastY=y;
+      if(!g.axis){
+        if(Math.abs(dx)<INTENT_PX&&Math.abs(dy)<INTENT_PX)return;
+        g.axis=Math.abs(dx)>Math.abs(dy)*1.16?'horizontal':'vertical';
+        if(g.axis==='vertical'){gestureRef.current=null;return;}
+      }
+      if(g.axis!=='horizontal')return;
+      if(event?.cancelable)event.preventDefault();
+      position(Math.max(-SWIPE_REVEAL_PX,Math.min(SWIPE_REVEAL_PX,dx)),false);
     }
-  }
-  function perform(action) {
-    onReveal(null);
-    position(0);
-    (action==='edit'?onEdit:onDelete)();
-  }
-  return <div className={'diary-swipe-container'+(openSide?' has-reveal':'')} data-swipe-id={id}>
-    <div className="diary-swipe-actions" aria-hidden={!openSide}>
-      <button type="button" className="diary-swipe-reveal-action diary-swipe-edit" tabIndex={openSide==='edit'?0:-1} aria-label={editLabel} onClick={()=>perform('edit')}><Edit3 size={21}/><span>{editLabel}</span></button>
-      <button type="button" className="diary-swipe-reveal-action diary-swipe-delete" tabIndex={openSide==='delete'?0:-1} aria-label={deleteLabel} onClick={()=>perform('delete')}><Trash2 size={21}/><span>{deleteLabel}</span></button>
+    function finish(cancelled=false){
+      const g=gestureRef.current;
+      gestureRef.current=null;
+      if(!g)return;
+      if(g.axis!=='horizontal'){position(0);return;}
+      suppressNextClick();
+      const dx=g.lastX-g.x;
+      const side=cancelled?null:swipeSideForDistance(dx);
+      if(!side){position(0);return;}
+      // Show the entire action (and its text) before opening edit / confirmation.
+      position(side==='edit'?SWIPE_REVEAL_PX:-SWIPE_REVEAL_PX);
+      pendingAction=side;
+      const fire=()=>{
+        if(pendingAction!==side)return;
+        pendingAction=null;
+        position(0);
+        if(side==='edit')callbacksRef.current.onEdit?.();
+        else callbacksRef.current.onDelete?.(); // Existing confirmation stays in App.remove.
+      };
+      // Give the 108px reveal a brief, visible snap before the action opens.
+      setTimeout(fire,145);
+    }
+    const touchstart=e=>{if(e.touches.length===1)start(e.touches[0].clientX,e.touches[0].clientY,'touch');};
+    const touchmove=e=>{if(gestureRef.current?.input==='touch'&&e.touches.length===1)move(e.touches[0].clientX,e.touches[0].clientY,e);};
+    const touchend=e=>{const g=gestureRef.current;if(g?.input!=='touch')return;if(e.changedTouches.length){g.lastX=e.changedTouches[0].clientX;g.lastY=e.changedTouches[0].clientY;}finish();};
+    const touchcancel=()=>{if(gestureRef.current?.input==='touch')finish(true);};
+    const pointerdown=e=>{if(e.pointerType==='mouse'&&e.button===0)start(e.clientX,e.clientY,'mouse');};
+    const pointermove=e=>{if(gestureRef.current?.input==='mouse')move(e.clientX,e.clientY,e);};
+    const pointerup=e=>{if(gestureRef.current?.input==='mouse'){gestureRef.current.lastX=e.clientX;finish();}};
+    const mousecancel=()=>{if(gestureRef.current?.input==='mouse')finish(true);};
+    node.addEventListener('touchstart',touchstart,{passive:true});
+    node.addEventListener('touchmove',touchmove,{passive:false});
+    node.addEventListener('touchend',touchend,{passive:true});
+    node.addEventListener('touchcancel',touchcancel,{passive:true});
+    node.addEventListener('pointerdown',pointerdown);
+    node.addEventListener('pointermove',pointermove);
+    node.addEventListener('pointerup',pointerup);
+    node.addEventListener('pointercancel',mousecancel);
+    node.addEventListener('mouseleave',mousecancel);
+    return ()=>{
+      node.removeEventListener('touchstart',touchstart);
+      node.removeEventListener('touchmove',touchmove);
+      node.removeEventListener('touchend',touchend);
+      node.removeEventListener('touchcancel',touchcancel);
+      node.removeEventListener('pointerdown',pointerdown);
+      node.removeEventListener('pointermove',pointermove);
+      node.removeEventListener('pointerup',pointerup);
+      node.removeEventListener('pointercancel',mousecancel);
+      node.removeEventListener('mouseleave',mousecancel);
+      pendingAction=null;
+    };
+  },[id]);
+  useEffect(()=>()=>{if(suppressTimerRef.current)clearTimeout(suppressTimerRef.current);},[]);
+  const suppressClick=e=>{if(suppressClickRef.current){e.preventDefault();e.stopPropagation();}};
+  return <div className="diary-swipe-container" data-swipe-id={id}>
+    <div className="diary-swipe-actions" aria-hidden="true">
+      <div className="diary-swipe-reveal-action diary-swipe-edit"><Pencil size={23}/><span>{editLabel}</span></div>
+      <div className="diary-swipe-reveal-action diary-swipe-delete"><Trash2 size={23}/><span>{deleteLabel}</span></div>
     </div>
-    <div ref={card} className="diary-swipe-surface" style={{transform:`translate3d(${offset}px,0,0)`}} onPointerDown={start} onPointerMove={move} onPointerUp={e=>end(e)} onPointerCancel={e=>end(e,true)} onLostPointerCapture={e=>{if(gesture.current?.pointerId===e.pointerId)end(e,true)}} onClickCapture={handleContentClick}>{children}</div>
+    <div ref={surfaceRef} className="diary-swipe-surface" onClickCapture={suppressClick}>{children}</div>
   </div>;
 }

@@ -3848,3 +3848,56 @@ html body .transaction-category-dialog .transaction-category-column-title { bord
 @media (prefers-reduced-motion:reduce) {
  .app-shell .diary-transaction-list .diary-swipe-surface {transition-duration:0ms;}
 }
+
+
+/* v195: reliable finger-driven swipe actions. Previous v194 surface clipped/covered
+   the action labels and Pointer Events were cancelled in iOS Safari. */
+.app-shell .diary-transaction-list .diary-swipe-container {
+  width:100%; overflow:hidden; position:relative; isolation:isolate;
+  border-radius:12px;
+}
+.app-shell .diary-transaction-list .diary-swipe-actions {
+  position:absolute; inset:0; display:block; z-index:0; pointer-events:none;
+}
+.app-shell .diary-transaction-list .diary-swipe-reveal-action {
+  position:absolute; top:0; bottom:0; height:100%; width:108px; min-height:64px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:6px; padding:6px 8px; font:inherit; font-size:15px; font-weight:700;
+  color:#fff!important; opacity:1; visibility:visible;
+  pointer-events:auto; border:0; border-radius:0;
+}
+.app-shell .diary-transaction-list .diary-swipe-edit {left:0; right:auto; background:#117a9b!important;}
+.app-shell .diary-transaction-list .diary-swipe-delete {right:0; left:auto; background:#b13b57!important;}
+.app-shell .diary-transaction-list .diary-swipe-reveal-action:disabled {pointer-events:none;}
+.app-shell .diary-transaction-list .diary-swipe-surface {
+  position:relative; z-index:1; width:100%;
+  background:var(--theme-bg,var(--bg,#081322))!important;
+  touch-action:pan-y; user-select:none; -webkit-user-select:none;
+  transition:transform 270ms cubic-bezier(.2,.85,.25,1);
+  will-change:transform;
+}
+.app-shell .diary-transaction-list .diary-swipe-container.has-reveal .diary-swipe-actions {pointer-events:auto;}
+@media (prefers-reduced-motion:reduce) {
+  .app-shell .diary-transaction-list .diary-swipe-surface {transition-duration:0ms!important;}
+}
+
+/* v196: finger-release commits the visible diary swipe action; labels are hints,
+   not extra taps. Keep them behind the translating row. */
+.app-shell .diary-transaction-list .diary-swipe-actions,
+.app-shell .diary-transaction-list .diary-swipe-reveal-action {pointer-events:none!important;}
+
+/* Slide the full seven-day strip into place on week changes. A new key is used
+   only when the start of the week changes; choosing a day does not reanimate. */
+@keyframes nexpen-week-from-right {
+  from { opacity:.6;transform:translate3d(28px,0,0); }
+  to { opacity:1;transform:translate3d(0,0,0); }
+}
+@keyframes nexpen-week-from-left {
+  from { opacity:.6;transform:translate3d(-28px,0,0); }
+  to { opacity:1;transform:translate3d(0,0,0); }
+}
+.app-shell .week-strip.week-strip-slide-left {animation:nexpen-week-from-right 280ms cubic-bezier(.2,.8,.2,1) both;}
+.app-shell .week-strip.week-strip-slide-right {animation:nexpen-week-from-left 280ms cubic-bezier(.2,.8,.2,1) both;}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell .week-strip.week-strip-slide-left,.app-shell .week-strip.week-strip-slide-right {animation:none!important;}
+}
