@@ -33,6 +33,16 @@ const catalog={
     "ja": "このPINはアプリ画面へのアクセスを制限するだけで、端末内のデータを暗号化しません。",
     "zh-CN": "此密码只限制应用画面的访问，不会加密本机数据。"
   },
+  "啟用密碼": {"en":"Enable passcode","ja":"PINを有効にする","zh-CN":"启用密码"},
+  "變更密碼": {"en":"Change passcode","ja":"PINを変更","zh-CN":"变更密码"},
+  "請輸入原密碼": {"en":"Enter current passcode","ja":"現在のPINを入力","zh-CN":"请输入原密码"},
+  "請先驗證目前密碼": {"en":"Verify your current passcode first","ja":"最初に現在のPINを確認してください","zh-CN":"请先验证当前密码"},
+  "驗證成功後將停用密碼": {"en":"The passcode will be disabled after verification","ja":"確認後にPINを無効にします","zh-CN":"验证成功后将停用密码"},
+  "請再次輸入相同的六碼密碼": {"en":"Enter the same 6-digit passcode again","ja":"同じ6桁のPINを再入力","zh-CN":"请再次输入相同的六位密码"},
+  "請輸入六位數字": {"en":"Enter six digits","ja":"6桁の数字を入力","zh-CN":"请输入六位数字"},
+  "驗證密碼": {"en":"Verify passcode","ja":"PINを確認","zh-CN":"验证密码"},
+  "下一步": {"en":"Next","ja":"次へ","zh-CN":"下一步"},
+  "確認設定": {"en":"Confirm passcode","ja":"PINを確定","zh-CN":"确认设置"},
   "開啟 App 密碼": {
     "en": "App passcode",
     "ja": "アプリのPIN",

@@ -2152,3 +2152,15 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 .app-shell .networth-trend-chart circle{cursor:pointer;}
 .app-shell .networth-trend-note{color:var(--theme-muted);font-size:12px;line-height:1.6;margin:8px 0 3px;}
 @media(prefers-reduced-motion:reduce){.app-shell .networth-trend-ranges button{transition:none!important;}}
+
+/* v170: settings passcode flows open on demand in a modal wizard. */
+.app-password-settings .app-password-actions{margin-top:16px}
+.app-pin-wizard-backdrop{position:fixed;inset:0;z-index:100020;display:flex;align-items:center;justify-content:center;padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(18px + env(safe-area-inset-bottom,0px));background:rgba(4,12,23,.66);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px)}
+.app-pin-wizard{color:var(--theme-text,#f5f8ff);background:var(--theme-surface,#18283d);border:1px solid var(--theme-line,#3c5266);border-radius:24px;padding:23px 20px;width:min(410px,100%);max-height:90dvh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.35);animation:app-pin-wizard-in .24s cubic-bezier(.22,1,.36,1)}
+.app-pin-wizard-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.app-pin-wizard-heading h3{font-size:20px;margin:0}.app-pin-wizard-heading button{display:grid;place-items:center;min-width:38px;min-height:38px;border:0;border-radius:12px;background:var(--theme-chip,rgba(255,255,255,.08));color:inherit}
+.app-pin-wizard-subtitle{margin:10px 0 14px;color:var(--theme-muted,#b4c1d0);font-size:14px}
+.app-pin-wizard .cp-pin-pad{width:100%;max-width:330px;margin:0 auto}.app-pin-wizard .cp-pin-grid{margin:auto}
+.app-pin-wizard-legacy{width:100%;border-radius:12px;padding:12px;font-size:18px;background:var(--theme-chip,#203b52);color:inherit;border:1px solid var(--theme-line,#456077)}
+.app-pin-wizard-actions{display:flex;gap:10px;margin-top:18px}.app-pin-wizard-actions button{flex:1;min-width:0;min-height:44px}
+@keyframes app-pin-wizard-in{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.app-pin-wizard{animation:none}}

@@ -267,21 +267,62 @@ function AppLockScreen({onUnlock,onSuccess,numeric=false}){
   {!numeric&&<button type="submit" disabled={busy||!value||Date.now()<blockedUntil}>{busy?i18n('驗證中…'):i18n('解鎖')}</button>}
  </form></div>;
 }
-function AppPasswordSettings({hasPassword,onSet,onRemove,numericPassword=false}){
- const[old,setOld]=useState(''),[next,setNext]=useState(''),[confirm,setConfirm]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const save=async e=>{e.preventDefault();setError('');if(!/^[0-9]{6}$/.test(next))return setError(i18n("請設定剛好 6 碼的數字密碼"));if(next!==confirm)return setError(i18n("兩次輸入的新密碼不同"));if(hasPassword&&!old)return setError(i18n("請先輸入目前密碼"));setBusy(true);
-  try{await onSet(old,next);setOld('');setNext('');setConfirm('');}catch(err){setError(err.message)}finally{setBusy(false)}
+function AppPasswordSettings({hasPassword,onSet,onRemove,onVerify,numericPassword=false}){
+ // Password fields only exist inside the step-by-step modal, never on settings page.
+ const [mode,setMode]=useState(''); // enable | change | disable
+ const [step,setStep]=useState(''); // verify | new | confirm
+ const [old,setOld]=useState(''),[next,setNext]=useState(''),[confirmation,setConfirmation]=useState('');
+ const [busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [attempts,setAttempts]=useState(0);
+ const inFlight=useRef(false);
+ const open=action=>{setMode(action);setStep(action==='enable'?'new':'verify');setOld('');setNext('');setConfirmation('');setBusy(false);setError('');setAttempts(0);};
+ const close=()=>{if(inFlight.current)return;setMode('');setOld('');setNext('');setConfirmation('');setError('');};
+ const verify=async()=>{
+  if(inFlight.current||!old||numericPassword&&old.length!==6)return;
+  inFlight.current=true;setBusy(true);setError('');
+  try{
+   if(!(await onVerify(old))){setAttempts(n=>n+1);setOld('');setError(i18n('目前密碼不正確'));return;}
+   if(mode==='disable'){await onRemove(old);closeAfterSuccess();}
+   else{setStep('new');setError('');}
+  }catch(err){setError(err.message||i18n('密碼驗證失敗'));}
+  finally{setBusy(false);inFlight.current=false;}
  };
- const remove=async()=>{setError('');setBusy(true);try{await onRemove(old);setOld('');setNext('');setConfirm('');}catch(err){setError(err.message)}finally{setBusy(false)}};
- return <section className="glass panel app-password-settings"><h2>{i18n("開啟 App 密碼")}</h2><p className="hint">{hasPassword?i18n("已啟用：下次重新開啟 App 需輸入密碼"):i18n("目前未設定：開啟 App 時直接進入")}{i18n("。密碼只儲存加鹽雜湊值，不會儲存明文。")}</p>
-  <form onSubmit={save} className="app-password-form">
-  {hasPassword&&(numericPassword?<PinField label={i18n("目前密碼")} value={old} onChange={setOld}/>:<label className="field"><span>{i18n("目前密碼（舊版）")}</span><input type="password" autoComplete="current-password" value={old} onChange={e=>setOld(e.target.value)} required/></label>)}
-  <PinField label={hasPassword?i18n("設定新密碼"):i18n("設定 6 碼數字密碼")} value={next} onChange={setNext}/>
-  <PinField label={i18n("再次輸入新密碼")} value={confirm} onChange={setConfirm}/>
-  {error&&<p role="alert" className="app-lock-error">{error}</p>}
-  <div className="app-password-actions"><button className="primary-btn" type="submit" disabled={busy}>{hasPassword?i18n("更新密碼"):i18n("啟用密碼")}</button>
-  {hasPassword&&<button type="button" className="soft-btn" onClick={remove} disabled={busy||!old}>{i18n("停用密碼")}</button>}</div></form>
-  <p className="hint">{i18n("忘記密碼無法由 App 直接找回。此功能不是資料加密，無法防止使用開發者工具的人讀取 IndexedDB。")}</p>
+ const closeAfterSuccess=()=>{setMode('');setOld('');setNext('');setConfirmation('');setError('');};
+ const submit=async()=>{
+  if(inFlight.current)return;
+  if(step==='new'){
+   if(!/^[0-9]{6}$/.test(next)){setError(i18n('請設定剛好 6 碼的數字密碼'));return;}
+   setConfirmation('');setError('');setStep('confirm');return;
+  }
+  if(step!=='confirm')return;
+  if(!/^[0-9]{6}$/.test(confirmation)){setError(i18n('請設定剛好 6 碼的數字密碼'));return;}
+  if(next!==confirmation){setError(i18n('兩次輸入的新密碼不同'));setConfirmation('');return;}
+  inFlight.current=true;setBusy(true);setError('');
+  try{await onSet(mode==='change'?old:'',next);closeAfterSuccess();}
+  catch(err){setError(err.message||i18n('密碼設定失敗'));}
+  finally{setBusy(false);inFlight.current=false;}
+ };
+ const title=step==='verify'?i18n('請輸入原密碼'):step==='new'?i18n('設定 6 碼數字密碼'):i18n('再次輸入新密碼');
+ const value=step==='verify'?old:step==='new'?next:confirmation;
+ const update=step==='verify'?setOld:step==='new'?setNext:setConfirmation;
+ return <section className="glass panel app-password-settings">
+  <h2>{i18n('啟用密碼')}</h2>
+  <p className="hint">{hasPassword?i18n('已啟用：下次重新開啟 App 需輸入密碼'):i18n('目前未設定：開啟 App 時直接進入')}</p>
+  <div className="app-password-actions">
+   {hasPassword?<>
+    <button type="button" className="primary-btn" onClick={()=>open('change')}>{i18n('變更密碼')}</button>
+    <button type="button" className="soft-btn" onClick={()=>open('disable')}>{i18n('停用密碼')}</button>
+   </>:<button type="button" className="primary-btn" onClick={()=>open('enable')}>{i18n('啟用密碼')}</button>}
+  </div>
+  {mode&&createPortal(<div className="app-pin-wizard-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}>
+   <div className="app-pin-wizard" role="dialog" aria-modal="true" aria-labelledby="app-pin-wizard-title" onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();close();}}}>
+    <div className="app-pin-wizard-heading"><h3 id="app-pin-wizard-title">{title}</h3><button type="button" aria-label={i18n('取消')} onClick={close} disabled={busy}><X size={20}/></button></div>
+    <p className="app-pin-wizard-subtitle">{mode==='disable'?i18n('驗證成功後將停用密碼'):mode==='change'&&step==='verify'?i18n('請先驗證目前密碼'):step==='confirm'?i18n('請再次輸入相同的六碼密碼'):i18n('請輸入六位數字')}</p>
+    {step==='verify'&&!numericPassword?<input className="app-pin-wizard-legacy" type="password" autoComplete="current-password" value={old} autoFocus onChange={e=>{setOld(e.target.value);setError('')}} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();void verify()}}}/>:<PinPad embedded value={value} onChange={v=>{update(v);setError('')}}/>}
+    {error&&<p className="app-lock-error" role="alert">{error}</p>}
+    <div className="app-pin-wizard-actions"><button type="button" className="soft-btn" disabled={busy} onClick={close}>{i18n('取消')}</button><button type="button" className="primary-btn" disabled={busy||(step==='verify'?!old||(numericPassword&&old.length!==6):value.length!==6)} onClick={()=>void (step==='verify'?verify():submit())}>{busy?i18n('驗證中…'):step==='verify'?i18n('驗證密碼'):step==='new'?i18n('下一步'):step==='confirm'?i18n('確認設定'):i18n('確認')}</button></div>
+   </div>
+  </div>,document.body)}
  </section>;
 }
 
@@ -1186,7 +1227,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  <p className="hint">{i18n("介面文字依語言設定切換；使用者自行建立的帳戶、分類、專案及備註名稱不會被改寫。")}</p>
  <Field label={tr('金額顏色')}><SmartSelect value={colorScheme} onChange={e=>chooseColors(e.target.value)}><option value="normal">{tr('收入／獲利顯示綠色')} {i18n("· 支出／損失紅色")}</option><option value="reverse">{tr('收入／獲利顯示紅色')} {i18n("· 支出／損失綠色")}</option></SmartSelect></Field>
  <div className="color-preview"><span className="income">+ 1,200</span><span className="expense">− 500</span></div>
- </section><section className="glass panel"><h2>{i18n("iCloud Drive 備份")}</h2><p className="hint">{i18n("資料保存在這台裝置。按「立即備份」產生 JSON，再透過 iPhone 的分享選單儲存至「檔案 → iCloud Drive」；還原時從檔案 App 手動選取備份。")}</p><button className="action-row" onClick={download}><Download size={20}/><span><b>{tr('立即備份')}</b><small>{i18n("匯出完整 JSON，儲存到 iCloud Drive")}</small></span><ChevronRight size={18}/></button><button className="action-row" onClick={()=>fileInput.current?.click()}><Upload size={20}/><span><b>{tr('立即還原')}</b><small>{i18n("從 iCloud Drive 選擇備份檔，確認後覆蓋本機")}</small></span><ChevronRight size={18}/></button><input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importFile}/><p className="hint">{i18n("iPhone PWA 無法自動找到 iCloud Drive 最新檔案，還原時須自行選取；建議以檔名日期辨識最新備份。")}</p></section><section className="glass panel"><h2>{tr('外觀與使用')}</h2><div className="theme-heading"><b>{tr('外觀主題')}</b><small>{i18n("選擇配色，立即套用並儲存於本機")}</small></div><ThemePicker value={theme} onChange={chooseTheme}/><div className="font-scale-block"><div><b>{tr('字體大小')}</b><small>{i18n("依你的閱讀習慣調整")}</small></div><div className="scale-chips">{[[0.94,'小'],[1,'中'],[1.14,'大']].map(([v,label])=><button key={label} type="button" className={'scale-chip '+(Math.abs(fontScale-v)<0.025?'active':'')} onClick={()=>updateFontScale(v)}>{i18n(label)}</button>)}</div></div><div className="font-scale-block fab-position-setting"><div><b>{i18n('浮動按鈕位置')}</b><small>{i18n('選擇浮動操作按鈕靠左或靠右')}</small></div><div className="scale-chips" role="group" aria-label={i18n('浮動按鈕位置')}>{[['left','左側'],['right','右側']].map(([value,label])=><button key={value} type="button" className={'scale-chip '+(fabPosition===value?'active':'')} aria-pressed={fabPosition===value} onClick={()=>updateFabPosition(value)}>{i18n(label)}</button>)}</div></div><div className="hint">{i18n("安裝：用 iPhone Safari 開啟 GitHub Pages 網址 → 分享 → 加入主畫面。程式快取後可離線開啟。")}</div></section><AppPasswordSettings hasPassword={!!passwordConfig} onSet={changeLock} onRemove={removeLock} numericPassword={passwordConfig?.kind==='pin6'}/></>}
+ </section><section className="glass panel"><h2>{i18n("iCloud Drive 備份")}</h2><p className="hint">{i18n("資料保存在這台裝置。按「立即備份」產生 JSON，再透過 iPhone 的分享選單儲存至「檔案 → iCloud Drive」；還原時從檔案 App 手動選取備份。")}</p><button className="action-row" onClick={download}><Download size={20}/><span><b>{tr('立即備份')}</b><small>{i18n("匯出完整 JSON，儲存到 iCloud Drive")}</small></span><ChevronRight size={18}/></button><button className="action-row" onClick={()=>fileInput.current?.click()}><Upload size={20}/><span><b>{tr('立即還原')}</b><small>{i18n("從 iCloud Drive 選擇備份檔，確認後覆蓋本機")}</small></span><ChevronRight size={18}/></button><input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importFile}/><p className="hint">{i18n("iPhone PWA 無法自動找到 iCloud Drive 最新檔案，還原時須自行選取；建議以檔名日期辨識最新備份。")}</p></section><section className="glass panel"><h2>{tr('外觀與使用')}</h2><div className="theme-heading"><b>{tr('外觀主題')}</b><small>{i18n("選擇配色，立即套用並儲存於本機")}</small></div><ThemePicker value={theme} onChange={chooseTheme}/><div className="font-scale-block"><div><b>{tr('字體大小')}</b><small>{i18n("依你的閱讀習慣調整")}</small></div><div className="scale-chips">{[[0.94,'小'],[1,'中'],[1.14,'大']].map(([v,label])=><button key={label} type="button" className={'scale-chip '+(Math.abs(fontScale-v)<0.025?'active':'')} onClick={()=>updateFontScale(v)}>{i18n(label)}</button>)}</div></div><div className="font-scale-block fab-position-setting"><div><b>{i18n('浮動按鈕位置')}</b><small>{i18n('選擇浮動操作按鈕靠左或靠右')}</small></div><div className="scale-chips" role="group" aria-label={i18n('浮動按鈕位置')}>{[['left','左側'],['right','右側']].map(([value,label])=><button key={value} type="button" className={'scale-chip '+(fabPosition===value?'active':'')} aria-pressed={fabPosition===value} onClick={()=>updateFabPosition(value)}>{i18n(label)}</button>)}</div></div><div className="hint">{i18n("安裝：用 iPhone Safari 開啟 GitHub Pages 網址 → 分享 → 加入主畫面。程式快取後可離線開啟。")}</div></section><AppPasswordSettings hasPassword={!!passwordConfig} onSet={changeLock} onRemove={removeLock} onVerify={verifyLock} numericPassword={passwordConfig?.kind==='pin6'}/></>}
  </main></div>
  
  <nav className="bottom-nav glass">{mobileNav.map(([key,label,Icon])=><button key={key} onClick={()=>setTab(key)} className={(tab===key||(key==='settings'&&settingsPages.includes(tab)))?'active':''}><Icon size={20} strokeWidth={tab===key?2.6:1.9}/><span>{tr(label)}</span></button>)}</nav>
