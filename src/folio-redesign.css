@@ -3382,3 +3382,66 @@ html .app-shell .category-section .category-stack-card.category-stack-expanded .
   html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek>.category-drag-handle,
   html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek>.category-tools { bottom:24px!important; }
 }
+
+/* v167 — Category Card Stack: keep both action groups in the uncovered
+   portion of the front face, matching My Accounts. The previous translateY(50%)
+   pushed controls underneath the following overlapping card. */
+html .app-shell .category-section .category-stack-card:not(.category-stack-expanded) .category-stack-peek > .category-drag-handle,
+html .app-shell .category-section .category-stack-card:not(.category-stack-expanded) .category-stack-peek > .category-tools {
+  top:auto!important;
+  bottom:82px!important;
+  transform:none!important;
+  align-self:auto!important;
+}
+html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek > .category-drag-handle,
+html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek > .category-tools {
+  top:auto!important;
+  bottom:17px!important;
+  transform:none!important;
+  align-self:auto!important;
+}
+/* The final stack item has no following card covering its lower area. */
+html .app-shell .category-section .category-stack-card:last-child:not(.category-stack-expanded) .category-stack-peek > .category-drag-handle,
+html .app-shell .category-section .category-stack-card:last-child:not(.category-stack-expanded) .category-stack-peek > .category-tools {
+  bottom:33px!important;
+}
+html .app-shell .category-section .category-stack-peek > .category-drag-handle {
+  width:32px!important;
+  height:38px!important;
+  min-width:32px!important;
+  min-height:38px!important;
+  display:grid!important;
+  place-items:center!important;
+}
+html .app-shell .category-section .category-stack-peek > .category-tools {
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+}
+@media(max-width:650px){
+  html .app-shell .category-section .category-stack-card:not(.category-stack-expanded):not(:last-child) .category-stack-peek > .category-drag-handle,
+  html .app-shell .category-section .category-stack-card:not(.category-stack-expanded):not(:last-child) .category-stack-peek > .category-tools {
+    bottom:78px!important;
+  }
+  html .app-shell .category-section .category-stack-peek > .category-drag-handle {
+    width:30px!important;
+    min-width:30px!important;
+  }
+}
+
+/* v168 — Match the My Accounts drag-handle vertical position.
+   Category controls were ~22px above the account grip in the user's screenshots.
+   Keep the two category action areas on the same axis, without changing overlap,
+   title padding, or card height. The last card has no overlapping successor. */
+html .app-shell .category-section .category-stack-card:not(.category-stack-expanded):not(:last-child) .category-stack-peek > .category-drag-handle,
+html .app-shell .category-section .category-stack-card:not(.category-stack-expanded):not(:last-child) .category-stack-peek > .category-tools {
+  top:auto!important;
+  bottom:56px!important;
+  transform:none!important;
+}
+@media(max-width:650px){
+ html .app-shell .category-section .category-stack-card:not(.category-stack-expanded):not(:last-child) .category-stack-peek > .category-drag-handle,
+ html .app-shell .category-section .category-stack-card:not(.category-stack-expanded):not(:last-child) .category-stack-peek > .category-tools {
+   bottom:56px!important;
+ }
+}
