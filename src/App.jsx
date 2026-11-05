@@ -13,6 +13,7 @@ import StockPerformanceView from './StockPerformanceView.jsx';
 import NetWorthBreakdown from './NetWorthBreakdown.jsx';
 import {useNetWorthHistory} from './useNetWorthHistory.js';
 import SummaryHero from './SummaryHero.jsx';
+import NetWorthGoal from './NetWorthGoal.jsx';
 import InstallHint from './InstallHint.jsx';
 import {computeNetWorth,ASSET_GROUPS,assetGroupForType} from './netWorth.js';
 import InvestmentAssets from './InvestmentAssets.jsx';
@@ -282,6 +283,7 @@ function AppPasswordSettings({hasPassword,onSet,onRemove,numericPassword=false})
 
 export default function App(){
  const[language,setLanguage]=useState('zh-TW'),[colorScheme,setColorScheme]=useState('normal'),[primaryCurrency,setPrimaryCurrency]=useState('TWD'),[primaryTwdRate,setPrimaryTwdRate]=useState(1),[primaryRateDate,setPrimaryRateDate]=useState(''),[primaryRateLoading,setPrimaryRateLoading]=useState(false);const tr=value=>trText(value,language);setLocale(language);
+ const [netWorthGoalTwd,setNetWorthGoalTwd]=useState(null);
  const [passwordConfig,setPasswordConfig]=useState(null),[unlocked,setUnlocked]=useState(false);
  const lockInitialized=useRef(false);
  const[tab,setTab]=useState('daily'),[records,setRecords]=useState([]),[accounts,setAccounts]=useState([]),[stocks,setStocks]=useState([]),[recurring,setRecurring]=useState([]),[categories,setCategories]=useState(defaultCategories),[categoryIcons,setCategoryIcons]=useState({}),[accountTypes,setAccountTypes]=useState(defaultAccountTypes),[projects,setProjects]=useState([]),[date,setDate]=useState(today()),[diaryView,setDiaryView]=useState('day'),[theme,setTheme]=useState('folio'),[fontScale,setFontScale]=useState(1),[fabPosition,setFabPosition]=useState('right'),[ready,setReady]=useState(false),[dialog,setDialog]=useState(''),[editing,setEditing]=useState(null),[notice,setNotice]=useState(''),[filter,setFilter]=useState('all'),[categoryFlow,setCategoryFlow]=useState('expense'),[query,setQuery]=useState('');const fileInput=useRef(null);const datePickerRef=useRef(null);const monthPickerRef=useRef(null);const weekSwipe=useRef(null);
@@ -304,6 +306,7 @@ export default function App(){
  const [stockTypeStatus,setStockTypeStatus]=useState('');const [catalogAutoName,setCatalogAutoName]=useState('');const [brokerFees,setBrokerFees]=useState({discount:60,minimum:20});
  const [quotes,setQuotes]=useState({});const [quoteLoading,setQuoteLoading]=useState(false);const [quoteStatus,setQuoteStatus]=useState('');
  const quoteRequest=useRef({busy:false,last:0,pendingCodes:new Set()});
+ const startupRatesRequested=useRef(false);
  const mainRate=primaryCurrency==='TWD'?1:Number(primaryTwdRate);const baseAvailable=Number.isFinite(mainRate)&&mainRate>0;const crossRateToPrimary=(currency,twdRate)=>{if(currency===primaryCurrency)return 1;if(!baseAvailable)return NaN;const base=currency==='TWD'?1:Number(twdRate);return Number.isFinite(base)&&base>0?base/mainRate:NaN};const formatFxRate=rate=>Number.isFinite(rate)&&rate>0?Number(rate.toPrecision(9)).toLocaleString('zh-TW',{maximumFractionDigits:8}):'匯率尚未取得';const inPrimary=n=>baseAvailable?Number(n)/mainRate:NaN;const fmtPrimary=n=>baseAvailable?renderCurrency(inPrimary(n),primaryCurrency,['JPY','KRW'].includes(primaryCurrency)?0:2):'匯率尚未取得';
  // v53: Currency codes below an entry only identify balances NOT denominated in the primary currency.
  const nonPrimaryCode=currency=>{const c=currency||'TWD';return c===primaryCurrency?'':c};
@@ -424,7 +427,7 @@ export default function App(){
   }
  };
  const toast=s=>{setNotice(i18n(s));setTimeout(()=>setNotice(''),3300)};
- async function reload(){const[r,a,s,rr,c,t,fs,ci,at,bf,sq,langSetting,colorSetting,baseSetting,baseRateSetting,projectSetting,investHistory,investFlows,appLockSetting,fabSetting,accountOrderSetting]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.get('categories'),db.settings.get('theme'),db.settings.get('fontScale'),db.settings.get('categoryIcons'),db.settings.get('accountTypes'),db.settings.get('stockBrokerFees'),db.settings.get('stockClosingQuotes'),db.settings.get('language'),db.settings.get('amountColors'),db.settings.get('primaryCurrency'),db.settings.get('primaryTwdRate'),db.settings.get('projects'),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.settings.get('appLock'),db.settings.get('fabPosition'),db.settings.get('accountOrder')]);setAccountOrder(Array.isArray(accountOrderSetting?.value)?accountOrderSetting.value:[]);setFabPosition(fabSetting?.value==='left'?'left':'right');setPasswordConfig(appLockSetting?.value||null);if(!lockInitialized.current){setUnlocked(!appLockSetting?.value);lockInitialized.current=true;}setInvestmentValuations(investHistory);setInvestmentFlows(investFlows);setProjects(projectSetting?.value||[]);setLanguage(langSetting?.value||'zh-TW');setColorScheme(colorSetting?.value||'normal');setPrimaryCurrency(baseSetting?.value||'TWD');setPrimaryTwdRate(Number(baseRateSetting?.value?.rate)||((baseSetting?.value||'TWD')==='TWD'?1:0));setPrimaryRateDate(baseRateSetting?.value?.date||'');setQuotes(sq?.value||{});setBrokerFees(bf?.value||{discount:60,minimum:20});setAccountTypes([...((at?.value)||defaultAccountTypes),...defaultAccountTypes.filter(t=>['trust','policy'].includes(t.id)&&!((at?.value)||defaultAccountTypes).some(x=>x.id===t.id))]);setRecords(r);setAccounts(a);setStocks(s);setRecurring(rr);setCategories(c?.value||defaultCategories);setTheme(t?.value||'folio');setFontScale((()=>{const f=Number(fs?.value)||1;return f<=0.96?0.94:f>=1.05?1.14:1})());setCategoryIcons(ci?.value||{});}
+ async function reload(){const[r,a,s,rr,c,t,fs,ci,at,bf,sq,langSetting,colorSetting,baseSetting,baseRateSetting,projectSetting,investHistory,investFlows,appLockSetting,fabSetting,accountOrderSetting,netWorthGoalSetting]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.get('categories'),db.settings.get('theme'),db.settings.get('fontScale'),db.settings.get('categoryIcons'),db.settings.get('accountTypes'),db.settings.get('stockBrokerFees'),db.settings.get('stockClosingQuotes'),db.settings.get('language'),db.settings.get('amountColors'),db.settings.get('primaryCurrency'),db.settings.get('primaryTwdRate'),db.settings.get('projects'),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.settings.get('appLock'),db.settings.get('fabPosition'),db.settings.get('accountOrder'),db.settings.get('netWorthGoalTwd')]);setNetWorthGoalTwd(Number(netWorthGoalSetting?.value)>0?Number(netWorthGoalSetting.value):null);setAccountOrder(Array.isArray(accountOrderSetting?.value)?accountOrderSetting.value:[]);setFabPosition(fabSetting?.value==='left'?'left':'right');setPasswordConfig(appLockSetting?.value||null);if(!lockInitialized.current){setUnlocked(!appLockSetting?.value);lockInitialized.current=true;}setInvestmentValuations(investHistory);setInvestmentFlows(investFlows);setProjects(projectSetting?.value||[]);setLanguage(langSetting?.value||'zh-TW');setColorScheme(colorSetting?.value||'normal');setPrimaryCurrency(baseSetting?.value||'TWD');setPrimaryTwdRate(Number(baseRateSetting?.value?.rate)||((baseSetting?.value||'TWD')==='TWD'?1:0));setPrimaryRateDate(baseRateSetting?.value?.date||'');setQuotes(sq?.value||{});setBrokerFees(bf?.value||{discount:60,minimum:20});setAccountTypes([...((at?.value)||defaultAccountTypes),...defaultAccountTypes.filter(t=>['trust','policy'].includes(t.id)&&!((at?.value)||defaultAccountTypes).some(x=>x.id===t.id))]);setRecords(r);setAccounts(a);setStocks(s);setRecurring(rr);setCategories(c?.value||defaultCategories);setTheme(t?.value||'folio');setFontScale((()=>{const f=Number(fs?.value)||1;return f<=0.96?0.94:f>=1.05?1.14:1})());setCategoryIcons(ci?.value||{});}
  useEffect(()=>{ensureDefaults().then(reload).then(()=>setReady(true)).catch(e=>toast(e.message))},[]);
  useEffect(()=>{document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;document.documentElement.style.setProperty('--app-font-scale',String(fontScale));},[theme,fontScale]);
  // On app launch, silently refresh the official securities catalog (at most once daily).
@@ -432,7 +435,54 @@ export default function App(){
  useEffect(()=>{if(!ready)return;refreshSecurityCatalog().catch(e=>console.info('已保留本機股票名冊：',e.message));},[ready]);
  // Refresh official closing prices on startup when there are holdings, not only after
  // opening the Stock tab. Existing five-minute throttle prevents repeated downloads.
- useEffect(()=>{if(ready&&(holdings(stocks).length||accounts.some(a=>a.type==='trust')))refreshQuotes();},[ready,tab,stocks]);
+ // Launch refresh uses the existing official quotes pipeline; no history is fabricated.
+ useEffect(()=>{if(ready&&(holdings(stocks).length||accounts.some(a=>a.type==='trust')))refreshQuotes();},[ready,tab,stocks,accounts]);
+ // v153: update the exchange rates actually used by existing accounts and the
+ // configured primary currency when the app opens. Keep last good values offline.
+ useEffect(()=>{
+  if(!ready||startupRatesRequested.current)return;
+  startupRatesRequested.current=true;
+  const currencies=[...new Set([...accounts.map(a=>a.currency||'TWD'),primaryCurrency].filter(c=>c&&c!=='TWD'))];
+  if(!currencies.length)return;
+  let cancelled=false;
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),14000);
+  (async()=>{
+   const results=await Promise.allSettled(currencies.map(async currency=>{
+    const res=await fetch(`https://api.frankfurter.dev/v2/rate/${encodeURIComponent(currency)}/TWD`,{cache:'no-store',signal:controller.signal});
+    if(!res.ok)throw Error(`匯率 ${currency}: HTTP ${res.status}`);
+    const data=await res.json();
+    const rate=Number(data.rate);
+    if(!Number.isFinite(rate)||rate<=0||!/^\d{4}-\d{2}-\d{2}$/.test(String(data.date||'')))throw Error(`匯率 ${currency} 格式錯誤`);
+    return {currency,rate,date:data.date};
+   }));
+   if(cancelled)return;
+   const valid=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+   const previousPrimary=(await db.settings.get('primaryTwdRate'))?.value;
+   // Ignore older feeds: otherwise an older quote can replace a recent manual refresh.
+   const updates=valid.filter(r=>{
+    if(r.currency===primaryCurrency)return !previousPrimary?.date||r.date>=previousPrimary.date;
+    return accounts.some(a=>a.currency===r.currency&&(!a.fxDate||r.date>=a.fxDate));
+   });
+   if(cancelled||!updates.length)return;
+   const accountRates=new Map(updates.map(x=>[x.currency,x]));
+   await db.transaction('rw',db.accounts,db.settings,async()=>{
+    for(const a of accounts){
+     const r=accountRates.get(a.currency);
+     if(r&&(!a.fxDate||r.date>=a.fxDate))await db.accounts.update(a.id,{fxRate:r.rate,fxDate:r.date,fxSource:'Frankfurter'});
+    }
+    const current=accountRates.get(primaryCurrency);
+    if(current)await db.settings.put({key:'primaryTwdRate',value:{rate:current.rate,date:current.date,source:'Frankfurter'}});
+   });
+   if(cancelled)return;
+   setAccounts(old=>old.map(a=>{const r=accountRates.get(a.currency);return r&&(!a.fxDate||r.date>=a.fxDate)?{...a,fxRate:r.rate,fxDate:r.date,fxSource:'Frankfurter'}:a}));
+   const primary=accountRates.get(primaryCurrency);
+   if(primary){setPrimaryTwdRate(primary.rate);setPrimaryRateDate(primary.date)}
+   const failures=results.filter(r=>r.status==='rejected');
+   if(failures.length)console.info(`部分匯率更新失敗 (${failures.length}/${results.length})，保留快取`);
+  })().catch(e=>console.info('啟動匯率更新失敗，保留本機匯率：',e.message)).finally(()=>clearTimeout(timer));
+  return()=>{cancelled=true;controller.abort();clearTimeout(timer)};
+ },[ready]);
  // v146: first level follows the account-type order; second level follows
  // persisted account IDs. New/unsorted accounts fall back to natural name order.
  const accountNameCollator=new Intl.Collator('zh-Hant-TW',{numeric:true,sensitivity:'base'});
@@ -947,6 +997,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  };
  const importFile=async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;try{const obj=JSON.parse(await file.text());if(obj?.app!=='cyberpulse-liquid'||![1,2].includes(obj.version)||!['records','accounts','stocks','recurring','settings'].every(k=>Array.isArray(obj[k])))throw Error(i18n("備份格式或版本不正確"));if(!confirm(`準備還原 ${file.name}\n備份時間：${obj.exportedAt?new Date(obj.exportedAt).toLocaleString('zh-TW'):'未記錄'}\n交易 ${obj.records.length} 筆、帳戶 ${obj.accounts.length} 個、股票 ${obj.stocks.length} 筆、保單估值 ${(obj.investmentValuations||[]).length} 筆、定期排程 ${obj.recurring.length} 筆。\n\n這會覆蓋目前所有本機資料。請先備份目前資料，確定還原？`))return;await restore(obj);await reload();toast(i18n("備份還原完成"))}catch(err){toast('匯入失敗：'+err.message)}};
  const chooseLanguage=async value=>{await db.settings.put({key:'language',value});setLanguage(value)};
+ const saveNetWorthGoal=async amountTwd=>{const valid=amountTwd===null?null:Number(amountTwd);if(valid!==null&&(!Number.isFinite(valid)||valid<=0))throw Error('目標金額必須大於零');await db.settings.put({key:'netWorthGoalTwd',value:valid});setNetWorthGoalTwd(valid);};
  const chooseColors=async value=>{await db.settings.put({key:'amountColors',value});setColorScheme(value)};
  const changePrimaryCurrency=async value=>{
   await db.settings.put({key:'primaryCurrency',value});setPrimaryCurrency(value);
@@ -974,7 +1025,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   await db.settings.delete('appLock');setPasswordConfig(null);setUnlocked(true);toast(i18n("已停用 App 密碼"));};
  if(!ready)return <div className="loading">{i18n("載入本機資料庫中…")}</div>;
  if(passwordConfig&&!unlocked)return <AppLockScreen onUnlock={verifyLock} numeric={passwordConfig.kind==='pin6'}/>;
- return <div className="app-shell" data-fab-position={fabPosition} lang={language} data-color-scheme={colorScheme} style={{'--user-income':colorScheme==='reverse'?'#e75365':'#26ab7d','--user-expense':colorScheme==='reverse'?'#26ab7d':'#e75365'}}><InstallHint language={language}/><div className="ambient ambient-a"/><div className="ambient ambient-b"/><header className="topbar glass"><div className="brand"><div className="brand-icon"><Wallet size={22}/></div><div><strong>NEX<span>PEN</span></strong><small>LIQUID · PRIVATE LEDGER</small></div></div><div className="top-actions"><span className="offline-pill"><ShieldCheck size={13}/> {i18n("本機資料")}</span><button className="circle-button" onClick={toggleTheme}>{theme==='light'?<Moon size={20}/>:<Sun size={20}/>}</button></div></header>
+ return <div className="app-shell" data-fab-position={fabPosition} lang={language} data-color-scheme={colorScheme} style={{'--user-income':colorScheme==='reverse'?'#e75365':'#26ab7d','--user-expense':colorScheme==='reverse'?'#26ab7d':'#e75365'}}><InstallHint language={language}/><div className="ambient ambient-a"/><div className="ambient ambient-b"/><header className="topbar glass"><div className="brand"><div className="brand-icon"><Wallet size={22}/></div><div><strong>NEX<span>PEN</span></strong><small>LIQUID · PRIVATE LEDGER</small></div></div><div className="top-actions"><span className="offline-pill"><ShieldCheck size={13}/> {i18n("本機資料")}</span><button className="circle-button desktop-theme-toggle" onClick={toggleTheme}>{theme==='light'?<Moon size={20}/>:<Sun size={20}/>}</button></div></header>
  <div className="layout"><aside className="sidebar glass"><div className="side-caption">PERSONAL FINANCE</div>{nav.map(([key,label,Icon])=><button key={key} onClick={()=>setTab(key)} className={'side-link '+(tab===key?'selected':'')}><Icon size={19}/>{tr(label)}</button>)}<div className="sidebar-bottom">100% LOCAL-FIRST<br/>{i18n("資料不會上傳 GitHub")}</div></aside>
  <main key={tab} className={"main page-enter "+(tab==='daily'?'daily-compact':'')}>{settingsPages.includes(tab)&&<button className="mobile-back" onClick={()=>setTab(tab==='accountTypes'?'accounts':'settings')}><ChevronLeft size={19}/> {i18n("返回")}{tab==='accountTypes'?i18n("帳戶管理"):i18n("設定")}</button>}{tab!=='daily'&&<div className="page-head"><div><div className="eyebrow">YOUR MONEY, YOUR SPACE</div><h1>{tr(nav.find(n=>n[0]===tab)?.[1])}</h1></div>{tab==='daily'?<span className="page-context">{month.replace('-',' 年 ')} {i18n("月")}</span>:<span className="page-context">{tab==='categories'?i18n("自訂收支分類"):tab==='settings'?i18n("本機資料管理"):tab==='dashboard'?i18n("財務概況"):tab==='stocks'?i18n("投資管理"):tab==='accounts'?i18n("帳戶管理"):tab==='accountTypes'?i18n("類型設定"):tab==='projects'?i18n("專案管理"):i18n("交易設定")}</span>}</div>}
  {tab==='daily'&&<><section className="glass panel calendar-panel">
@@ -1014,7 +1065,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   </React.Fragment>;
 }):<Blank text={diaryView==='month'?i18n('這個月沒有符合條件的交易'):i18n('這一天沒有符合條件的交易')}/>}
 </div></section></>}
- {tab==='dashboard'&&<NetWorthBreakdown data={netWorthData} history={netWorthHistory} format={n=>baseAvailable?new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(Math.round(inPrimary(n))):'匯率尚未取得'} language={language} currency={primaryCurrency}/>}
+ {tab==='dashboard'&&<NetWorthBreakdown data={netWorthData} history={netWorthHistory} goalTwd={netWorthGoalTwd} mainRate={mainRate} onSaveGoal={saveNetWorthGoal} format={n=>baseAvailable?new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(Math.round(inPrimary(n))):'匯率尚未取得'} language={language} currency={primaryCurrency}/>}
  {tab==='accounts'&&<><div className="hero glass compact-hero"><span>{tr('帳戶資產總額（不含股票）')}</span><strong>{fmtPrimaryNumber(includedAccounts.reduce((s,a)=>s+bal(a)*fxOf(a),0))}</strong><small>{i18n("依各帳戶匯率換算為")} {primaryCurrency}{i18n("，僅供估值")}</small></div><section className="accounts-group-section"><div className="section-header account-list-header"><h2>{tr('我的帳戶')}</h2><div className="account-list-toolbar"><button className="soft-btn small" type="button" onClick={()=>setTab('accountTypes')}><Tags size={15}/>{i18n("帳戶類型管理")}</button></div></div>{accounts.length?(()=>{
   const groups=accountTypes.filter(t=>accounts.some(a=>a.type===t.id));
   const current=groups.some(g=>g.id===expandedAccountStack)?expandedAccountStack:null;
@@ -1076,7 +1127,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   </section>
  </>:null}
  {investSection==='stocks'&&<StockPerformanceView
-   groups={stockPerformance} holdings={hs} quotes={quotes} selectedSymbol={selectedStockSymbol}
+   groups={stockPerformance} holdings={hs} quotes={quotes} accounts={accounts} selectedSymbol={selectedStockSymbol}
    onSelect={setSelectedStockSymbol} onBack={()=>setSelectedStockSymbol(null)} onEdit={item=>open('stock',item)}
    fmt={fmtInvestmentDetail} fmtSummary={fmtInvestmentMoney} fmtUnit={fmtStockUnit} fmtTradeNative={fmtStockTradeAmount} language={language} baseAvailable={baseAvailable} nativeStockCurrency={primaryCurrency==='TWD'?'':'TWD'}
    quoteLoading={quoteLoading} onRefresh={()=>refreshQuotes({force:true})} RefreshIcon={RefreshCcw}
@@ -1093,7 +1144,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  <p className="hint">{i18n("介面文字依語言設定切換；使用者自行建立的帳戶、分類、專案及備註名稱不會被改寫。")}</p>
  <Field label={tr('金額顏色')}><SmartSelect value={colorScheme} onChange={e=>chooseColors(e.target.value)}><option value="normal">{tr('收入／獲利顯示綠色')} {i18n("· 支出／損失紅色")}</option><option value="reverse">{tr('收入／獲利顯示紅色')} {i18n("· 支出／損失綠色")}</option></SmartSelect></Field>
  <div className="color-preview"><span className="income">+ 1,200</span><span className="expense">− 500</span></div>
- </section><section className="glass panel"><h2>{i18n("iCloud Drive 備份")}</h2><p className="hint">{i18n("資料保存在這台裝置。按「立即備份」產生 JSON，再透過 iPhone 的分享選單儲存至「檔案 → iCloud Drive」；還原時從檔案 App 手動選取備份。")}</p><button className="action-row" onClick={download}><Download size={20}/><span><b>{tr('立即備份')}</b><small>{i18n("匯出完整 JSON，儲存到 iCloud Drive")}</small></span><ChevronRight size={18}/></button><button className="action-row" onClick={()=>fileInput.current?.click()}><Upload size={20}/><span><b>{tr('立即還原')}</b><small>{i18n("從 iCloud Drive 選擇備份檔，確認後覆蓋本機")}</small></span><ChevronRight size={18}/></button><input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importFile}/><p className="hint">{i18n("iPhone PWA 無法自動找到 iCloud Drive 最新檔案，還原時須自行選取；建議以檔名日期辨識最新備份。")}</p></section><section className="glass panel"><h2>{tr('外觀與使用')}</h2><div className="theme-heading"><b>{tr('外觀主題')}</b><small>{i18n("選擇配色，立即套用並儲存於本機")}</small></div><ThemePicker value={theme} onChange={chooseTheme}/><div className="font-scale-block"><div><b>{tr('字體大小')}</b><small>{i18n("依你的閱讀習慣調整")}</small></div><div className="scale-chips">{[[0.94,'小'],[1,'中'],[1.14,'大']].map(([v,label])=><button key={label} type="button" className={'scale-chip '+(Math.abs(fontScale-v)<0.025?'active':'')} onClick={()=>updateFontScale(v)}>{i18n(label)}</button>)}</div></div><div className="font-scale-block fab-position-setting"><div><b>{i18n('浮動按鈕位置')}</b><small>{i18n('選擇浮動操作按鈕靠左或靠右')}</small></div><div className="scale-chips" role="group" aria-label={i18n('浮動按鈕位置')}>{[['left','左側'],['right','右側']].map(([value,label])=><button key={value} type="button" className={'scale-chip '+(fabPosition===value?'active':'')} aria-pressed={fabPosition===value} onClick={()=>updateFabPosition(value)}>{i18n(label)}</button>)}</div></div><div className="hint">{i18n("安裝：用 iPhone Safari 開啟 GitHub Pages 網址 → 分享 → 加入主畫面。程式快取後可離線開啟。")}</div></section><AppPasswordSettings hasPassword={!!passwordConfig} onSet={changeLock} onRemove={removeLock} numericPassword={passwordConfig?.kind==='pin6'}/></>}
+ </section><NetWorthGoal goalTwd={netWorthGoalTwd} currentTwd={netWorthData.netWorth} mainRate={mainRate} currency={primaryCurrency} language={language} incomplete={netWorthData.missingQuotes.length>0} onSave={saveNetWorthGoal}/><section className="glass panel"><h2>{i18n("iCloud Drive 備份")}</h2><p className="hint">{i18n("資料保存在這台裝置。按「立即備份」產生 JSON，再透過 iPhone 的分享選單儲存至「檔案 → iCloud Drive」；還原時從檔案 App 手動選取備份。")}</p><button className="action-row" onClick={download}><Download size={20}/><span><b>{tr('立即備份')}</b><small>{i18n("匯出完整 JSON，儲存到 iCloud Drive")}</small></span><ChevronRight size={18}/></button><button className="action-row" onClick={()=>fileInput.current?.click()}><Upload size={20}/><span><b>{tr('立即還原')}</b><small>{i18n("從 iCloud Drive 選擇備份檔，確認後覆蓋本機")}</small></span><ChevronRight size={18}/></button><input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={importFile}/><p className="hint">{i18n("iPhone PWA 無法自動找到 iCloud Drive 最新檔案，還原時須自行選取；建議以檔名日期辨識最新備份。")}</p></section><section className="glass panel"><h2>{tr('外觀與使用')}</h2><div className="theme-heading"><b>{tr('外觀主題')}</b><small>{i18n("選擇配色，立即套用並儲存於本機")}</small></div><ThemePicker value={theme} onChange={chooseTheme}/><div className="font-scale-block"><div><b>{tr('字體大小')}</b><small>{i18n("依你的閱讀習慣調整")}</small></div><div className="scale-chips">{[[0.94,'小'],[1,'中'],[1.14,'大']].map(([v,label])=><button key={label} type="button" className={'scale-chip '+(Math.abs(fontScale-v)<0.025?'active':'')} onClick={()=>updateFontScale(v)}>{i18n(label)}</button>)}</div></div><div className="font-scale-block fab-position-setting"><div><b>{i18n('浮動按鈕位置')}</b><small>{i18n('選擇浮動操作按鈕靠左或靠右')}</small></div><div className="scale-chips" role="group" aria-label={i18n('浮動按鈕位置')}>{[['left','左側'],['right','右側']].map(([value,label])=><button key={value} type="button" className={'scale-chip '+(fabPosition===value?'active':'')} aria-pressed={fabPosition===value} onClick={()=>updateFabPosition(value)}>{i18n(label)}</button>)}</div></div><div className="hint">{i18n("安裝：用 iPhone Safari 開啟 GitHub Pages 網址 → 分享 → 加入主畫面。程式快取後可離線開啟。")}</div></section><AppPasswordSettings hasPassword={!!passwordConfig} onSet={changeLock} onRemove={removeLock} numericPassword={passwordConfig?.kind==='pin6'}/></>}
  </main></div>
  
  <nav className="bottom-nav glass">{mobileNav.map(([key,label,Icon])=><button key={key} onClick={()=>setTab(key)} className={(tab===key||(key==='settings'&&settingsPages.includes(tab)))?'active':''}><Icon size={20} strokeWidth={tab===key?2.6:1.9}/><span>{tr(label)}</span></button>)}</nav>

@@ -3,6 +3,7 @@ import {Wallet,Landmark,ChartNoAxesCombined,Shield,Layers3,Coins,AlertCircle,Che
 import {ASSET_GROUPS} from './netWorth.js';
 import SummaryHero from './SummaryHero.jsx';
 import NetWorthTrend from './NetWorthTrend.jsx';
+import NetWorthGoal from './NetWorthGoal.jsx';
 
 const translations={
  'zh-TW':{title:'資產配置',gross:'總資產',debt:'總負債',net:'淨資產',ratio:'資產比例',liabilities:'負債明細',none:'目前沒有負債',empty:'尚未有可計算的資產',unknown:'部分投資缺少有效報價，以下為已知估值；淨資產可能低估。',cash:'現金',deposit:'存款',securities:'證券',trust:'持股信託',insurance:'保險',other:'其他資產',credit:'信用卡欠款',overdraft:'帳戶透支'},
@@ -13,7 +14,7 @@ const translations={
 const icons={cash:Wallet,deposit:Landmark,securities:ChartNoAxesCombined,trust:Layers3,insurance:Shield,other:Coins};
 const colors={cash:'#35b9ab',deposit:'#638bd9',securities:'#a88be5',trust:'#ff9b82',insurance:'#e7b75f',other:'#8fa6b0'};
 
-export default function NetWorthBreakdown({data,format,language='zh-TW',currency='TWD',history=[]}){
+export default function NetWorthBreakdown({data,format,language='zh-TW',currency='TWD',history=[],goalTwd=null,mainRate=1,onSaveGoal=()=>{}}){
  const t=translations[language]||translations['zh-TW'];
  const [openCard,setOpenCard]=useState(null);
  // 與投資頁面完全共用 Card Stack 元件，保持相同的堆疊露邊、展開和陰影。
@@ -24,6 +25,7 @@ export default function NetWorthBreakdown({data,format,language='zh-TW',currency
      <p className="summary-hero-description">{language==='en'?'Cash, deposits, securities, trusts and insurance, minus liabilities':language==='ja'?'現金・預金・証券・信託・保険から負債を控除':language==='zh-CN'?'现金、存款、证券、信托与保险，扣除负债':'現金、存款、證券、信託與保險，扣除負債'}</p>
      <div className="summary-hero-metrics"><div><small>{t.gross}</small><strong>{money(data.totalAssets)}</strong></div><div><small>{t.debt}</small><strong className={data.totalLiabilities>0?'expense':''}>{money(data.totalLiabilities)}</strong></div></div>
    </SummaryHero>
+   <NetWorthGoal goalTwd={goalTwd} currentTwd={data.netWorth} mainRate={mainRate} currency={currency} language={language} incomplete={data.missingQuotes.length>0} onSave={onSaveGoal}/>
    <NetWorthTrend history={history} format={format} currency={currency} language={language}/>
    {data.missingQuotes.length>0&&<p className="networth-quote-warning"><AlertCircle size={16}/><span>{t.unknown} ({[...new Set(data.missingQuotes)].join('、')})</span></p>}
    <div className="investment-dashboard-section-title networth-section-title">
