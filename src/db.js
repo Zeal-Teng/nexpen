@@ -42,7 +42,20 @@ export async function ensureDefaults(){
      await db.recurring.update(before.id,{mainCategory:after.mainCategory,subCategory:after.subCategory});
    }
   }
-  if(currentVersion<169)await db.settings.put({key:'categoryPresetVersion',value:169});
+  // v171: insert the new default subcategory only once. Preserve all other
+  // personalized categories, order, records, recurring rules and icons.
+  if(currentVersion<171){
+   const latest=(await db.settings.get('categories'))?.value;
+   if(latest?.expense?.['餐飲美食'] && Array.isArray(latest.expense['餐飲美食'])){
+    const meals=[...latest.expense['餐飲美食']];
+    if(!meals.includes('宵夜')){
+     const dinner=meals.indexOf('晚餐');
+     meals.splice(dinner>=0?dinner+1:meals.length,0,'宵夜');
+     await db.settings.put({key:'categories',value:{...latest,expense:{...latest.expense,'餐飲美食':meals}}});
+    }
+   }
+   await db.settings.put({key:'categoryPresetVersion',value:171});
+  }
   if(!await db.settings.get('theme'))await db.settings.put({key:'theme',value:'dark'});
   if(!await db.settings.get('fontScale'))await db.settings.put({key:'fontScale',value:1});
  });

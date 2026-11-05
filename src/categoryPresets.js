@@ -1,7 +1,7 @@
-// NEXPEN category presets v169. Keep this module independent of IndexedDB for testing.
+// NEXPEN category presets v171. Keep this module independent of IndexedDB for testing.
 export const defaultCategories = {
   expense: {
-    '餐飲美食': ['早餐','午餐','晚餐','飲料','咖啡','點心零食','食材採買','聚餐','其他飲食'],
+    '餐飲美食': ['早餐','午餐','晚餐','宵夜','飲料','咖啡','點心零食','食材採買','聚餐','其他飲食'],
     '居家生活': ['房租','房貸利息','管理費','水費','電費','瓦斯費','家具','家電','居家用品','房屋修繕','其他住家'],
     '電信': ['手機費','網路費','通訊設備','郵資與運費','其他電信'],
     '訂閱服務': ['AI 工具','影音串流','音樂串流','雲端儲存','雲端伺服器','軟體服務','會員訂閱','其他訂閱'],
