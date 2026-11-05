@@ -1,5 +1,5 @@
 import {t as i18n,setLocale} from './i18n.js';
-import { normalizeQuoteRows, validateQuoteBundle } from './marketQuotes.js';
+import { normalizeQuoteRows, validateQuoteBundle, quoteMarketStatus } from './marketQuotes.js';
 import React,{useEffect,useMemo,useRef,useState}from 'react';
 import{createPortal}from'react-dom';
 import{Wallet,ChartNoAxesCombined,Landmark,TrendingUp,Repeat2,Tags,Settings,Plus,ChevronLeft,ChevronRight,GripVertical,ArrowDownLeft,ArrowUpRight,ArrowLeftRight,Download,Upload,Sun,Moon,X,Trash2,Edit3,Check,CloudUpload,Search,CalendarDays,ShieldCheck,RefreshCcw,Coffee,UtensilsCrossed,Bus,Car,Home,ShoppingBag,HeartPulse,Gamepad2,Plane,GraduationCap,Gift,BriefcaseBusiness,Coins,WalletCards,Music,Smartphone,Receipt,BookOpen,Cat,Dog,Shirt,Dumbbell,TrainFront,Film,Landmark as BankIcon,House,Paintbrush,Apple,Hospital,Package,Smile,Camera,Clapperboard,Users,HandCoins,Building2,ArrowRightLeft,Pizza,Sandwich,Soup,CakeSlice,IceCreamCone,Wine,Beer,CookingPot,Fish,Beef,Milk,CupSoda,ShoppingCart,Store,CreditCard,PiggyBank,CircleDollarSign,BadgeDollarSign,Banknote,ChartPie,ChartLine,Briefcase,Laptop,Monitor,Wifi,Tv,Headphones,Speaker,Bike,BusFront,Train,TramFront,Ship,Fuel,ParkingCircle,MapPin,Map as MapIcon,Tickets,Ticket,Hotel,BedDouble,Sofa,Lightbulb,PlugZap,Droplets,WashingMachine,Wrench,Hammer,Scissors,Flower2,Leaf,TreePine,PawPrint,Baby,School,NotebookPen,Pencil,PenLine,Library,Stethoscope,Pill as PillIcon,Syringe,Activity,Heart,HandHeart,SmilePlus,PartyPopper,Popcorn,Drama,Trophy,Medal,Brush,Palette,Globe,AlarmClock,Clock3,Newspaper,Mail,Printer,Shield,Lock,KeyRound,Tag,Bookmark,BookMarked,MoreHorizontal,Umbrella,Cloud,Snowflake}from'lucide-react';
@@ -442,12 +442,14 @@ export default function App(){
    const urls=import.meta.env.DEV
     ?['/api/quotes/twse','/api/quotes/tpex']
     :[`${import.meta.env.BASE_URL}market-quotes.json`];
+   let publishedMarkets={};
    const results=await Promise.allSettled(urls.map(async url=>{
     const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),18000);
     try{
      const response=await fetch(`${url}${url.includes('?')?'&':'?'}_=${Date.now()}`,{cache:'no-store',signal:controller.signal});
      if(!response.ok)throw Error(`${url}: HTTP ${response.status}（請確認 GitHub Actions 已產生 public/market-quotes.json 並重新部署完整專案）`);
      const json=await response.json();
+     if(!import.meta.env.DEV)publishedMarkets=quoteMarketStatus(json);
      return import.meta.env.DEV
       ?normalizeQuoteRows(json,url.includes('twse')?'twse':'tpex')
       :validateQuoteBundle(json);
@@ -473,7 +475,10 @@ export default function App(){
    const missing=[...codes].filter(code=>!(Number(merged[code]?.price)>0));
    if(Object.keys(got).length){
     const latest=Object.values(got).map(q=>q.date).sort().at(-1);
-    setQuoteStatus(`最後更新日期 ${latest}`);
+    const label=Object.entries(publishedMarkets).map(([market,detail])=>`${market==='twse'?'上市':'上櫃'}${detail.status==='cached'?'沿用舊資料':'已更新'}${detail.date?`（${detail.date}）`:''}`).join('、');
+    const unchanged=updated===0?'；本機已有相同或較新的報價':'';
+    const unavailable=[...codes].filter(code=>!got[code]);
+    setQuoteStatus(`${label||`行情日期 ${latest}`}${unchanged}${unavailable.length?`；${unavailable.length} 檔持股未出現在此次行情檔`:''}${errors.length?`；${errors.join('；')}`:''}`);
    }else{
     setQuoteStatus(`尚未取得持股行情${errors.length?`：${errors.join('；')}`:'（資料未包含持有代號）'}；保留既有報價`);
    }

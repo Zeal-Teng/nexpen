@@ -1,9 +1,12 @@
 // Normalized, public closing prices only. No account or holdings data leaves the device.
-const rocDate=raw=>{
- const s=String(raw??'').trim();
- if(/^\d{7}$/.test(s))return `${Number(s.slice(0,3))+1911}-${s.slice(3,5)}-${s.slice(5,7)}`;
- if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
- return '';
+export const rocDate=raw=>{
+ const s=String(raw??'').trim().replace(/[\/-]/g,'');
+ const normalized=/^\d{7}$/.test(s)?`${Number(s.slice(0,3))+1911}${s.slice(3)}`:s;
+ if(!/^\d{8}$/.test(normalized))return '';
+ const y=Number(normalized.slice(0,4)),m=Number(normalized.slice(4,6)),d=Number(normalized.slice(6,8));
+ const date=new Date(Date.UTC(y,m-1,d));
+ if(date.getUTCFullYear()!==y||date.getUTCMonth()!==m-1||date.getUTCDate()!==d)return '';
+ return `${normalized.slice(0,4)}-${normalized.slice(4,6)}-${normalized.slice(6,8)}`;
 };
 export function normalizeQuoteRows(rows,market){
  if(!Array.isArray(rows))throw Error('行情 JSON 格式錯誤');
@@ -28,4 +31,15 @@ export function validateQuoteBundle(bundle){
   out[code]={price,date,source:String(q.source||'官方收盤行情')};
  }
  return out;
+}
+
+// Market availability is supplied by the deployment job, not inferred from today's calendar date.
+export function quoteMarketStatus(bundle){
+ const result={};
+ for(const market of ['twse','tpex']){
+  const entry=bundle?.markets?.[market];
+  if(!entry)continue;
+  result[market]={status:entry.status==='cached'?'cached':entry.status==='updated'?'updated':'unknown',date:rocDate(entry.latestDate),count:Number(entry.count)||0};
+ }
+ return result;
 }
