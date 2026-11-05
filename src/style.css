@@ -2164,3 +2164,8 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 .app-pin-wizard-actions{display:flex;gap:10px;margin-top:18px}.app-pin-wizard-actions button{flex:1;min-width:0;min-height:44px}
 @keyframes app-pin-wizard-in{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.app-pin-wizard{animation:none}}
+
+/* v186: allow native selection/copy/paste directly in the calculator amount field. */
+.calculator-sheet input.calc-editable{width:calc(100% - 34px);display:block;flex-shrink:0;border:0;border-bottom:1px solid var(--theme-border,#42617c);border-radius:0;outline:0;background:transparent!important;color:var(--theme-text,#eaf7ff)!important;caret-color:var(--theme-primary,#13d5ea);-webkit-user-select:text;user-select:text;appearance:none;-webkit-appearance:none}
+.calculator-sheet input.calc-editable:focus{border-bottom-color:var(--theme-primary,#13d5ea)}
+.calculator-sheet .calc-error{margin:2px 18px;color:#ff8998;font-size:12px;flex-shrink:0}

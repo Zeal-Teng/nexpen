@@ -1,3 +1,4 @@
+import {t} from './i18n.js';
 import React,{useEffect,useState} from 'react';
 import {Download,Share2,X} from 'lucide-react';
 
@@ -40,6 +41,6 @@ export default function InstallHint({language='zh-TW'}){
   <div className="nexpen-install-symbol">{mode==='ios'?<Share2 size={19}/>:<Download size={19}/>}</div>
   <div className="nexpen-install-copy"><strong>{heading}</strong><small>{mode==='ios'?iosText:androidText}</small></div>
   {mode==='android'&&promptEvent&&<button type="button" className="nexpen-install-action" onClick={onInstall}>{en?'Install':ja?'インストール':zhCN?'安装':'安裝'}</button>}
-  <button type="button" className="nexpen-install-dismiss" onClick={close} aria-label={en?'Dismiss':'關閉'}><X size={18}/></button>
+  <button type="button" className="nexpen-install-dismiss" onClick={close} aria-label={t('關閉')}><X size={18}/></button>
  </aside>;
 }

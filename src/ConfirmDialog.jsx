@@ -2,6 +2,7 @@ import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {AlertTriangle,Check,ShieldAlert,Trash2,Upload, X} from 'lucide-react';
 import './confirm-dialog.css';
+import {t} from './i18n.js';
 
 // A single asynchronous confirmation contract, shared by all destructive and high-impact operations.
 // Always resolve the promise on both confirm and dismiss; never keep a Dexie transaction
@@ -55,10 +56,10 @@ function ConfirmDialogView({request,onConfirm,onCancel}){
  },[onCancel]);
  return createPortal(<div className="nexpen-confirm-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)onCancel()}}>
   <section ref={windowRef} className={'nexpen-confirm-dialog tone-'+request.kind} role="alertdialog" aria-modal="true" aria-labelledby="nexpen-confirm-title" aria-describedby="nexpen-confirm-description">
-   <div className="nexpen-confirm-heading"><span className="nexpen-confirm-icon"><Icon size={23}/></span><div className="nexpen-confirm-title-wrap"><h2 id="nexpen-confirm-title">{request.title||preset.title}</h2>{request.subtitle&&<small>{request.subtitle}</small>}</div><button type="button" className="nexpen-confirm-close" onClick={onCancel} aria-label="關閉"><X size={18}/></button></div>
-   <p id="nexpen-confirm-description">{request.description||preset.description}</p>
+   <div className="nexpen-confirm-heading"><span className="nexpen-confirm-icon"><Icon size={23}/></span><div className="nexpen-confirm-title-wrap"><h2 id="nexpen-confirm-title">{t(request.title||preset.title)}</h2>{request.subtitle&&<small>{t(request.subtitle)}</small>}</div><button type="button" className="nexpen-confirm-close" onClick={onCancel} aria-label={t('關閉')}><X size={18}/></button></div>
+   <p id="nexpen-confirm-description">{t(request.description||preset.description)}</p>
    {request.details&&<div className="nexpen-confirm-details">{request.details}</div>}
-   <div className="nexpen-confirm-actions"><button ref={cancelRef} type="button" className="nexpen-confirm-cancel" onClick={onCancel}>{request.cancelText||'取消'}</button><button ref={confirmRef} type="button" className="nexpen-confirm-submit" onClick={onConfirm}>{request.confirmText||preset.confirmText}</button></div>
+   <div className="nexpen-confirm-actions"><button ref={cancelRef} type="button" className="nexpen-confirm-cancel" onClick={onCancel}>{t(request.cancelText||'取消')}</button><button ref={confirmRef} type="button" className="nexpen-confirm-submit" onClick={onConfirm}>{t(request.confirmText||preset.confirmText)}</button></div>
   </section>
  </div>,document.body);
 }

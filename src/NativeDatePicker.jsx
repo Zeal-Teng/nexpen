@@ -11,7 +11,7 @@ export default function NativeDatePicker({mode='day',value='',onChange,required=
   const ref=useRef(null);
   const isMonth=mode==='month';
   const text=typeof value==='string'&&value
-    ? (isMonth ? value.slice(0,7).replace('-', '/') : value.slice(0,10).replaceAll('-', '/'))
+    ? (isMonth ? value.slice(0,7) : value.slice(0,10))
     : (isMonth ? '選擇月份' : '選擇日期');
   return <div className={`native-date-control ${className}`.trim()} data-mode={isMonth?'month':'date'}>
     <span className={`native-date-display${value?'':' is-placeholder'}`} aria-hidden="true">{text}</span>
