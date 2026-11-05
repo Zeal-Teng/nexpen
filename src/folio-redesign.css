@@ -3445,3 +3445,79 @@ html .app-shell .category-section .category-stack-card:not(.category-stack-expan
    bottom:56px!important;
  }
 }
+/* v172: Transaction template picker and management sheet */
+html .app-shell .transaction-template-toolbar{display:flex;align-items:stretch;gap:9px;margin:0 0 14px;min-width:0}
+html .app-shell .transaction-template-picker{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:0 12px;background:var(--theme-chip,rgba(127,127,127,.09));border:1px solid var(--theme-line,rgba(127,127,127,.23));border-radius:14px}
+html .app-shell .transaction-template-picker select{width:100%;min-width:0;height:43px;border:0;background:transparent;color:inherit;font-size:13px}
+html .app-shell .transaction-template-manage{margin:0;min-height:43px;white-space:nowrap;padding:8px 12px}
+.template-modal-backdrop{position:fixed;inset:0;z-index:20000;background:rgba(5,12,24,.68);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 14px max(16px,env(safe-area-inset-bottom))}
+.template-modal{width:min(100%,510px);max-height:calc(100dvh - 48px);overflow-y:auto;border-radius:23px;padding:20px;color:var(--theme-text,inherit);background:var(--theme-card,#1e293b);border:1px solid var(--theme-line,#59687b);box-shadow:0 22px 70px #0006;animation:template-sheet-enter .25s cubic-bezier(.22,1,.36,1)}
+@keyframes template-sheet-enter{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.template-modal-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:15px}.template-modal-head h2{font-size:20px;margin:3px 0 0}.template-modal-head small{opacity:.58}
+.template-modal .hint{font-size:12px;opacity:.7;line-height:1.6}.template-manager-list{display:flex;flex-direction:column;gap:8px;max-height:50dvh;overflow:auto;margin:13px 0}
+.template-manager-row{display:flex;align-items:center;gap:9px;min-width:0;border:1px solid var(--theme-line,#ffffff2b);border-radius:14px;padding:12px 9px;background:var(--theme-chip,#ffffff0d)}
+.template-manager-info{flex:1;min-width:0}.template-manager-info b,.template-manager-info small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.template-manager-info b{font-size:14px}.template-manager-info small{opacity:.68;font-size:11px;margin-top:4px}.template-manager-row button{border:0;border-radius:10px;min-width:34px;min-height:36px;background:var(--theme-card,#ffffff16);color:inherit;display:grid;place-items:center;padding:5px 8px}.template-manager-row button.template-delete{color:#f59da4}
+.template-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:13px;background:var(--theme-accent,#369e86);color:white;font-weight:700;padding:12px 16px;min-height:44px}.template-add{width:100%;margin-top:5px}.template-empty{padding:28px;text-align:center;opacity:.62}
+.template-editor{display:flex;flex-direction:column;gap:12px}.template-editor label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:650;min-width:0}.template-editor input,.template-editor select{border:1px solid var(--theme-line,#ffffff40);background:var(--theme-chip,#ffffff12);color:inherit;border-radius:12px;min-height:43px;width:100%;padding:9px 11px;min-width:0}.template-editor select option{color:#17212b;background:#fff}.template-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.template-editor-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:9px}.template-editor-actions .soft-btn{margin:0}.template-error{color:#ec7d89;font-size:12px}
+@media(max-width:390px){html .app-shell .transaction-template-toolbar{gap:6px}html .app-shell .transaction-template-manage{padding:8px;font-size:12px}.template-modal{padding:15px}.template-manager-row{gap:5px;padding:9px 5px}.template-manager-row button{min-width:29px}}
+@media(prefers-reduced-motion:reduce){.template-modal{animation:none}}
+
+/* v173 — Transaction templates live inside the original transaction sheet. */
+html .app-shell .transaction-four-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-bottom:14px}
+html .app-shell .transaction-four-tabs>button{min-width:0;padding-inline:4px;font-size:clamp(11px,2.8vw,14px)}
+html .app-shell .transaction-template-quick-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 12px}
+html .app-shell .transaction-template-quick-actions small{opacity:.7;font-size:12px}
+html .app-shell .transaction-template-add-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:39px;border-radius:12px;padding:8px 13px;border:1px solid var(--theme-line, #ffffff35);background:var(--theme-chip, #ffffff12);color:var(--theme-text,inherit);font-size:13px;font-weight:650}
+html .app-shell .transaction-inline-templates{display:flex;flex-direction:column;gap:8px;padding:2px 0 16px}
+html .app-shell .transaction-inline-template{display:flex;align-items:center;gap:7px;min-width:0;padding:8px 9px;background:var(--theme-chip,rgba(140,160,180,.08));border:1px solid var(--theme-line,rgba(140,160,180,.25));border-radius:14px}
+html .app-shell .transaction-template-choice{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;text-align:left;gap:5px;border:0;background:transparent;color:var(--theme-text,inherit);padding:6px 3px}
+html .app-shell .transaction-template-title{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+html .app-shell .transaction-template-choice small{opacity:.66;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+html .app-shell .transaction-template-icon-button{display:grid;flex:0 0 35px;width:35px;height:35px;place-items:center;border-radius:10px;border:1px solid var(--theme-line,rgba(130,140,150,.2));background:var(--theme-card,transparent);color:var(--theme-text,inherit)}
+html .app-shell .transaction-template-icon-button.danger{color:#ed818d}
+html .app-shell .transaction-templates-empty{text-align:center;padding:30px 12px;color:var(--theme-muted,#999)}
+html .app-shell .transaction-inline-template-save{display:flex;flex-direction:column;gap:9px;margin:0 0 14px;padding:13px;border-radius:15px;border:1px solid var(--theme-line,#ffffff30);background:var(--theme-chip,#ffffff08)}
+html .app-shell .transaction-inline-template-save>label{font-size:13px;font-weight:700}
+html .app-shell .transaction-inline-template-save>input{width:100%;min-height:44px;min-width:0;padding:9px 12px;border:1px solid var(--theme-line,#ffffff30);border-radius:12px;background:var(--theme-card,transparent);color:var(--theme-text,inherit)}
+html .app-shell .transaction-template-save-actions{display:flex;justify-content:flex-end;align-items:center;gap:9px}
+html .app-shell .transaction-template-save-actions .soft-btn{margin:0}
+@media(max-width:390px){html .app-shell .transaction-inline-template{gap:4px;padding:7px 5px}html .app-shell .transaction-template-icon-button{flex-basis:31px;width:31px;height:33px}}
+
+/* v174: Add to template is an independent sheet FAB; name entry is a themed dialog. */
+html .app-shell .sheet-floating-actions .sheet-action-template {
+  background:var(--theme-chip)!important;
+  color:var(--theme-accent)!important;
+  border:1px solid var(--theme-line)!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.16)!important;
+}
+html .app-shell .sheet-floating-actions .sheet-action-template:focus-visible{outline:2px solid var(--theme-accent);outline-offset:3px}
+html .app-shell .transaction-template-applied-hint{font-size:12px;opacity:.7;margin:0 0 10px}
+.transaction-template-name-dialog form{display:flex;flex-direction:column;gap:10px;margin-top:13px}
+.transaction-template-name-dialog .transaction-template-name-field{font-weight:650;font-size:13px}
+.transaction-template-name-dialog input{width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--theme-line,rgba(120,130,140,.4));border-radius:12px;background:var(--theme-card,#fff);color:var(--theme-text,inherit);font:inherit;box-sizing:border-box}
+.transaction-template-name-dialog input:focus-visible{outline:2px solid var(--theme-accent,#2bbaaa);outline-offset:2px}
+.transaction-template-name-dialog .nexpen-confirm-actions{margin-top:10px}
+.transaction-template-name-dialog .nexpen-confirm-submit:disabled{opacity:.5;cursor:not-allowed}
+
+/* v175: template dialog input readable in every theme, including portaled dark UI. */
+html body .nexpen-confirm-dialog.transaction-template-name-dialog input#transaction-template-name{
+  background:var(--theme-surface2,#1b2e45)!important;
+  color:var(--theme-text,#edf7ff)!important;
+  -webkit-text-fill-color:var(--theme-text,#edf7ff)!important;
+  caret-color:var(--theme-accent,#16c7e7)!important;
+  border:1px solid var(--theme-line,rgba(134,175,206,.38))!important;
+  opacity:1!important;
+  color-scheme:inherit;
+}
+html body .nexpen-confirm-dialog.transaction-template-name-dialog input#transaction-template-name::placeholder{
+  color:var(--theme-muted,#91a9bf)!important;
+  -webkit-text-fill-color:var(--theme-muted,#91a9bf)!important;
+  opacity:.85!important;
+}
+html body .nexpen-confirm-dialog.transaction-template-name-dialog input#transaction-template-name:focus{
+  border-color:var(--theme-accent,#16c7e7)!important;
+}
+html .app-shell .transaction-template-choice .transaction-template-account{
+  display:block;max-width:100%;color:var(--theme-muted,#9db4c8);opacity:1;
+  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:11px;
+}

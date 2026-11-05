@@ -55,7 +55,7 @@ const legacyMain = {
   '送禮&捐贈':'送禮＆捐贈','醫療&健康':'醫療＆健康','醫療健康':'醫療＆健康',
   '金融&保險':'金融＆保險'
  },
- income: {'其他':'其他收入','薪資所得':'主動收入','投資收益':'開支被動收入'}
+ income: {'其他':'其他收入','薪資所得':'主動收入','投資收益':'被動收入'}
 };
 const legacySub = {
  expense: {
@@ -80,11 +80,14 @@ const legacySub = {
 };
 const presetNames=new Set(Object.values(v168Categories).flatMap(flow=>Object.keys(flow)));
 export function mapCategory(flow,main,sub='') {
+  // A previous v168 setting placed 訂閱服務 under 電信; it is a new main category now.
   if(flow==='expense' && main==='電信' && sub==='訂閱服務') return {main:'訂閱服務',sub:'其他訂閱'};
+  // In older income presets, refunds and subsidies were in 意外收入.
   if(flow==='income' && main==='意外收入' && ['退款退費','補助津貼'].includes(sub))return {main:'其他收入',sub:sub==='補助津貼'?'政府補助':'退款退費'};
   const dest=legacyMain[flow]?.[main] || main;
   return {main:dest,sub:legacySub[flow]?.[dest]?.[sub] || sub};
 }
+// Merge preset improvements without dropping user-defined categories or custom subcategories.
 export function migrateCategoryData(existing,records=[],recurring=[],icons={}) {
   const result=structuredClone(defaultCategories);
   const knownOld=(flow,main,sub)=>v168Categories[flow]?.[main]?.includes(sub)===true;
@@ -97,6 +100,7 @@ export function migrateCategoryData(existing,records=[],recurring=[],icons={}) {
       for(const sub of subs){
         const mapped=mapCategory(flow,main,sub);
         if(knownOld(flow,main,sub)&&mapped.main==='訂閱服務'&&sub==='訂閱服務')continue;
+        // Existing v168 factory labels can be standardized without duplicating obsolete names.
         if(knownOld(flow,main,sub) && (mapped.sub!==sub || (defaultCategories[flow]?.[mapped.main]||[]).includes(mapped.sub)))continue;
         if(!result[flow][mapped.main])result[flow][mapped.main]=[];
         if(mapped.sub && !result[flow][mapped.main].includes(mapped.sub))result[flow][mapped.main].push(mapped.sub);
