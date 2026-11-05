@@ -3311,3 +3311,33 @@ html .app-shell .investment-third-level :is(.stock-history-details,.investment-h
     translate:none!important;scale:1!important;rotate:0deg!important;
   }
 }
+
+/* v161: third-level histories are a single ListView, not a collapsible Card Stack. */
+.app-shell .investment-third-listview{width:100%;min-width:0;padding:0 0 110px;}
+.app-shell .investment-third-listview-heading{display:flex;flex-direction:column;gap:6px;padding:13px 3px 15px;border-bottom:1px solid var(--theme-line);}
+.app-shell .investment-third-listview-heading h2{margin:0;color:var(--theme-text);font-size:clamp(18px,4vw,23px);font-weight:760;}
+.app-shell .investment-third-listview-heading small{color:var(--theme-muted);font-size:clamp(12px,2.9vw,14px);}
+.app-shell .investment-third-list-content{margin:0!important;padding:5px 3px!important;min-height:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;}
+.app-shell .investment-third-list-content .stock-detail-trade{min-height:0!important;}
+.app-shell .recurring-auto-setting{padding:13px 14px;margin:10px 0 18px;background:var(--theme-surface2);border:1px solid var(--theme-line);border-radius:14px;}
+.app-shell .recurring-auto-control{display:flex;gap:12px;align-items:center;font-weight:730;cursor:pointer;}
+.app-shell .recurring-auto-control input{width:20px;height:20px;accent-color:var(--theme-accent);flex:none;}
+.app-shell .recurring-auto-setting .hint{margin:9px 0 0;line-height:1.55;}
+
+/* v162 — page-entry number and chart animations (honors reduced motion) */
+.nexpen-countup{display:inline-block;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.main.page-enter .recharts-sector{animation:nexp-chart-slice-in .65s cubic-bezier(.2,.75,.2,1) both;transform-origin:center;transform-box:fill-box}
+.main.page-enter .recharts-bar-rectangle{animation:nexp-chart-rise .72s cubic-bezier(.2,.8,.2,1) both;transform-box:fill-box;transform-origin:bottom}
+.networth-trend-chart .networth-trend-line{stroke-dasharray:1;stroke-dashoffset:1;animation:nexp-draw-line 1.05s ease-out forwards}
+.networth-trend-chart circle{animation:nexp-chart-dot .45s .5s backwards;transform-origin:center;transform-box:fill-box}
+.networth-card-expanded-body.is-open .networth-stacked-bar{animation:nexp-chart-reveal .65s ease-out both;transform-origin:left center}
+@keyframes nexp-chart-slice-in{from{opacity:0;transform:scale(.72)}to{opacity:1;transform:scale(1)}}
+@keyframes nexp-chart-rise{from{opacity:.1;transform:scaleY(.05)}to{opacity:1;transform:scaleY(1)}}
+@keyframes nexp-draw-line{to{stroke-dashoffset:0}}
+@keyframes nexp-chart-dot{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+@keyframes nexp-chart-reveal{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.app-lock-card.app-lock-failure{animation:nexp-lock-shake .42s cubic-bezier(.3,.6,.3,1);border-color:#dd6479!important}
+.app-lock-card.app-lock-success{animation:nexp-lock-success .43s ease-in forwards;border-color:#36b49b!important}
+@keyframes nexp-lock-shake{0%,100%{transform:translateX(0)}18%,52%{transform:translateX(-9px)}35%,70%{transform:translateX(9px)}85%{transform:translateX(-3px)}}
+@keyframes nexp-lock-success{0%{opacity:1;transform:scale(1)}65%{opacity:1;transform:scale(1.025)}100%{opacity:0;transform:scale(.97)}}
+@media(prefers-reduced-motion:reduce){.main.page-enter .recharts-sector,.main.page-enter .recharts-bar-rectangle,.networth-trend-chart .networth-trend-line,.networth-trend-chart circle,.networth-card-expanded-body.is-open .networth-stacked-bar,.app-lock-card.app-lock-failure,.app-lock-card.app-lock-success{animation:none!important}.networth-trend-chart .networth-trend-line{stroke-dashoffset:0}}

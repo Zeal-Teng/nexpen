@@ -1,4 +1,5 @@
 import React,{useMemo,useState} from 'react';
+import AnimatedNumber from './AnimatedNumber.jsx';
 
 const i18n={
  'zh-TW':{title:'淨資產走勢',desc:'每日快照（以當天最後一次開啟或更新時的金額為準）',empty:'尚未有歷史紀錄；開啟 APP 後會開始逐日累積。',one:'目前只有一天的紀錄，累積第二天後會呈現趨勢。',incomplete:'當日部分投資缺少報價',all:'全部',days:'天'},
@@ -26,12 +27,12 @@ export default function NetWorthTrend({history=[],format,language='zh-TW',curren
   <div className="networth-trend-heading"><div><h3>{t.title}</h3><small>{t.desc}</small></div></div>
   <div className="networth-trend-ranges" role="group" aria-label={t.title}>{[7,30,90,'all'].map(r=><button key={r} type="button" aria-pressed={range===r} onClick={()=>{setRange(r);setSelected(null)}} className={range===r?'active':''}>{r==='all'?t.all:`${r}${t.days}`}</button>)}</div>
   {data.length? <>
-   <div className="networth-trend-selected"><small>{point.date}{point.complete===false?` · ${t.incomplete}`:''}</small><strong>{value(point.netWorth)}</strong></div>
-   <svg className="networth-trend-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${t.title}：${data.map(p=>`${p.date} ${value(p.netWorth)}`).join('；')}`}>
+   <div className="networth-trend-selected"><small>{point.date}{point.complete===false?` · ${t.incomplete}`:''}</small><strong><AnimatedNumber value={value(point.netWorth)}/></strong></div>
+   <svg key={String(range)} className="networth-trend-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${t.title}：${data.map(p=>`${p.date} ${value(p.netWorth)}`).join('；')}`}>
     <defs><linearGradient id="networth-trend-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--theme-accent)" stopOpacity=".28"/><stop offset="100%" stopColor="var(--theme-accent)" stopOpacity=".015"/></linearGradient></defs>
     {[0,.5,1].map(v=><line key={v} x1={L} x2={W-R} y1={T+v*(H-T-B)} y2={T+v*(H-T-B)} stroke="var(--theme-line)" strokeDasharray="5 6"/>) }
     {data.length>1&&<path d={fill} fill="url(#networth-trend-fill)"/>}
-    <path d={path} fill="none" stroke="var(--theme-accent)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d={path} className="networth-trend-line" pathLength="1" fill="none" stroke="var(--theme-accent)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
     {data.map((p,i)=><circle key={p.date} cx={pts[i][0]} cy={pts[i][1]} r={selected===p.date||point?.date===p.date?6:4} fill="var(--theme-surface)" stroke="var(--theme-accent)" strokeWidth="2.8" onClick={()=>setSelected(p.date)}><title>{p.date} · {value(p.netWorth)}</title></circle>)}
     <text x={L} y={H-6} fill="var(--theme-muted)" fontSize="13">{data[0].date.slice(5)}</text>
     <text x={W-R} y={H-6} textAnchor="end" fill="var(--theme-muted)" fontSize="13">{data.at(-1).date.slice(5)}</text>

@@ -129,15 +129,16 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
   </section>}
   {active?<>
    <button type="button" className="stock-back investment-nav-back" onClick={()=>setSelected('')}><ArrowLeft size={17}/> {i18n("返回")}{i18n(label[type])}{i18n("列表")}</button>
-   <InvestmentStack className="investment-third-level">
-   <InvestmentStackCard accent="lavender" title={i18n("資金異動／估值歷史")} summary={`${active.name} · ${history.length} ${i18n("筆紀錄")}`} amount={null}><section className="glass panel stock-trade-detail-list investment-valuation-history investment-stage-history">
+   <section className="investment-third-level investment-third-listview">
+    <div className="investment-third-listview-heading"><h2>{i18n('資金異動／估值歷史')}</h2><small>{active.name} · {history.length} {i18n('筆紀錄')}</small></div>
+    <div className="stock-trade-detail-list investment-valuation-history investment-stage-history investment-third-list-content">
     <div className="investment-history-heading"><div className="investment-action-row"><button type="button" className="soft-btn small" onClick={()=>change('contribution',active)}><Plus size={16}/> {i18n("追加投入")}</button>{type==='policy'&&<button type="button" className="soft-btn small" onClick={()=>change('value',active)}><RefreshCcw size={16}/> {i18n("更新現值")}</button>}<button type="button" className="soft-btn small" onClick={()=>onEditAccount(active)}>{i18n("編輯帳戶")}</button></div></div>
     {history.length?history.map(h=><button type="button" className="stock-detail-trade investment-history-button" key={`${h.entry}-${h.id}`} onClick={()=>editEntry(h)}>
       <div className={'transaction-icon '+(h.entry==='valuation'?'income':'transfer')}>{h.entry==='valuation'?<TrendingUp size={18}/>:<Coins size={18}/>}</div>
       <div className="row-main"><b>{h.entry==='valuation'?i18n("現值更新"):i18n("追加投入")}</b><small>{h.date}{h.entry==='flow'&&type==='trust'?` · ${fmt(h.units)} ${i18n("張")}`:''}</small>{h.entry==='flow'&&h.note&&<small>{h.note}</small>}</div>
       <div className="transaction-right"><strong>{money(h.entry==='valuation'?h.value:h.amount,active.currency)}</strong></div><ChevronRight size={17} className="faint"/>
      </button>):<p className="hint">{i18n("尚無異動紀錄")}</p>}
-   </section></InvestmentStackCard></InvestmentStack>
+   </div></section>
   </>:<InvestmentStack className="investment-second-level investment-trust-policy-stack investment-individual-asset-stack">
    {items.length?items.map((asset)=>{
     const m=metrics(asset);

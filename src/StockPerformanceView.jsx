@@ -35,8 +35,9 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtSumm
     const unrealized=priced?holding.shares*Number(quote.price)-holding.cost:null;
     return <section className="stock-detail-view">
       <button type="button" className="stock-back investment-nav-back" onClick={onBack}><ArrowLeft size={18}/> {tr('返回股票','Back to stocks')}</button>
-      <InvestmentStack className="investment-third-level">
-      <InvestmentStackCard accent="mint" title={tr("買賣與股利紀錄","Trade and dividend history")} summary={`${active.symbol}${active.securityName?` · ${active.securityName}`:""} · ${active.transactions.length} ${tr("筆紀錄","records")}`} amount={null}><section className="glass panel stock-trade-detail-list investment-stage-history">
+      <section className="investment-third-level investment-third-listview">
+       <div className="investment-third-listview-heading"><h2>{tr('買賣與股利紀錄','Trade and dividend history')}</h2><small>{active.symbol}{active.securityName?` · ${active.securityName}`:''} · {active.transactions.length} {tr('筆紀錄','records')}</small></div>
+       <div className="stock-trade-detail-list investment-stage-history investment-third-list-content">
         {active.transactions.map(x=>{
           const isBuy=x.action==='buy';
           const isSell=x.action==='sell';
@@ -68,7 +69,7 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtSumm
           </button>;
         })}
         {!active.transactions.length&&<p className="hint">{tr('尚無交易紀錄','No transactions yet')}</p>}
-      </section></InvestmentStackCard></InvestmentStack>
+      </div></section>
     </section>;
   }
   return <>

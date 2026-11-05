@@ -1,4 +1,5 @@
 import React,{useEffect,useState} from 'react';
+import AnimatedNumber from './AnimatedNumber.jsx';
 
 const messages={
  'zh-TW':{title:'淨資產目標',desc:'設定希望達成的淨資產金額',goal:'目標金額',achieved:'達成率',remaining:'距離目標還差',exceeded:'已超越目標',reached:'已達成目標',edit:'設定目標',save:'儲存目標',cancel:'取消',remove:'移除目標',empty:'設定目標金額後，即可追蹤達成進度。',invalid:'請輸入大於 0 的有效目標金額',unavailable:'目前匯率不可用，暫時無法編輯目標',incomplete:'部分投資尚未取得報價，進度可能低估。'},
@@ -25,9 +26,9 @@ export default function NetWorthGoal({goalTwd=null,currentTwd=0,mainRate=1,curre
   <div className="networth-goal-heading"><div><h3>{t.title}</h3><small>{t.desc}</small></div><button className="soft-btn small" type="button" onClick={editing?()=>setEditing(false):begin} disabled={!usableRate&&!editing}>{editing?t.cancel:t.edit}</button></div>
   {!usableRate&&<p className="hint">{t.unavailable}</p>}
   {goal&&usableRate?<>
-   <div className="networth-goal-numbers"><div><small>{t.goal}</small><strong>{display(localValue)}</strong></div><div><small>{t.achieved}</small><strong>{progress.toFixed(1)}%</strong></div></div>
+   <div className="networth-goal-numbers"><div><small>{t.goal}</small><strong><AnimatedNumber value={display(localValue)}/></strong></div><div><small>{t.achieved}</small><strong><AnimatedNumber value={`${progress.toFixed(1)}%`}/></strong></div></div>
    <div className="networth-goal-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100,progress)} aria-label={t.achieved}><div style={{width:`${Math.min(100,progress)}%`}}/></div>
-   <div className="networth-goal-remaining"><span>{current>=goal?(current>goal?t.exceeded:t.reached):t.remaining}</span><strong>{current>=goal?display((current-goal)/Number(mainRate)):display(remaining/Number(mainRate))}</strong></div>
+   <div className="networth-goal-remaining"><span>{current>=goal?(current>goal?t.exceeded:t.reached):t.remaining}</span><strong><AnimatedNumber value={current>=goal?display((current-goal)/Number(mainRate)):display(remaining/Number(mainRate))}/></strong></div>
    {incomplete&&<p className="hint networth-goal-warning">{t.incomplete}</p>}
   </>:!editing&&<p className="hint">{t.empty}</p>}
   {editing&&<form className="networth-goal-editor" onSubmit={save}><label><span>{t.goal}（{currency}）</span><input type="text" inputMode="decimal" value={draft} onChange={e=>setDraft(e.target.value)} placeholder="10000000" autoFocus/></label>{error&&<p className="networth-goal-error" role="alert">{error}</p>}<div className="networth-goal-actions"><button className="primary-btn" type="submit" disabled={saving||!usableRate}>{t.save}</button>{goal&&<button type="button" className="soft-btn" onClick={clear} disabled={saving}>{t.remove}</button>}</div></form>}
