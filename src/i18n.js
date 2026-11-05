@@ -1,6 +1,16 @@
 // NEXPEN UI localization. Keys use the original Traditional Chinese source labels.
 // Account names, custom categories and transaction notes are never translated automatically.
 const catalog={
+  "上一年":{"en":"Previous year","ja":"前年へ","zh-CN":"上一年"},
+  "下一年":{"en":"Next year","ja":"翌年へ","zh-CN":"下一年"},
+  "選擇年份":{"en":"Select year","ja":"年を選択","zh-CN":"选择年份"},
+  "本年支出":{"en":"Yearly expenses","ja":"年間支出","zh-CN":"本年支出"},
+  "本年收入":{"en":"Yearly income","ja":"年間収入","zh-CN":"本年收入"},
+  "本年淨額":{"en":"Yearly net","ja":"年間収支","zh-CN":"本年净额"},
+  "今年":{"en":"This year","ja":"今年","zh-CN":"今年"},
+  "篩選帳戶":{"en":"Filter accounts","ja":"口座で絞り込む","zh-CN":"筛选账户"},
+  "全部帳戶":{"en":"All accounts","ja":"すべての口座","zh-CN":"全部账户"},
+  "這一年沒有符合條件的交易":{"en":"No matching transactions this year","ja":"今年は該当する取引がありません","zh-CN":"这一年没有符合条件的交易"},
   "早餐": {"en": "Breakfast", "ja": "朝食", "zh-CN": "早餐"},
   "午餐": {"en": "Lunch", "ja": "昼食", "zh-CN": "午餐"},
   "晚餐": {"en": "Dinner", "ja": "夕食", "zh-CN": "晚餐"},

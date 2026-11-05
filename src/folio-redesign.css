@@ -3521,3 +3521,70 @@ html .app-shell .transaction-template-choice .transaction-template-account{
   display:block;max-width:100%;color:var(--theme-muted,#9db4c8);opacity:1;
   white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:11px;
 }
+
+/* v176 — Annual diary navigator and account-aware transaction filtering. */
+.app-shell .diary-year-control select {
+  min-width: 92px;
+  min-height: 40px;
+  max-width: 130px;
+  text-align:center;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:var(--theme-text);
+  font:inherit;
+  font-weight:750;
+  padding:5px 10px;
+}
+.app-shell .diary-search-filter {display:flex;flex-wrap:wrap;gap:8px!important;align-items:stretch!important;}
+.app-shell .diary-search-filter>.searchbox {flex:1 1 100%;min-width:0;}
+.app-shell .diary-search-filter>.smart-select.compact,
+.app-shell .diary-search-filter>.diary-account-filter {flex:1 1 calc(50% - 4px);min-width:0;max-width:none!important;margin:0!important;}
+@media (min-width:650px){
+ .app-shell .diary-search-filter>.searchbox{flex:1 1 38%;}
+ .app-shell .diary-search-filter>.smart-select.compact,
+ .app-shell .diary-search-filter>.diary-account-filter{flex:1 1 22%;}
+}
+/* Override the legacy single-filter fixed width without affecting other selects. */
+html .app-shell .diary-listview .diary-search-filter {
+  display:flex!important;flex-wrap:wrap!important;gap:8px!important;align-items:stretch!important;
+}
+html .app-shell .diary-listview .diary-search-filter > .searchbox {
+  flex:1 1 100%!important;width:auto!important;max-width:none!important;
+}
+html .app-shell .diary-listview .diary-search-filter > .smart-select.compact {
+  flex:1 1 calc(50% - 4px)!important;width:auto!important;min-width:0!important;max-width:none!important;
+}
+@media(min-width:650px){
+ html .app-shell .diary-listview .diary-search-filter > .searchbox {flex:1 1 35%!important;}
+ html .app-shell .diary-listview .diary-search-filter > .smart-select.compact {flex:1 1 20%!important;}
+}
+
+/* v177 – Compact filter icons on the diary search row. */
+html .app-shell .diary-listview .diary-search-filter {
+ display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:8px!important;
+}
+html .app-shell .diary-listview .diary-search-filter>.searchbox {
+ flex:1 1 auto!important;min-width:0!important;width:auto!important;max-width:none!important;
+ margin:0!important;
+}
+html .app-shell .diary-listview .diary-search-filter>.searchbox input {min-width:0!important;width:100%;}
+html .app-shell .diary-filter-icon {
+ flex:0 0 42px;position:relative;width:42px;height:42px;min-width:42px;
+ display:grid;place-items:center;border-radius:13px;
+ border:1px solid var(--theme-border, rgba(130,170,190,.3));
+ background:var(--theme-card, rgba(140,165,195,.13));
+ color:var(--theme-text, inherit);padding:0;cursor:pointer;
+}
+html .app-shell .diary-filter-icon.is-filtered {
+ border-color:var(--theme-accent,#0acfe5);
+ color:var(--theme-accent,#0acfe5);
+}
+html .app-shell .diary-filter-indicator {
+ position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;
+ background:var(--theme-accent,#0acfe5);
+}
+@media(max-width:390px){
+ html .app-shell .diary-filter-icon{width:38px;height:38px;min-width:38px;flex-basis:38px;}
+ html .app-shell .diary-listview .diary-search-filter{gap:6px!important;}
+}
