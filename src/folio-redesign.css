@@ -3640,3 +3640,151 @@ html .app-shell .week-strip .week-day.is-weekend.active b {
  .app-shell .sheet-body .form-grid.transaction-date-money-row:has(.native-date-control){grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
  .app-shell .sheet-body .form-grid.transaction-date-money-row:has(.native-date-control)>.field{grid-column:auto!important}
 }
+
+
+/* v188: Categorization legibility follows the app font-size setting, including iPhone. */
+html body .transaction-category-dialog .transaction-category-choice {
+  font-size:calc(16px * var(--app-font-scale, 1))!important;
+  line-height:1.42!important;
+  min-height:48px;
+  padding:10px 8px!important;
+  gap:9px!important;
+}
+html body .transaction-category-dialog .transaction-category-icon {
+  width:32px!important;
+  height:32px!important;
+}
+html body .transaction-category-dialog .transaction-category-column-title {
+  font-size:calc(15px * var(--app-font-scale, 1))!important;
+}
+@media(max-width:600px){
+ html body .transaction-category-dialog .transaction-category-choice {
+  font-size:calc(15px * var(--app-font-scale, 1))!important;
+  padding:10px 5px!important;
+  gap:6px!important;
+ }
+ html body .transaction-category-dialog .transaction-category-icon {width:29px!important;height:29px!important}
+}
+/* Override legacy phone-only rules that force any date-containing form-grid to one column. */
+html body .app-shell form#nexpen-sheet-form.sheet-body > .form-grid.transaction-date-money-row,
+html body .app-shell form#nexpen-sheet-form.sheet-body > .form-grid.transaction-date-money-row:has(.native-date-control),
+html body .app-shell form#nexpen-sheet-form.sheet-body > .form-grid.transaction-date-money-row:has(input.native-date-input),
+html body .app-shell form#nexpen-sheet-form.sheet-body > .form-grid.transaction-date-money-row:has(input[type="date"]) {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:10px!important;
+  width:100%!important;
+}
+html body .app-shell form#nexpen-sheet-form.sheet-body > .form-grid.transaction-date-money-row > .field,
+html body .app-shell form#nexpen-sheet-form.sheet-body > .form-grid.transaction-date-money-row:has(input.native-date-input) > .field {
+  grid-column:auto!important;
+  grid-row:auto!important;
+  width:100%!important;
+  min-width:0!important;
+}
+html body .app-shell form#nexpen-sheet-form.sheet-body > .form-grid.transaction-date-money-row .native-date-control,
+html body .app-shell form#nexpen-sheet-form.sheet-body > .form-grid.transaction-date-money-row .money-trigger {
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+/* Templates are single-tap list rows, not cards with inline edit/delete buttons. */
+html .app-shell .transaction-inline-templates {gap:0!important;padding-top:0!important}
+html .app-shell .transaction-inline-template {
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-bottom:1px solid var(--theme-line,rgba(130,140,150,.22))!important;
+  border-radius:0!important;
+}
+html .app-shell .transaction-template-choice {
+  width:100%!important;
+  padding:14px 4px!important;
+  gap:6px!important;
+}
+html .app-shell .transaction-template-title {font-size:calc(16px * var(--app-font-scale, 1))!important}
+html .app-shell .transaction-template-choice small {font-size:calc(13px * var(--app-font-scale, 1))!important}
+html .app-shell .transaction-template-choice .transaction-template-account {font-size:calc(13px * var(--app-font-scale, 1))!important}
+
+
+/* v189 — Template management is retained within the compact ListView.
+   Tapping row applies, while dedicated edit/delete buttons never activate the row. */
+html .app-shell .transaction-inline-template {
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-width:0;
+}
+html .app-shell .transaction-template-choice {flex:1 1 auto!important;min-width:0!important;width:auto!important}
+html .app-shell .transaction-template-row-actions {
+  display:flex;align-items:center;gap:7px;flex:0 0 auto;
+  padding-right:3px;
+}
+html .app-shell .transaction-template-row-actions .transaction-template-icon-button {
+  width:38px;height:38px;flex:0 0 38px;
+  color:var(--theme-text,inherit);
+}
+html .app-shell .transaction-template-row-actions .transaction-template-icon-button.danger {color:#f17a91}
+html .app-shell .transaction-template-row-actions .transaction-template-icon-button:focus-visible {
+  outline:2px solid var(--theme-accent,#1ccbe1);outline-offset:2px;
+}
+@media (max-width:390px) {
+  html .app-shell .transaction-inline-template {gap:4px!important}
+  html .app-shell .transaction-template-row-actions {gap:5px}
+  html .app-shell .transaction-template-row-actions .transaction-template-icon-button {
+    width:34px;height:36px;flex-basis:34px;
+  }
+}
+
+/* v191 — Decorative geometry belongs in the empty space ABOVE the fixed bottom
+   navigation, not inside diary-transaction-list. The position mirrors the FAB. */
+html .app-shell .diary-bottom-geometry { display:none; }
+@media (max-width:800px) {
+  html .app-shell .daily-transactions .diary-transaction-list {
+    background:transparent!important;
+    overflow:visible;
+    border-radius:0;
+    min-height:0;
+  }
+  html .app-shell .daily-transactions .diary-transaction-list::after { content:none!important; }
+  html .app-shell .diary-bottom-geometry {
+    display:block;
+    position:fixed;
+    left:max(14px, env(safe-area-inset-left));
+    right:auto;
+    bottom:calc(88px + env(safe-area-inset-bottom));
+    width:clamp(118px,32vw,185px);
+    height:clamp(118px,32vw,185px);
+    pointer-events:none;
+    z-index:1;
+    opacity:.58;
+    background:
+      radial-gradient(circle at 15% 85%, color-mix(in srgb,var(--theme-accent,#28bbca) 12%,transparent) 0 42px, transparent 43px),
+      radial-gradient(circle at 15% 85%, transparent 0 70px,color-mix(in srgb,var(--theme-accent,#28bbca) 23%,transparent) 71px 72px,transparent 73px);
+    transform:translateZ(0);
+  }
+  html .app-shell .diary-bottom-geometry::after {
+    content:"";
+    position:absolute;
+    left:-42px;
+    bottom:-52px;
+    width:165px;
+    height:165px;
+    border:1px solid color-mix(in srgb,var(--theme-accent,#28bbca) 29%,transparent);
+    border-radius:35%;
+    transform:rotate(-32deg);
+  }
+  html .app-shell[data-fab-position="left"] .diary-bottom-geometry {
+    left:auto;
+    right:max(14px, env(safe-area-inset-right));
+    background:
+      radial-gradient(circle at 85% 85%, color-mix(in srgb,var(--theme-accent,#28bbca) 12%,transparent) 0 42px,transparent 43px),
+      radial-gradient(circle at 85% 85%, transparent 0 70px,color-mix(in srgb,var(--theme-accent,#28bbca) 23%,transparent) 71px 72px,transparent 73px);
+  }
+  html .app-shell[data-fab-position="left"] .diary-bottom-geometry::after {
+    left:auto;
+    right:-42px;
+    transform:rotate(32deg);
+  }
+}
