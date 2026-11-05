@@ -27,6 +27,7 @@ import {useConfirmDialog} from './ConfirmDialog.jsx';
 import {computeNetWorth,ASSET_GROUPS,assetGroupForType} from './netWorth.js';
 import InvestmentAssets from './InvestmentAssets.jsx';
 import NativeDatePicker from './NativeDatePicker.jsx';
+import SwipeableDiaryRow from './SwipeableDiaryRow.jsx';
 import { accountRefs, categoryRefs, accountTypeRefs, projectRefs, stockBuyRefs } from './deletionGuards.js';
 
 const SUPPORTED_LANGUAGES=[['zh-TW','繁體中文'],['zh-CN','简体中文'],['en','English'],['ja','日本語']];
@@ -360,6 +361,7 @@ export default function App(){
  const autoRecurringBusy=useRef(false);
  const [passwordConfig,setPasswordConfig]=useState(null),[unlocked,setUnlocked]=useState(false);
  const lockInitialized=useRef(false);
+ const [openedDiarySwipe,setOpenedDiarySwipe]=useState(null);
  const[tab,setTab]=useState('daily'),[records,setRecords]=useState([]),[accounts,setAccounts]=useState([]),[stocks,setStocks]=useState([]),[recurring,setRecurring]=useState([]),[categories,setCategories]=useState(defaultCategories),[categoryIcons,setCategoryIcons]=useState({}),[accountTypes,setAccountTypes]=useState(defaultAccountTypes),[projects,setProjects]=useState([]),[transactionTemplates,setTransactionTemplates]=useState([]),[templateTab,setTemplateTab]=useState(false),[templateName,setTemplateName]=useState(''),[templateEditorId,setTemplateEditorId]=useState(''),[templateNaming,setTemplateNaming]=useState(false),[selectedTemplateId,setSelectedTemplateId]=useState(''),[date,setDate]=useState(today()),[diaryView,setDiaryView]=useState('day'),[theme,setTheme]=useState('folio'),[fontScale,setFontScale]=useState(1),[fabPosition,setFabPosition]=useState('right'),[weekStartsOn,setWeekStartsOn]=useState(0),[ready,setReady]=useState(false),[dialog,setDialog]=useState(''),[editing,setEditing]=useState(null),[notice,setNotice]=useState(''),[filter,setFilter]=useState('all'),[accountFilter,setAccountFilter]=useState('all'),[categoryFlow,setCategoryFlow]=useState('expense'),[query,setQuery]=useState('');const fileInput=useRef(null);const datePickerRef=useRef(null);const monthPickerRef=useRef(null);const weekSwipe=useRef(null);
  // Touch/mouse/pen drag sorting: only the handle captures gestures.
  const dragCategoryRef=useRef(null);
@@ -1257,6 +1259,9 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   return <React.Fragment key={x.id}>
     {diaryView!=='day'&&(i===0||dayTx[i-1].date!==x.date)&&<div className="diary-month-date-heading">{x.date} <small>{weekdayLabels[language]?.[parseDate(x.date).getDay()]||weekdayLabels['zh-TW'][parseDate(x.date).getDay()]}</small></div>}
     <article role="listitem" className={`diary-list-row diary-type-${x.type}`}>
+      <SwipeableDiaryRow id={x.id} openSide={openedDiarySwipe?.id===x.id?openedDiarySwipe.side:null} onReveal={side=>setOpenedDiarySwipe(side?{id:x.id,side}:null)} editLabel={i18n('編輯')} deleteLabel={i18n('刪除')}
+        onEdit={()=>(x.isStockDividend||x.isStockTrade)?open('stock',stocks.find(s=>s.id===x.stockId)):open('transaction',x)}
+        onDelete={()=>remove(x.isStockDividend||x.isStockTrade?'stocks':'records',x.isStockDividend||x.isStockTrade?x.stockId:x.id)}>
       <button type="button" className="diary-list-action" aria-label={`${displayTitle} · ${signedAmount} · ${accountLabel} · ${i18n('編輯')}`} onClick={()=>(x.isStockDividend||x.isStockTrade)?open('stock',stocks.find(s=>s.id===x.stockId)):open('transaction',x)}>
         <span className="diary-list-main">
           <span className={'transaction-icon '+x.type}><Icon size={20}/></span>
@@ -1265,6 +1270,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
           <ChevronRight size={18} className="diary-list-chevron" aria-hidden="true"/>
         </span>
       </button>
+      </SwipeableDiaryRow>
     </article>
   </React.Fragment>;
 }):<Blank text={diaryView==='year'?i18n('這一年沒有符合條件的交易'):diaryView==='month'?i18n('這個月沒有符合條件的交易'):i18n('這一天沒有符合條件的交易')}/>}

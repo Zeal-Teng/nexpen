@@ -3791,3 +3791,60 @@ html .app-shell .diary-bottom-geometry { display:none; }
 
 /* v193: remove only the horizontal separators beneath the two picker column headings. */
 html body .transaction-category-dialog .transaction-category-column-title { border-bottom:0!important; box-shadow:none!important; }
+
+/* v194 — Swipe actions are revealed behind each ListView row, without changing
+   the original row layout or hijacking vertical page scrolling. */
+.app-shell .diary-transaction-list .diary-swipe-container {
+  position:relative;
+  width:100%;
+  overflow:hidden;
+  isolation:isolate;
+  border-radius:12px;
+}
+.app-shell .diary-transaction-list .diary-swipe-actions {
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:stretch;
+  justify-content:space-between;
+  z-index:0;
+  pointer-events:none;
+}
+.app-shell .diary-transaction-list .diary-swipe-reveal-action {
+  display:flex;
+  flex:0 0 84px;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:3px;
+  border:0;
+  padding:4px;
+  font:inherit;
+  font-size:12px;
+  font-weight:650;
+  cursor:pointer;
+  color:#fff;
+  pointer-events:auto;
+}
+.app-shell .diary-transaction-list .diary-swipe-edit {background:#167d96;}
+.app-shell .diary-transaction-list .diary-swipe-delete {background:#b9455d;}
+.app-shell .diary-transaction-list .diary-swipe-surface {
+  position:relative;
+  z-index:1;
+  width:100%;
+  background:var(--theme-bg, var(--bg,#081322));
+  touch-action:pan-y;
+  user-select:none;
+  -webkit-user-select:none;
+  will-change:transform;
+  transition:transform 270ms cubic-bezier(.2,.85,.25,1);
+}
+.app-shell .diary-transaction-list .diary-swipe-surface .diary-list-action {
+  background:var(--theme-bg, var(--bg,#081322));
+}
+.app-shell .diary-transaction-list .diary-swipe-surface .diary-list-action:focus-visible {
+  outline-offset:-3px;
+}
+@media (prefers-reduced-motion:reduce) {
+ .app-shell .diary-transaction-list .diary-swipe-surface {transition-duration:0ms;}
+}
