@@ -4031,3 +4031,46 @@ html .app-shell .sheet-body .stock-action-date-grid .native-date-input {width:10
     width: 112px !important;
   }
 }
+
+/* v200: animate only clipped placeholder hints, without moving the real input. */
+.marquee-input-wrap{display:block;position:relative;min-width:0;width:100%;max-width:100%;}
+.marquee-input-wrap > input{box-sizing:border-box;width:100%;min-width:0;}
+.marquee-placeholder-viewport{position:absolute;inset-inline-start:0;inset-inline-end:0;top:50%;overflow:hidden;white-space:nowrap;pointer-events:none;transform:translateY(-50%);padding-inline:var(--marquee-placeholder-padding,15px);box-sizing:border-box;visibility:hidden;color:var(--muted,#8ea5ba);font-size:inherit;line-height:1.5;}
+.marquee-placeholder-text{display:inline-block;white-space:nowrap;max-width:none;width:max-content;}
+.marquee-input-active > input::placeholder{color:transparent!important;opacity:0!important;}
+.marquee-input-active > .marquee-placeholder-viewport{visibility:visible;}
+.marquee-input-active .marquee-placeholder-text{animation:nexpen-placeholder-marquee var(--marquee-duration,7s) ease-in-out infinite alternate;}
+@keyframes nexpen-placeholder-marquee{0%,15%{transform:translateX(0)}85%,100%{transform:translateX(calc(-1 * var(--marquee-distance,0px)))}}
+@media(prefers-reduced-motion:reduce){.marquee-input-active .marquee-placeholder-text{animation:none}.marquee-input-active > input::placeholder{color:initial!important;opacity:1!important}.marquee-input-active > .marquee-placeholder-viewport{visibility:hidden}}
+/* Keep search icons and adjacent controls their original widths. */
+.searchbox > .marquee-input-wrap{flex:1 1 0;min-width:0;width:auto;}
+
+
+/* v201 — Diary ListView is borderless while idle. Swipe color is visible ONLY
+   when the row itself moves, never in the rounded corners at rest. */
+.app-shell .diary-transaction-list .diary-swipe-container {
+  border-radius:0!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+.app-shell .diary-transaction-list .diary-swipe-actions,
+.app-shell .diary-transaction-list .diary-swipe-surface,
+.app-shell .diary-transaction-list .diary-swipe-surface .diary-list-action {
+  border-radius:0!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.app-shell .diary-transaction-list .diary-swipe-actions {
+  background:transparent!important;
+}
+.app-shell .diary-transaction-list .diary-swipe-surface {
+  background:var(--theme-bg,var(--bg,#081322))!important;
+}
+.app-shell .diary-transaction-list .diary-swipe-surface .diary-list-action {
+  background:transparent!important;
+}
+.app-shell .diary-transaction-list .diary-swipe-surface .diary-list-action:active {
+  background:var(--theme-soft,rgba(128,128,128,.08))!important;
+}

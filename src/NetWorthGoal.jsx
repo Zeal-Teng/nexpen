@@ -1,3 +1,4 @@
+import MarqueeInput from './MarqueeInput.jsx';
 import React,{useEffect,useState} from 'react';
 import AnimatedNumber from './AnimatedNumber.jsx';
 
@@ -34,6 +35,6 @@ export default function NetWorthGoal({goalTwd=null,currentTwd=0,mainRate=1,curre
    <div className="networth-goal-remaining"><span>{current>=goal?(current>goal?t.exceeded:t.reached):t.remaining}</span><strong><AnimatedNumber value={current>=goal?display((current-goal)/Number(mainRate)):display(remaining/Number(mainRate))}/></strong></div>
    {incomplete&&<p className="hint networth-goal-warning">{t.incomplete}</p>}
   </>:!editing&&<p className="hint">{t.empty}</p>}
-  {editing&&<form className="networth-goal-editor" onSubmit={save}><label><span>{t.goal}（{currency}）</span><input type="text" inputMode="decimal" value={draft} onChange={e=>setDraft(e.target.value)} placeholder="10000000" autoFocus/></label>{error&&<p className="networth-goal-error" role="alert">{error}</p>}<div className="networth-goal-actions"><button className="primary-btn" type="submit" disabled={saving||!usableRate}>{t.save}</button>{goal&&<button type="button" className="soft-btn" onClick={clear} disabled={saving}>{t.remove}</button>}</div></form>}
+  {editing&&<form className="networth-goal-editor" onSubmit={save}><label><span>{t.goal}（{currency}）</span><MarqueeInput type="text" inputMode="decimal" value={draft} onChange={e=>setDraft(e.target.value)} placeholder="10000000" autoFocus/></label>{error&&<p className="networth-goal-error" role="alert">{error}</p>}<div className="networth-goal-actions"><button className="primary-btn" type="submit" disabled={saving||!usableRate}>{t.save}</button>{goal&&<button type="button" className="soft-btn" onClick={clear} disabled={saving}>{t.remove}</button>}</div></form>}
  </section>;
 }
