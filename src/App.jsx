@@ -15,8 +15,10 @@ import {useNetWorthHistory} from './useNetWorthHistory.js';
 import SummaryHero from './SummaryHero.jsx';
 import NetWorthGoal from './NetWorthGoal.jsx';
 import AnimatedNumber from './AnimatedNumber.jsx';
-import {postRecurringOccurrence,runDueRecurring} from './recurringAutomation.js';
+import {runDueRecurring} from './recurringAutomation.js';
+import {diaryTransactionTitle} from './recurringDisplay.js';
 import InstallHint from './InstallHint.jsx';
+import {useConfirmDialog} from './ConfirmDialog.jsx';
 import {computeNetWorth,ASSET_GROUPS,assetGroupForType} from './netWorth.js';
 import InvestmentAssets from './InvestmentAssets.jsx';
 import NativeDatePicker from './NativeDatePicker.jsx';
@@ -284,9 +286,9 @@ function AppPasswordSettings({hasPassword,onSet,onRemove,numericPassword=false})
 }
 
 export default function App(){
+ const {askConfirm,confirmationDialog}=useConfirmDialog();
  const[language,setLanguage]=useState('zh-TW'),[colorScheme,setColorScheme]=useState('normal'),[primaryCurrency,setPrimaryCurrency]=useState('TWD'),[primaryTwdRate,setPrimaryTwdRate]=useState(1),[primaryRateDate,setPrimaryRateDate]=useState(''),[primaryRateLoading,setPrimaryRateLoading]=useState(false);const tr=value=>trText(value,language);setLocale(language);
  const [netWorthGoalTwd,setNetWorthGoalTwd]=useState(null);
- const [autoRecurring,setAutoRecurring]=useState(false);
  const autoRecurringBusy=useRef(false);
  const [passwordConfig,setPasswordConfig]=useState(null),[unlocked,setUnlocked]=useState(false);
  const lockInitialized=useRef(false);
@@ -431,21 +433,31 @@ export default function App(){
   }
  };
  const toast=s=>{setNotice(i18n(s));setTimeout(()=>setNotice(''),3300)};
- async function reload(){const[r,a,s,rr,c,t,fs,ci,at,bf,sq,langSetting,colorSetting,baseSetting,baseRateSetting,projectSetting,investHistory,investFlows,appLockSetting,fabSetting,accountOrderSetting,netWorthGoalSetting,autoRecurringSetting]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.get('categories'),db.settings.get('theme'),db.settings.get('fontScale'),db.settings.get('categoryIcons'),db.settings.get('accountTypes'),db.settings.get('stockBrokerFees'),db.settings.get('stockClosingQuotes'),db.settings.get('language'),db.settings.get('amountColors'),db.settings.get('primaryCurrency'),db.settings.get('primaryTwdRate'),db.settings.get('projects'),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.settings.get('appLock'),db.settings.get('fabPosition'),db.settings.get('accountOrder'),db.settings.get('netWorthGoalTwd'),db.settings.get('autoRecurring')]);setAutoRecurring(autoRecurringSetting?.value===true);setNetWorthGoalTwd(Number(netWorthGoalSetting?.value)>0?Number(netWorthGoalSetting.value):null);setAccountOrder(Array.isArray(accountOrderSetting?.value)?accountOrderSetting.value:[]);setFabPosition(fabSetting?.value==='left'?'left':'right');setPasswordConfig(appLockSetting?.value||null);if(!lockInitialized.current){setUnlocked(!appLockSetting?.value);lockInitialized.current=true;}setInvestmentValuations(investHistory);setInvestmentFlows(investFlows);setProjects(projectSetting?.value||[]);setLanguage(langSetting?.value||'zh-TW');setColorScheme(colorSetting?.value||'normal');setPrimaryCurrency(baseSetting?.value||'TWD');setPrimaryTwdRate(Number(baseRateSetting?.value?.rate)||((baseSetting?.value||'TWD')==='TWD'?1:0));setPrimaryRateDate(baseRateSetting?.value?.date||'');setQuotes(sq?.value||{});setBrokerFees(bf?.value||{discount:60,minimum:20});setAccountTypes([...((at?.value)||defaultAccountTypes),...defaultAccountTypes.filter(t=>['trust','policy'].includes(t.id)&&!((at?.value)||defaultAccountTypes).some(x=>x.id===t.id))]);setRecords(r);setAccounts(a);setStocks(s);setRecurring(rr);setCategories(c?.value||defaultCategories);setTheme(t?.value||'folio');setFontScale((()=>{const f=Number(fs?.value)||1;return f<=0.96?0.94:f>=1.05?1.14:1})());setCategoryIcons(ci?.value||{});}
+ async function reload(){const[r,a,s,rr,c,t,fs,ci,at,bf,sq,langSetting,colorSetting,baseSetting,baseRateSetting,projectSetting,investHistory,investFlows,appLockSetting,fabSetting,accountOrderSetting,netWorthGoalSetting]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.get('categories'),db.settings.get('theme'),db.settings.get('fontScale'),db.settings.get('categoryIcons'),db.settings.get('accountTypes'),db.settings.get('stockBrokerFees'),db.settings.get('stockClosingQuotes'),db.settings.get('language'),db.settings.get('amountColors'),db.settings.get('primaryCurrency'),db.settings.get('primaryTwdRate'),db.settings.get('projects'),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.settings.get('appLock'),db.settings.get('fabPosition'),db.settings.get('accountOrder'),db.settings.get('netWorthGoalTwd')]);setNetWorthGoalTwd(Number(netWorthGoalSetting?.value)>0?Number(netWorthGoalSetting.value):null);setAccountOrder(Array.isArray(accountOrderSetting?.value)?accountOrderSetting.value:[]);setFabPosition(fabSetting?.value==='left'?'left':'right');setPasswordConfig(appLockSetting?.value||null);if(!lockInitialized.current){setUnlocked(!appLockSetting?.value);lockInitialized.current=true;}setInvestmentValuations(investHistory);setInvestmentFlows(investFlows);setProjects(projectSetting?.value||[]);setLanguage(langSetting?.value||'zh-TW');setColorScheme(colorSetting?.value||'normal');setPrimaryCurrency(baseSetting?.value||'TWD');setPrimaryTwdRate(Number(baseRateSetting?.value?.rate)||((baseSetting?.value||'TWD')==='TWD'?1:0));setPrimaryRateDate(baseRateSetting?.value?.date||'');setQuotes(sq?.value||{});setBrokerFees(bf?.value||{discount:60,minimum:20});setAccountTypes([...((at?.value)||defaultAccountTypes),...defaultAccountTypes.filter(t=>['trust','policy'].includes(t.id)&&!((at?.value)||defaultAccountTypes).some(x=>x.id===t.id))]);setRecords(r);setAccounts(a);setStocks(s);setRecurring(rr);setCategories(c?.value||defaultCategories);setTheme(t?.value||'folio');setFontScale((()=>{const f=Number(fs?.value)||1;return f<=0.96?0.94:f>=1.05?1.14:1})());setCategoryIcons(ci?.value||{});}
  useEffect(()=>{ensureDefaults().then(reload).then(()=>setReady(true)).catch(e=>toast(e.message))},[]);
- // An opted-in recurring schedule is posted on startup and on foreground return.
+ // Every schedule is caught up automatically on startup and on foreground return.
  // IndexedDB transactions enforce exactly-once per schedule/date, including multi-tab races.
  useEffect(()=>{
-  if(!ready||!autoRecurring)return;
+  if(!ready)return;
   let inactive=false;
   const run=async()=>{
    if(inactive||document.visibilityState==='hidden'||autoRecurringBusy.current)return;
    autoRecurringBusy.current=true;
    try{
-    const {posted,remaining}=await runDueRecurring();
+    // Process bounded batches to avoid blocking the interface. Large backlogs
+    // continue automatically while the app remains visible; never create duplicate occurrences.
+    let totalPosted=0,remaining=false,batches=0;
+    do {
+     const outcome=await runDueRecurring({maximum:200});
+     totalPosted+=outcome.posted;
+     remaining=outcome.remaining;
+     batches++;
+     if(inactive||document.visibilityState==='hidden')break;
+     if(remaining)await new Promise(resolve=>setTimeout(resolve,100));
+    } while(remaining&&batches<20);
     if(inactive)return;
-    if(posted){await reload();toast(`已自動入帳 ${posted} 筆定期交易`);}
-    if(remaining)toast('尚有大量過期排程，請再次開啟此頁繼續補入');
+    if(totalPosted){await reload();toast(`已自動入帳 ${totalPosted} 筆定期交易`);}
+    if(remaining)toast('待補入的排程較多，將於下次開啟或回到前景時繼續執行');
    }catch(e){if(!inactive)toast('自動排程失敗：'+e.message)}
    finally{autoRecurringBusy.current=false;}
   };
@@ -453,11 +465,7 @@ export default function App(){
   document.addEventListener('visibilitychange',run);
   window.addEventListener('focus',run);
   return()=>{inactive=true;document.removeEventListener('visibilitychange',run);window.removeEventListener('focus',run)};
- },[ready,autoRecurring]);
- const updateAutoRecurring=async enabled=>{
-  await db.settings.put({key:'autoRecurring',value:enabled});
-  setAutoRecurring(enabled);
- };
+ },[ready]);
  useEffect(()=>{document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;document.documentElement.style.setProperty('--app-font-scale',String(fontScale));},[theme,fontScale]);
  // On app launch, silently refresh the official securities catalog (at most once daily).
  // UI stays responsive and the IndexedDB catalog remains usable without internet.
@@ -591,7 +599,7 @@ export default function App(){
  }
  if(dialog==='stock'){if(accounts.find(a=>a.id===form.account)?.currency!=='TWD'&&accounts.find(a=>a.id===form.account)?.currency)throw Error(i18n("目前股票交割僅支援新台幣帳戶"));if(!form.account)throw Error(i18n("請先新增交割帳戶"));if(!form.symbol.trim())throw Error(i18n("請輸入股票代號"));const action=form.action;const shares=Math.round(Number(form.shares)),price=Number(form.price),fee=estimateStockCharges(form).fee,tax=estimateStockCharges(form).tax,amount=Math.round(Number(form.amount));if(action==='dividend'&&!(amount>0))throw Error(i18n("請輸入股利金額"));if(action!=='dividend'&&(!(shares>0)||!(price>0)||!Number.isFinite(fee)||!Number.isFinite(tax)||fee<0||tax<0))throw Error(i18n("請檢查交易股數、股價及費稅"));
  if(action!=='dividend'&&(!SECURITY_TYPES.some(t=>t.id===(form.securityType||'stock'))||Number(form.feeDiscount)<0||Number(form.feeDiscount)>100||Number(form.feeRate)<0||Number(form.feeMinimum)<0))throw Error(i18n("請檢查證券類型與手續費設定"));
- if(action!=='dividend'&&form.dayTrade&&form.securityType==='stock'&&action==='sell'&&!window.confirm(i18n("當沖 0.15% 僅適用符合法規的現股當日沖銷，請確認確實符合當沖條件。")))return;if(action==='sell'){
+ if(action!=='dividend'&&form.dayTrade&&form.securityType==='stock'&&action==='sell'&&!(await askConfirm({kind:'warning',title:i18n('確認當沖交易資格'),description:i18n('當沖 0.15% 僅適用符合法規的現股當日沖銷，請確認確實符合當沖條件。'),confirmText:i18n('已確認，繼續')})))return;if(action==='sell'){
   const h=holdings(stocks.filter(s=>s.id!==editing?.id)).find(h=>h.symbol===form.symbol.trim().toUpperCase());
   if(!h||h.shares<shares)throw Error(`可賣股數不足：${h?h.shares.toLocaleString('zh-TW'):0} 股`);
   if(!form.matchedBuyId)throw Error(i18n("請先選擇要沖銷的買進紀錄"));
@@ -776,6 +784,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   try{
    let deleted=false;
    if(type.id!=='brokerage')throw Error(i18n("此帳戶類型為保留類型，只有「證券交割戶」可以刪除"));
+   if(!(await askConfirm({kind:'delete',title:`刪除帳戶類型「${type.name}」？`,description:'刪除後無法直接復原。請確認此類型已沒有帳戶使用。'})))return false;
    await db.transaction('rw',db.accounts,db.settings,async()=>{
     const allAccounts=await db.accounts.toArray();
     const refs=accountTypeRefs(type.id,allAccounts);
@@ -783,7 +792,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
     const row=await db.settings.get('accountTypes');const list=row?.value||defaultAccountTypes;
     if(list.length<=1)throw Error(i18n("至少需要保留一個帳戶類型"));
     if(!list.some(t=>t.id===type.id))throw Error(i18n("此帳戶類型已不存在"));
-    if(!confirm(`確定刪除「${type.name}」帳戶類型？`))return;
+
     deleted=true;
     await db.settings.put({key:'accountTypes',value:list.filter(t=>t.id!==type.id)});
    });if(deleted){await reload();return true;}return false;
@@ -792,13 +801,14 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  async function deleteProject(project){
   try{
    let deleted=false;
+   if(!(await askConfirm({kind:'delete',title:`刪除專案「${project.name}」？`,description:'刪除後無法直接復原，請確認此專案沒有關聯交易或排程。'})))return false;
    await db.transaction('rw',db.records,db.recurring,db.settings,async()=>{
     const [rr,rs,pr]=await Promise.all([db.records.toArray(),db.recurring.toArray(),db.settings.get('projects')]);
     const refs=projectRefs(project.id,rr,rs);
     if(refs>0)throw Error(`此專案仍被 ${refs} 筆交易／排程使用，請先修改關聯資料`);
     const list=pr?.value||[];
     if(!list.some(p=>p.id===project.id))throw Error(i18n("此專案已不存在"));
-    if(!confirm(`確定刪除「${project.name}」專案？`))return;
+
     deleted=true;
     await db.settings.put({key:'projects',value:list.filter(p=>p.id!==project.id)});
    });if(deleted){await reload();return true;}return false;
@@ -808,37 +818,31 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   if(!kind||!id)return;
   try{
    if(kind==='accounts'){
+    if(!(await askConfirm({kind:'delete',title:'刪除此帳戶？',description:'帳戶刪除後無法直接復原，且將重新檢查所有關聯交易。'})))return;
     await db.transaction('rw',db.accounts,db.records,db.stocks,db.recurring,db.investmentFlows,db.investmentValuations,async()=>{
      const [rr,ss,rs]=await Promise.all([db.records.toArray(),db.stocks.toArray(),db.recurring.toArray()]);
      const refs=accountRefs(id,rr,ss,rs);
      const flows=await db.investmentFlows.toArray();const valuations=await db.investmentValuations.where('assetId').equals(id).count();
      if(flows.some(f=>f.assetId===id||f.sourceAccount===id)||valuations)throw Error(i18n("此帳戶已有投資投入／估值歷史或被指定為投入資金來源，請先處理關聯紀錄"));
      if(refs.total)throw Error(`此帳戶仍有關聯資料：一般／轉帳交易 ${refs.records} 筆、股票交易 ${refs.stocks} 筆、定期排程 ${refs.recurring} 筆，請先處理後再刪除`);
-     if(!confirm(i18n("確定刪除帳戶？此動作無法復原。")))return;
+
      const deleted=await db.accounts.get(id);
       await db.accounts.delete(id);
       if(deleted?.isDefault){const remaining=(await db.accounts.toArray()).filter(a=>!['trust','policy'].includes(a.type));if(remaining.length&&!remaining.some(a=>a.isDefault)){await db.accounts.update(remaining[0].id,{isDefault:true});}}
      });
    }else if(kind==='stocks'){
+    if(!(await askConfirm({kind:'delete',title:'刪除此筆股票交易？',description:'交易刪除後無法直接復原，相關持股與損益將重新計算。'})))return;
     await db.transaction('rw',db.stocks,async()=>{
      const all=await db.stocks.toArray();
      if(stockBuyRefs(id,all))throw Error(i18n("這筆買進已被賣出交易指定沖銷，請先修改或刪除相關賣出紀錄"));
-     if(!confirm(i18n("確定刪除這筆股票交易？此動作無法復原。")))return;
+
      await db.stocks.delete(id);
     });
    }else{
-    if(!confirm(i18n("確定刪除？")))return;
+    if(!(await askConfirm({kind:'delete',title:kind==='recurring'?'刪除此定期排程？':'刪除此筆交易？',description:kind==='recurring'?'刪除後不再產生新的到期交易；已入帳的歷史紀錄仍會保留。':'這筆紀錄刪除後無法直接復原。'})))return;
     await db[kind].delete(id);
    }
    await reload();close();
-  }catch(e){toast(e.message)}
- }
- async function executeRecurring(x){
-  try{
-   const outcome=await postRecurringOccurrence(x.id,{allowFuture:true});
-   if(!outcome.date)throw Error('排程不存在或日期無效');
-   await reload();
-   toast(outcome.posted?'已執行一次定期交易':'此日期已入帳，已推進下次日期');
   }catch(e){toast(e.message)}
  }
  // 拖曳後將來源分類插入目標分類位置；僅改寫順序，不影響交易 ID 與分類關聯。
@@ -911,13 +915,14 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  async function delCategory(main,sub,flow=categoryFlow){
   try{
    let deleted=false;
+   if(!(await askConfirm({kind:'delete',title:`刪除${sub?'子':'主'}分類「${sub||main}」？`,description:'刪除後無法直接復原，並將確認是否仍有交易使用此分類。'})))return false;
    await db.transaction('rw',db.settings,db.records,db.recurring,db.stocks,async()=>{
     const [rr,rs,ss,catSetting,iconSetting]=await Promise.all([db.records.toArray(),db.recurring.toArray(),db.stocks.toArray(),db.settings.get('categories'),db.settings.get('categoryIcons')]);
     const refs=categoryRefs(flow,main,sub,rr,rs,ss);
     if(refs.total)throw Error(`此${sub?'子':'主'}分類仍被使用：一般交易 ${refs.records} 筆、定期排程 ${refs.recurring} 筆${refs.stocks?', 股票股利 '+refs.stocks+' 筆':''}。請先調整關聯資料`);
     const current=catSetting?.value||defaultCategories;
     if(!Object.prototype.hasOwnProperty.call(current[flow]||{},main)||sub&&!(current[flow][main]||[]).includes(sub))throw Error(i18n("分類已不存在"));
-    if(!confirm(`確定刪除${sub?'子':'主'}分類「${sub||main}」？`))return;
+
     deleted=true;
     const n=structuredClone(current);
     if(sub)n[flow][main]=n[flow][main].filter(v=>v!==sub);else delete n[flow][main];
@@ -1031,7 +1036,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
    toast(i18n("已下載備份 JSON；如需 iCloud Drive，請將檔案移至 iCloud Drive"));
   }catch(e){toast('備份失敗：'+(e?.message||String(e)))}
  };
- const importFile=async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;try{const obj=JSON.parse(await file.text());if(obj?.app!=='cyberpulse-liquid'||![1,2].includes(obj.version)||!['records','accounts','stocks','recurring','settings'].every(k=>Array.isArray(obj[k])))throw Error(i18n("備份格式或版本不正確"));if(!confirm(`準備還原 ${file.name}\n備份時間：${obj.exportedAt?new Date(obj.exportedAt).toLocaleString('zh-TW'):'未記錄'}\n交易 ${obj.records.length} 筆、帳戶 ${obj.accounts.length} 個、股票 ${obj.stocks.length} 筆、保單估值 ${(obj.investmentValuations||[]).length} 筆、定期排程 ${obj.recurring.length} 筆。\n\n這會覆蓋目前所有本機資料。請先備份目前資料，確定還原？`))return;await restore(obj);await reload();toast(i18n("備份還原完成"))}catch(err){toast('匯入失敗：'+err.message)}};
+ const importFile=async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;try{const obj=JSON.parse(await file.text());if(obj?.app!=='cyberpulse-liquid'||![1,2].includes(obj.version)||!['records','accounts','stocks','recurring','settings'].every(k=>Array.isArray(obj[k])))throw Error(i18n("備份格式或版本不正確"));if(!(await askConfirm({kind:'restore',title:'還原本機備份？',subtitle:file.name,description:'還原將覆蓋目前所有本機資料。請先確認已備份現有資料。',details:`備份時間：${obj.exportedAt?new Date(obj.exportedAt).toLocaleString('zh-TW'):'未記錄'}\n交易 ${obj.records.length} 筆 · 帳戶 ${obj.accounts.length} 個\n股票 ${obj.stocks.length} 筆 · 保單估值 ${(obj.investmentValuations||[]).length} 筆\n定期排程 ${obj.recurring.length} 筆` })))return;await restore(obj);await reload();toast(i18n("備份還原完成"))}catch(err){toast('匯入失敗：'+err.message)}};
  const chooseLanguage=async value=>{await db.settings.put({key:'language',value});setLanguage(value)};
  const saveNetWorthGoal=async amountTwd=>{const valid=amountTwd===null?null:Number(amountTwd);if(valid!==null&&(!Number.isFinite(valid)||valid<=0))throw Error('目標金額必須大於零');await db.settings.put({key:'netWorthGoalTwd',value:valid});setNetWorthGoalTwd(valid);};
  const chooseColors=async value=>{await db.settings.put({key:'amountColors',value});setColorScheme(value)};
@@ -1061,8 +1066,8 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   await db.settings.delete('appLock');setPasswordConfig(null);setUnlocked(true);toast(i18n("已停用 App 密碼"));};
  if(!ready)return <div className="loading">{i18n("載入本機資料庫中…")}</div>;
  if(passwordConfig&&!unlocked)return <AppLockScreen onUnlock={verifyLock} onSuccess={()=>setUnlocked(true)} numeric={passwordConfig.kind==='pin6'}/>;
- return <div className="app-shell" data-fab-position={fabPosition} lang={language} data-color-scheme={colorScheme} style={{'--user-income':colorScheme==='reverse'?'#e75365':'#26ab7d','--user-expense':colorScheme==='reverse'?'#26ab7d':'#e75365'}}><InstallHint language={language}/><div className="ambient ambient-a"/><div className="ambient ambient-b"/><header className="topbar glass"><div className="brand"><div className="brand-icon"><Wallet size={22}/></div><div><strong>NEX<span>PEN</span></strong><small>LIQUID · PRIVATE LEDGER</small></div></div><div className="top-actions"><span className="offline-pill"><ShieldCheck size={13}/> {i18n("本機資料")}</span><button className="circle-button desktop-theme-toggle" onClick={toggleTheme}>{theme==='light'?<Moon size={20}/>:<Sun size={20}/>}</button></div></header>
- <div className="layout"><aside className="sidebar glass"><div className="side-caption">PERSONAL FINANCE</div>{nav.map(([key,label,Icon])=><button key={key} onClick={()=>setTab(key)} className={'side-link '+(tab===key?'selected':'')}><Icon size={19}/>{tr(label)}</button>)}<div className="sidebar-bottom">100% LOCAL-FIRST<br/>{i18n("資料不會上傳 GitHub")}</div></aside>
+ return <div className="app-shell" data-fab-position={fabPosition} lang={language} data-color-scheme={colorScheme} style={{'--user-income':colorScheme==='reverse'?'#e75365':'#26ab7d','--user-expense':colorScheme==='reverse'?'#26ab7d':'#e75365'}}><InstallHint language={language}/>{confirmationDialog}<div className="ambient ambient-a"/><div className="ambient ambient-b"/><header className="topbar glass"><div className="brand"><div className="brand-icon"><Wallet size={22}/></div><div><strong>NEX<span>PEN</span></strong><small>LIQUID · PRIVATE LEDGER</small></div></div><div className="top-actions"><span className="offline-pill"><ShieldCheck size={13}/> {i18n("本機資料")}</span><button className="circle-button desktop-theme-toggle" onClick={toggleTheme}>{theme==='light'?<Moon size={20}/>:<Sun size={20}/>}</button></div></header>
+ <div className="layout"><aside className="sidebar glass"><div className="side-caption">PERSONAL FINANCE</div>{nav.map(([key,label,Icon])=><button key={key} onClick={()=>setTab(key)} className={'side-link '+(tab===key?'selected':'')}><Icon size={19}/>{tr(label)}</button>)}</aside>
  <main key={tab} className={"main page-enter "+(tab==='daily'?'daily-compact':'')}>{settingsPages.includes(tab)&&<button className="mobile-back" onClick={()=>setTab(tab==='accountTypes'?'accounts':'settings')}><ChevronLeft size={19}/> {i18n("返回")}{tab==='accountTypes'?i18n("帳戶管理"):i18n("設定")}</button>}{tab!=='daily'&&<div className="page-head"><div><div className="eyebrow">YOUR MONEY, YOUR SPACE</div><h1>{tr(nav.find(n=>n[0]===tab)?.[1])}</h1></div>{tab==='daily'?<span className="page-context">{month.replace('-',' 年 ')} {i18n("月")}</span>:<span className="page-context">{tab==='categories'?i18n("自訂收支分類"):tab==='settings'?i18n("本機資料管理"):tab==='dashboard'?i18n("財務概況"):tab==='stocks'?i18n("投資管理"):tab==='accounts'?i18n("帳戶管理"):tab==='accountTypes'?i18n("類型設定"):tab==='projects'?i18n("專案管理"):i18n("交易設定")}</span>}</div>}
  {tab==='daily'&&<><section className="glass panel calendar-panel">
  <div className="calendar-header">
@@ -1084,15 +1089,16 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
 {dayTx.length?dayTx.map((x,i)=>{
   const account=accounts.find(a=>a.id===x.account);
   const accountLabel=x.type==='transfer'?`${accounts.find(a=>a.id===x.fromAccount)?.name||i18n('未指定轉出帳戶')} → ${accounts.find(a=>a.id===x.toAccount)?.name||i18n('未指定轉入帳戶')}`:(account?.name||i18n('未指定帳戶'));
+  const displayTitle=diaryTransactionTitle(x,picker[x.type]);
   const signedAmount=`${x.type==='expense'||(x.isStockTrade&&x.stockAction==='buy')?'-':x.type==='income'||(x.isStockTrade&&x.stockAction==='sell')?'+':''}${fmtAccountFigure(x.amount,accounts.find(a=>a.id===(x.type==='transfer'?x.fromAccount:x.account)))}`;
   const Icon=CATEGORY_ICONS[x.type==='stock'?'trend':x.type==='transfer'?'transfer':categoryIcons[`${x.type}/sub/${x.mainCategory}/${x.subCategory}`]||categoryIcons[`${x.type}/main/${x.mainCategory}`]||suggestedIcon(x.mainCategory||'')]||Tags;
   return <React.Fragment key={x.id}>
     {diaryView==='month'&&(i===0||dayTx[i-1].date!==x.date)&&<div className="diary-month-date-heading">{x.date.replaceAll('-','/')} <small>{['日','一','二','三','四','五','六'][parseDate(x.date).getDay()]}</small></div>}
     <article role="listitem" className={`diary-list-row diary-type-${x.type}`}>
-      <button type="button" className="diary-list-action" aria-label={`${x.note||x.subCategory||x.mainCategory||picker[x.type]} · ${signedAmount} · ${accountLabel} · ${i18n('編輯')}`} onClick={()=>(x.isStockDividend||x.isStockTrade)?open('stock',stocks.find(s=>s.id===x.stockId)):open('transaction',x)}>
+      <button type="button" className="diary-list-action" aria-label={`${displayTitle} · ${signedAmount} · ${accountLabel} · ${i18n('編輯')}`} onClick={()=>(x.isStockDividend||x.isStockTrade)?open('stock',stocks.find(s=>s.id===x.stockId)):open('transaction',x)}>
         <span className="diary-list-main">
           <span className={'transaction-icon '+x.type}><Icon size={20}/></span>
-          <span className="diary-list-name"><b>{x.note||x.subCategory||x.mainCategory||picker[x.type]}</b><small>{x.type==='transfer'?i18n('帳戶轉帳'):x.mainCategory||picker[x.type]}{x.projectId&&projects.some(p=>p.id===x.projectId)?' · '+projects.find(p=>p.id===x.projectId).name:''}</small></span>
+          <span className="diary-list-name"><b>{displayTitle}</b><small>{x.type==='transfer'?i18n('帳戶轉帳'):x.mainCategory||picker[x.type]}{x.projectId&&projects.some(p=>p.id===x.projectId)?' · '+projects.find(p=>p.id===x.projectId).name:''}</small></span>
           <span className="diary-list-amount"><strong className={x.type==='expense'?'expense':x.type==='income'?'income':''}>{signedAmount}</strong><small>{accountLabel}</small></span>
           <ChevronRight size={18} className="diary-list-chevron" aria-hidden="true"/>
         </span>
@@ -1151,8 +1157,8 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
        <div className="investment-reference-main">
         <div className="investment-reference-copy"><b>{item.title}</b><small>{detail} · {item.count} {i18n("筆")}</small></div>
         <div className="investment-reference-amount" aria-label={`${i18n('目前現值')}、${i18n('未實現損益')}、${i18n('損益百分比')}`}>
-         <strong className="investment-reference-net"><AnimatedNumber value={item.valueTwd===null?i18n("尚無報價"):fmtInvestmentMoney(item.valueTwd)}/></strong>
-         <small className={'investment-reference-profit '+(pnl===null?'':pnl>=0?'income':'expense')}><AnimatedNumber value={pnl===null?'—':`${pnl>=0?'+':''}${fmtInvestmentMoney(pnl)}`}/></small>
+         <strong className="investment-reference-net">{item.valueTwd===null?i18n("尚無報價"):fmtInvestmentMoney(item.valueTwd)}</strong>
+         <small className={'investment-reference-profit '+(pnl===null?'':pnl>=0?'income':'expense')}>{pnl===null?'—':`${pnl>=0?'+':''}${fmtInvestmentMoney(pnl)}`}</small>
          <small className={'investment-reference-rate '+(pct===null?'':pct>=0?'income':'expense')}>{pct===null?'—':`${pct>=0?'+':''}${pct.toFixed(2)}%`}</small>
         </div>
        </div>
@@ -1167,9 +1173,9 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
    onSelect={setSelectedStockSymbol} onBack={()=>setSelectedStockSymbol(null)} onEdit={item=>open('stock',item)}
    fmt={fmtInvestmentDetail} fmtSummary={fmtInvestmentMoney} fmtUnit={fmtStockUnit} fmtTradeNative={fmtStockTradeAmount} language={language} baseAvailable={baseAvailable} nativeStockCurrency={primaryCurrency==='TWD'?'':'TWD'}
    quoteLoading={quoteLoading} onRefresh={()=>refreshQuotes({force:true})} RefreshIcon={RefreshCcw}
- />}{['trust','policy'].includes(investSection)&&<InvestmentAssets key={investSection} onBackOverview={()=>{setInvestSection('list');setSelectedStockSymbol(null);setInvestmentAssetDetailOpen(false)}} onDetailChange={onInvestmentDetailChange} backToListSignal={investmentBackToListSignal} type={investSection} items={accounts.filter(a=>a.type===investSection)} valuations={investmentValuations} flows={investmentFlows} cashAccounts={accounts.filter(a=>!['trust','policy'].includes(a.type))} quotes={quotes} primaryCurrency={primaryCurrency} onChanged={reload} onEditAccount={a=>open('account',a)} />}</>}
+ />}{['trust','policy'].includes(investSection)&&<InvestmentAssets askConfirm={askConfirm} key={investSection} onBackOverview={()=>{setInvestSection('list');setSelectedStockSymbol(null);setInvestmentAssetDetailOpen(false)}} onDetailChange={onInvestmentDetailChange} backToListSignal={investmentBackToListSignal} type={investSection} items={accounts.filter(a=>a.type===investSection)} valuations={investmentValuations} flows={investmentFlows} cashAccounts={accounts.filter(a=>!['trust','policy'].includes(a.type))} quotes={quotes} primaryCurrency={primaryCurrency} onChanged={reload} onEditAccount={a=>open('account',a)} />}</>}
 
- {tab==='recurring'&&<section className="glass panel"><h2>{i18n("定期交易排程")}</h2><div className="recurring-auto-setting"><label className="recurring-auto-control"><input type="checkbox" checked={autoRecurring} onChange={e=>void updateAutoRecurring(e.target.checked)}/><span>開啟 APP 時自動執行到期排程</span></label><p className="hint">預設關閉。啟用後會在 APP 開啟或回到前景時補入已到期的交易，每個排程日期只入帳一次。APP 關閉期間不保證背景執行；這是本機記帳，不會真的向銀行扣款。</p></div>{recurring.length?recurring.map(x=><div className="recurring-row" key={x.id}><div className="list-row" onClick={()=>open('recurring',x)}><div className={'transaction-icon '+x.type}><Repeat2 size={18}/></div><div className="row-main"><b>{x.name}</b><small>{i18n("下次")} {x.nextDate} · {i18n({weekly:'每週',monthly:'每月',yearly:'每年'}[x.freq])}</small></div><div className="recurring-amount"><strong>{fmtAccountFigure(x.amount,accounts.find(a=>a.id===(x.type==='transfer'?x.fromAccount:x.account)))}</strong></div><ChevronRight className="faint" size={16}/></div><button className="soft-btn small" onClick={()=>executeRecurring(x)}><Check size={14}/> {i18n("執行一次並推進日期")}</button></div>):<Blank text={i18n("尚未設定定期交易")}/>}</section>}
+ {tab==='recurring'&&<section className="glass panel"><h2>{i18n("定期交易排程")}</h2>{recurring.length?recurring.map(x=><div className="recurring-row" key={x.id}><div className="list-row" onClick={()=>open('recurring',x)}><div className={'transaction-icon '+x.type}><Repeat2 size={18}/></div><div className="row-main"><b>{x.name}</b><small>{i18n("下次")} {x.nextDate} · {i18n({weekly:'每週',monthly:'每月',yearly:'每年'}[x.freq])}</small></div><div className="recurring-amount"><strong>{fmtAccountFigure(x.amount,accounts.find(a=>a.id===(x.type==='transfer'?x.fromAccount:x.account)))}</strong></div><ChevronRight className="faint" size={16}/></div></div>):<Blank text={i18n("尚未設定定期交易")}/>}</section>}
  {tab==='projects'&&<section className="glass panel project-management-page"><div className="section-header"><div><h2>{i18n("專案管理")}</h2><p className="hint">{i18n("交易可自由指定專案，不選擇也能正常記帳。重新命名不影響歷史交易。")}</p></div></div>{projects.length?<div className="project-management-list">{projects.map(project=><div className="project-management-row" key={project.id}><div className="row-main"><b>{project.name}</b><small>{records.filter(r=>r.projectId===project.id).length} {i18n("筆關聯交易")}</small></div><button type="button" className="type-action" title={'修改'+project.name} aria-label={'修改'+project.name} onClick={()=>open('project',project)}><Edit3 size={18}/></button><button type="button" className="type-action delete" title={'刪除'+project.name} aria-label={'刪除'+project.name} onClick={()=>deleteProject(project)}><Trash2 size={18}/></button></div>)}</div>:<Blank text={i18n("尚未建立專案")} sub={i18n("點擊右下角＋建立專案，之後在新增交易時可選擇")}/>}</section>}
  {tab==='categories'&&<section className="category-section"><div className="section-header category-section-head"><div><h2>{i18n("分類管理")}</h2><p className="hint">{i18n("按住左側拖曳把手調整主分類或子分類順序，放開後自動儲存；也可聚焦把手按方向鍵排序。")}</p></div><div className="segmented"><Pill active={categoryFlow==='expense'} onClick={()=>setCategoryFlow('expense')}>{i18n("支出")}</Pill><Pill active={categoryFlow==='income'} onClick={()=>setCategoryFlow('income')}>{i18n("收入")}</Pill></div></div><div className="category-list category-card-stack">{Object.entries(categories[categoryFlow]).map(([main,subs])=><div className={'category-group category-stack-card'+(expandedCategoryStack===`${categoryFlow}/${main}`?' category-stack-expanded':' category-stack-collapsed')+(categoryDrag?.kind==='main'&&categoryDrag.main===main?' category-dragging':'')+(categoryDrag?.kind==='main'&&categoryDrag.target===main?' category-drop-target':'')} key={main} data-category-sort-row="" data-category-kind="main" data-category-flow={categoryFlow} data-category-main={main}><div className="category-group-head category-stack-peek"><button type="button" className="category-drag-handle" title={i18n("拖曳排序主分類")} aria-label={'拖曳排序主分類'+main} onPointerDown={e=>categoryHandleDown(e,'main',main,null)} onPointerMove={categoryHandleMove} onPointerUp={categoryHandleUp} onPointerCancel={endCategoryDrag} onKeyDown={e=>categoryHandleKey(e,'main',main,null)}><GripVertical size={19}/></button><button type="button" className="category-main-label category-stack-toggle" aria-expanded={expandedCategoryStack===`${categoryFlow}/${main}`} onClick={()=>setExpandedCategoryStack(prev=>prev===`${categoryFlow}/${main}`?null:`${categoryFlow}/${main}`)}>{(()=>{const Icon=CATEGORY_ICONS[categoryIcons[`${categoryFlow}/main/${main}`]||suggestedIcon(main)]||Tags;return <Icon size={20}/>})()}<strong>{main}</strong><ChevronRight className={expandedCategoryStack===`${categoryFlow}/${main}`?'stack-open-chevron':''} size={16}/></button><div className="category-tools"><button type="button" className="category-action" title={i18n("修改主分類")} aria-label={'修改'+main} onClick={()=>open('category',{name:main,mode:'main',categoryType:categoryFlow})}><Edit3 size={17}/></button><button type="button" className="category-action delete" title={i18n("刪除主分類")} aria-label={'刪除'+main} onClick={()=>delCategory(main)}><Trash2 size={16}/></button></div></div><div className={"category-subs category-stack-details"+(expandedCategoryStack===`${categoryFlow}/${main}`?" is-open":"")} aria-hidden={expandedCategoryStack!==`${categoryFlow}/${main}`} inert={expandedCategoryStack!==`${categoryFlow}/${main}`}><div className="category-stack-details-inner">{subs.map(sub=><div className={'category-sub'+(categoryDrag?.kind==='sub'&&categoryDrag.main===main&&categoryDrag.sub===sub?' category-dragging':'')+(categoryDrag?.kind==='sub'&&categoryDrag.main===main&&categoryDrag.target===sub?' category-drop-target':'')} key={sub} data-category-sort-row="" data-category-kind="sub" data-category-flow={categoryFlow} data-category-main={main} data-category-sub={sub}><button type="button" className="category-drag-handle" title={i18n("拖曳排序子分類")} aria-label={'拖曳排序子分類'+sub} onPointerDown={e=>categoryHandleDown(e,'sub',main,sub)} onPointerMove={categoryHandleMove} onPointerUp={categoryHandleUp} onPointerCancel={endCategoryDrag} onKeyDown={e=>categoryHandleKey(e,'sub',main,sub)}><GripVertical size={16}/></button>{(()=>{const Icon=CATEGORY_ICONS[categoryIcons[`${categoryFlow}/sub/${main}/${sub}`]||categoryIcons[`${categoryFlow}/main/${main}`]||suggestedIcon(main)]||Tags;return <Icon size={16} className="category-sub-icon"/>})()}<span>{sub}</span><div className="category-tools"><button type="button" title={i18n("修改子分類")} aria-label={'修改'+sub} onClick={()=>open('category',{name:sub,mode:'sub',parent:main,categoryType:categoryFlow})}><Edit3 size={15}/></button><button type="button" className="delete" title={i18n("刪除子分類")} aria-label={'刪除'+sub} onClick={()=>delCategory(main,sub)}><X size={16}/></button></div></div>)}<button type="button" className="category-add-sub" onClick={()=>open('category',{name:'',mode:'sub',parent:main,categoryType:categoryFlow})}><Plus size={15}/> {i18n("新增子分類")}</button></div></div></div>)}</div></section>}
  {tab==='settings'&&<><section className="glass panel settings-menu"><h2>{tr('記帳管理')}</h2><p className="hint">{i18n("管理帳戶、定期交易與收支分類")}</p>{[['accounts','帳戶管理','新增與修改銀行、現金、信用卡帳戶',Landmark],['projects','專案管理','建立與管理交易所屬專案',Tags],['recurring','定期交易','管理薪資、訂閱與週期性支出',Repeat2],['categories','分類管理','設定收入、支出主分類與子分類',Tags]].map(([key,label,desc,Icon])=><button className="action-row" key={key} onClick={()=>setTab(key)}><Icon size={20}/><span><b>{i18n(label)}</b><small>{i18n(desc)}</small></span><ChevronRight size={18}/></button>)}</section><section className="glass panel preferences-panel"><h2>{tr('主要貨幣')} / {tr('語言')} / {tr('金額顏色')}</h2>

@@ -2,7 +2,7 @@ import {t as i18n} from './i18n.js';
 import React,{useEffect,useMemo,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {InvestmentStack,InvestmentStackCard} from './InvestmentStack.jsx';
-import {ArrowLeft,Check,ChevronRight,Plus,RefreshCcw,Trash2,X,TrendingUp,Landmark,ShieldCheck,Coins} from 'lucide-react';
+import {ArrowLeft,Check,ChevronRight,Plus,RefreshCcw,Trash2,X,Landmark,ShieldCheck} from 'lucide-react';
 import {db,today,uid} from './db.js';
 import InvestmentNumberPicker from './InvestmentNumberPicker.jsx';
 import NativeDatePicker from './NativeDatePicker.jsx';
@@ -16,7 +16,7 @@ const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
 const initialForm=()=>({kind:'contribution',date:today(),amount:'',units:'',sourceAccount:'',note:'',currentValue:'',valueDate:today()});
 
-export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],onChanged,onEditAccount,onBackOverview,onDetailChange,backToListSignal=0}){
+export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],onChanged,onEditAccount,onBackOverview,onDetailChange,backToListSignal=0,askConfirm}){
  const [selected,setSelected]=useState(''),[dialog,setDialog]=useState(''),[editingEntry,setEditingEntry]=useState(null),[form,setForm]=useState(initialForm()),[error,setError]=useState(''),[busy,setBusy]=useState(false),[numberField,setNumberField]=useState(null);
  useEffect(()=>{onDetailChange?.(Boolean(selected));},[selected,onDetailChange]);
  useEffect(()=>{if(backToListSignal>0){setSelected('');setDialog('');setNumberField(null);}},[backToListSignal]);
@@ -36,7 +36,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
  const deleteEntry=async(entry)=>{
   if(!active||busy)return;
   const typeName=entry.entry==='valuation'?'保單現值紀錄':'追加投入紀錄';
-  if(!window.confirm(`確定刪除 ${entry.date} 的${typeName}？\n刪除後將重新計算投資成本、現值與來源帳戶餘額。此操作無法直接復原。`))return;
+  if(!(await askConfirm({kind:'delete',title:`刪除${typeName}？`,subtitle:entry.date,description:'刪除後將重新計算投入成本、現值與來源帳戶餘額。此操作無法直接復原。'})))return;
   setBusy(true);setError('');
   try{
    if(entry.entry==='valuation'){
@@ -134,7 +134,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
     <div className="stock-trade-detail-list investment-valuation-history investment-stage-history investment-third-list-content">
     <div className="investment-history-heading"><div className="investment-action-row"><button type="button" className="soft-btn small" onClick={()=>change('contribution',active)}><Plus size={16}/> {i18n("追加投入")}</button>{type==='policy'&&<button type="button" className="soft-btn small" onClick={()=>change('value',active)}><RefreshCcw size={16}/> {i18n("更新現值")}</button>}<button type="button" className="soft-btn small" onClick={()=>onEditAccount(active)}>{i18n("編輯帳戶")}</button></div></div>
     {history.length?history.map(h=><button type="button" className="stock-detail-trade investment-history-button" key={`${h.entry}-${h.id}`} onClick={()=>editEntry(h)}>
-      <div className={'transaction-icon '+(h.entry==='valuation'?'income':'transfer')}>{h.entry==='valuation'?<TrendingUp size={18}/>:<Coins size={18}/>}</div>
+      
       <div className="row-main"><b>{h.entry==='valuation'?i18n("現值更新"):i18n("追加投入")}</b><small>{h.date}{h.entry==='flow'&&type==='trust'?` · ${fmt(h.units)} ${i18n("張")}`:''}</small>{h.entry==='flow'&&h.note&&<small>{h.note}</small>}</div>
       <div className="transaction-right"><strong>{money(h.entry==='valuation'?h.value:h.amount,active.currency)}</strong></div><ChevronRight size={17} className="faint"/>
      </button>):<p className="hint">{i18n("尚無異動紀錄")}</p>}

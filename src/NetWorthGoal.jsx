@@ -10,6 +10,7 @@ const messages={
 /** Goal is persisted in TWD so changing the preferred display currency does not change its value. */
 export default function NetWorthGoal({goalTwd=null,currentTwd=0,mainRate=1,currency='TWD',language='zh-TW',incomplete=false,onSave}){
  const t=messages[language]||messages['zh-TW'];
+ const [trackEntered,setTrackEntered]=useState(false);
  const [editing,setEditing]=useState(false),[draft,setDraft]=useState(''),[error,setError]=useState(''),[saving,setSaving]=useState(false);
  const usableRate=Number.isFinite(Number(mainRate))&&Number(mainRate)>0;
  const goal=Number(goalTwd)>0?Number(goalTwd):null;
@@ -19,6 +20,8 @@ export default function NetWorthGoal({goalTwd=null,currentTwd=0,mainRate=1,curre
  const progress=goal?Math.max(0,current/goal*100):0;
  const remaining=goal?Math.max(0,goal-current):0;
  useEffect(()=>{if(!editing)setDraft(localValue===null?'':String(Math.round(localValue)));},[editing,goalTwd,mainRate]);
+ // Animate the progress fill from zero on entering the overview; later changes transition smoothly.
+ useEffect(()=>{setTrackEntered(false);const raf=requestAnimationFrame(()=>requestAnimationFrame(()=>setTrackEntered(true)));return ()=>cancelAnimationFrame(raf);},[goalTwd]);
  const begin=()=>{setDraft(localValue===null?'':String(Math.round(localValue)));setError('');setEditing(true)};
  const save=async e=>{e.preventDefault();const number=Number(String(draft).replace(/[,，\s]/g,''));if(!usableRate||!Number.isFinite(number)||number<=0){setError(t.invalid);return;}setSaving(true);try{await onSave(number*Number(mainRate));setEditing(false);setError('');}catch(err){setError(err?.message||String(err))}finally{setSaving(false)}};
  const clear=async()=>{setSaving(true);try{await onSave(null);setEditing(false);setError('')}catch(err){setError(err?.message||String(err))}finally{setSaving(false)}};
@@ -27,7 +30,7 @@ export default function NetWorthGoal({goalTwd=null,currentTwd=0,mainRate=1,curre
   {!usableRate&&<p className="hint">{t.unavailable}</p>}
   {goal&&usableRate?<>
    <div className="networth-goal-numbers"><div><small>{t.goal}</small><strong><AnimatedNumber value={display(localValue)}/></strong></div><div><small>{t.achieved}</small><strong><AnimatedNumber value={`${progress.toFixed(1)}%`}/></strong></div></div>
-   <div className="networth-goal-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100,progress)} aria-label={t.achieved}><div style={{width:`${Math.min(100,progress)}%`}}/></div>
+   <div className="networth-goal-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100,progress)} aria-label={t.achieved}><div style={{width:`${trackEntered?Math.min(100,progress):0}%`}}/></div>
    <div className="networth-goal-remaining"><span>{current>=goal?(current>goal?t.exceeded:t.reached):t.remaining}</span><strong><AnimatedNumber value={current>=goal?display((current-goal)/Number(mainRate)):display(remaining/Number(mainRate))}/></strong></div>
    {incomplete&&<p className="hint networth-goal-warning">{t.incomplete}</p>}
   </>:!editing&&<p className="hint">{t.empty}</p>}

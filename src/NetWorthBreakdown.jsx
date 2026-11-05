@@ -4,7 +4,6 @@ import {ASSET_GROUPS} from './netWorth.js';
 import SummaryHero from './SummaryHero.jsx';
 import NetWorthTrend from './NetWorthTrend.jsx';
 import NetWorthGoal from './NetWorthGoal.jsx';
-import AnimatedNumber from './AnimatedNumber.jsx';
 
 const translations={
  'zh-TW':{title:'資產配置',gross:'總資產',debt:'總負債',net:'淨資產',ratio:'資產比例',liabilities:'負債明細',none:'目前沒有負債',empty:'尚未有可計算的資產',unknown:'部分投資缺少有效報價，以下為已知估值；淨資產可能低估。',cash:'現金',deposit:'存款',securities:'證券',trust:'持股信託',insurance:'保險',other:'其他資產',credit:'信用卡欠款',overdraft:'帳戶透支'},
@@ -37,7 +36,7 @@ export default function NetWorthBreakdown({data,format,language='zh-TW',currency
     <div className="investment-combined-list investment-peek-stack investment-reference-stack investment-first-level-stack networth-reference-stack">
      <article className={'investment-reference-layer invest-stack-policy networth-reference-layer'+(openCard==='asset'?' networth-layer-expanded':'')}>
       <button type="button" className="investment-reference-card networth-reference-card" aria-expanded={openCard==='asset'} onClick={()=>setOpenCard(v=>v==='asset'?null:'asset')}>
-       <span className="investment-reference-main"><span className="investment-reference-copy"><span className="networth-peek-heading"><span className="networth-peek-dot" aria-hidden="true"/><b>{t.title}</b><ChevronRight size={19} aria-hidden="true" className={'networth-card-chevron'+(openCard==='asset'?' is-open':'')}/></span><small>{data.assets.length} {language==='en'?'asset categories':'項資產'}</small></span><span className="investment-reference-amount"><strong className="investment-reference-net"><AnimatedNumber value={money(data.totalAssets)}/></strong></span></span>
+       <span className="investment-reference-main"><span className="investment-reference-copy"><span className="networth-peek-heading"><span className="networth-peek-dot" aria-hidden="true"/><b>{t.title}</b><ChevronRight size={19} aria-hidden="true" className={'networth-card-chevron'+(openCard==='asset'?' is-open':'')}/></span><small>{data.assets.length} {language==='en'?'asset categories':'項資產'}</small></span><span className="investment-reference-amount"><strong className="investment-reference-net">{money(data.totalAssets)}</strong></span></span>
       </button>
       <div className={'networth-card-expanded-body'+(openCard==='asset'?' is-open':'')} aria-hidden={openCard!=='asset'} inert={openCard!=='asset'}><div className="networth-card-expanded-inner">
        <div className="networth-chart-heading"><strong>{t.ratio}</strong><small>{data.assets.length?'100%':'0%'}</small></div>
@@ -45,15 +44,15 @@ export default function NetWorthBreakdown({data,format,language='zh-TW',currency
         {data.assets.map(a=><div key={a.id} className="networth-bar-segment" style={{width:`${a.percent}%`,backgroundColor:colors[a.id]}} title={`${t[a.id]} ${formatPct(a.percent)}`}/>)}
        </div>
        {data.assets.length===0&&<p className="hint">{t.empty}</p>}
-       <div className="networth-asset-list">{data.assets.map(a=>{const Icon=icons[a.id];return <div className="networth-asset-row" key={a.id}><span className="networth-asset-label"><span className="networth-asset-symbol" style={{backgroundColor:colors[a.id]}}><Icon size={21} strokeWidth={2.1}/></span><b>{t[a.id]}</b></span><span className="networth-asset-amount"><strong><AnimatedNumber value={money(a.amount)}/></strong><small>{formatPct(a.percent)}</small></span></div>})}</div>
+       <div className="networth-asset-list">{data.assets.map(a=>{const Icon=icons[a.id];return <div className="networth-asset-row" key={a.id}><span className="networth-asset-label"><span className="networth-asset-symbol" style={{backgroundColor:colors[a.id]}}><Icon size={21} strokeWidth={2.1}/></span><b>{t[a.id]}</b></span><span className="networth-asset-amount"><strong>{money(a.amount)}</strong><small>{formatPct(a.percent)}</small></span></div>})}</div>
       </div></div>
      </article>
      <article className={'investment-reference-layer invest-stack-trust networth-reference-layer'+(openCard==='debt'?' networth-layer-expanded':'')}>
       <button type="button" className="investment-reference-card networth-reference-card" aria-expanded={openCard==='debt'} onClick={()=>setOpenCard(v=>v==='debt'?null:'debt')}>
-       <span className="investment-reference-main"><span className="investment-reference-copy"><span className="networth-peek-heading"><span className="networth-peek-dot" aria-hidden="true"/><b>{t.liabilities}</b><ChevronRight size={19} aria-hidden="true" className={'networth-card-chevron'+(openCard==='debt'?' is-open':'')}/></span><small>{data.liabilities.length} {language==='en'?'liabilities':'筆負債'}</small></span><span className="investment-reference-amount"><strong className="investment-reference-net"><AnimatedNumber value={money(data.totalLiabilities)}/></strong></span></span>
+       <span className="investment-reference-main"><span className="investment-reference-copy"><span className="networth-peek-heading"><span className="networth-peek-dot" aria-hidden="true"/><b>{t.liabilities}</b><ChevronRight size={19} aria-hidden="true" className={'networth-card-chevron'+(openCard==='debt'?' is-open':'')}/></span><small>{data.liabilities.length} {language==='en'?'liabilities':'筆負債'}</small></span><span className="investment-reference-amount"><strong className="investment-reference-net">{money(data.totalLiabilities)}</strong></span></span>
       </button>
       <div className={'networth-card-expanded-body'+(openCard==='debt'?' is-open':'')} aria-hidden={openCard!=='debt'} inert={openCard!=='debt'}><div className="networth-card-expanded-inner">
-       {data.liabilities.length?<div className="networth-liability-list">{data.liabilities.map(a=><div key={a.id} className="networth-liability-row"><span><b>{a.name}</b><small>{a.type==='credit'?t.credit:t.overdraft}</small></span><strong className="expense"><AnimatedNumber value={money(a.amount)}/></strong></div>)}</div>:<p className="hint networth-no-debt">{t.none}</p>}</div></div>
+       {data.liabilities.length?<div className="networth-liability-list">{data.liabilities.map(a=><div key={a.id} className="networth-liability-row"><span><b>{a.name}</b><small>{a.type==='credit'?t.credit:t.overdraft}</small></span><strong className="expense">{money(a.amount)}</strong></div>)}</div>:<p className="hint networth-no-debt">{t.none}</p>}</div></div>
      </article>
     </div>
    </div>

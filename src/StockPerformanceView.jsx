@@ -1,7 +1,7 @@
 import {t as i18n} from './i18n.js';
 import React from 'react';
 import {InvestmentStack,InvestmentStackCard,InvestmentStackAsset} from './InvestmentStack.jsx';
-import {ArrowLeft, ChevronRight, TrendingUp, TrendingDown, Coins} from 'lucide-react';
+import {ArrowLeft, ChevronRight} from 'lucide-react';
 
 function percent(value){return Number.isFinite(value)?`${value>=0?'+':''}${value.toFixed(2)}%`:'—';}
 function resultText(amount,fmt){return `${amount>=0?'+':'−'}${fmt(Math.abs(amount))}`;}
@@ -44,7 +44,6 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtSumm
           const cashTone=isBuy?'expense':'income';
           const cashAmount=x.action==='dividend'?fmtTradeNative(Number(x.amount)||0):resultText(isBuy?-Number(x.totalAmount):Number(x.totalAmount),fmtTradeNative);
           return <button type="button" className={'stock-detail-trade stock-history-entry stock-history-'+x.action} key={x.id} onClick={()=>onEdit(x)}>
-            <span className={'transaction-icon stock-history-icon '+(x.action==='dividend'?'income':isSell?'income':'transfer')} aria-hidden="true">{x.action==='dividend'?<Coins size={19}/>:isSell?<TrendingDown size={19}/>:<TrendingUp size={19}/>}</span>
             <span className="stock-history-content">
               <span className="stock-history-heading"><b>{isBuy?tr('買進','Buy'):isSell?tr('賣出','Sell'):tr('現金股利','Dividend')}</b><time dateTime={x.date}>{x.date}</time></span>
               <span className="stock-history-details">

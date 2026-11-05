@@ -13,7 +13,7 @@ export function nextRecurringDate(date, freq) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 export function recurringRecord(schedule,date) {
-  const common={id:`recurring:${encodeURIComponent(String(schedule.id))}:${date}`,recurringId:schedule.id,date,amount:Number(schedule.amount),note:'定期交易：'+schedule.name};
+  const common={id:`recurring:${encodeURIComponent(String(schedule.id))}:${date}`,recurringId:schedule.id,date,amount:Number(schedule.amount),note:''};
   if(schedule.type==='transfer')return {...common,type:'transfer',fromAccount:schedule.fromAccount,toAccount:schedule.toAccount,mainCategory:'帳戶互轉',subCategory:'內部轉帳'};
   if(!['income','expense'].includes(schedule.type))throw Error('不支援的定期交易類型');
   return {...common,type:schedule.type,account:schedule.account,mainCategory:schedule.mainCategory,subCategory:schedule.subCategory||''};

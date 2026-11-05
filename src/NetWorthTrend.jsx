@@ -27,7 +27,7 @@ export default function NetWorthTrend({history=[],format,language='zh-TW',curren
   <div className="networth-trend-heading"><div><h3>{t.title}</h3><small>{t.desc}</small></div></div>
   <div className="networth-trend-ranges" role="group" aria-label={t.title}>{[7,30,90,'all'].map(r=><button key={r} type="button" aria-pressed={range===r} onClick={()=>{setRange(r);setSelected(null)}} className={range===r?'active':''}>{r==='all'?t.all:`${r}${t.days}`}</button>)}</div>
   {data.length? <>
-   <div className="networth-trend-selected"><small>{point.date}{point.complete===false?` · ${t.incomplete}`:''}</small><strong><AnimatedNumber value={value(point.netWorth)}/></strong></div>
+   <div className="networth-trend-selected"><small>{point.date}{point.complete===false?` · ${t.incomplete}`:''}</small><strong><AnimatedNumber value={value(point.netWorth)} /></strong></div>
    <svg key={String(range)} className="networth-trend-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${t.title}：${data.map(p=>`${p.date} ${value(p.netWorth)}`).join('；')}`}>
     <defs><linearGradient id="networth-trend-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--theme-accent)" stopOpacity=".28"/><stop offset="100%" stopColor="var(--theme-accent)" stopOpacity=".015"/></linearGradient></defs>
     {[0,.5,1].map(v=><line key={v} x1={L} x2={W-R} y1={T+v*(H-T-B)} y2={T+v*(H-T-B)} stroke="var(--theme-line)" strokeDasharray="5 6"/>) }

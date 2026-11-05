@@ -3341,3 +3341,44 @@ html .app-shell .investment-third-level :is(.stock-history-details,.investment-h
 @keyframes nexp-lock-shake{0%,100%{transform:translateX(0)}18%,52%{transform:translateX(-9px)}35%,70%{transform:translateX(9px)}85%{transform:translateX(-3px)}}
 @keyframes nexp-lock-success{0%{opacity:1;transform:scale(1)}65%{opacity:1;transform:scale(1.025)}100%{opacity:0;transform:scale(.97)}}
 @media(prefers-reduced-motion:reduce){.main.page-enter .recharts-sector,.main.page-enter .recharts-bar-rectangle,.networth-trend-chart .networth-trend-line,.networth-trend-chart circle,.networth-card-expanded-body.is-open .networth-stacked-bar,.app-lock-card.app-lock-failure,.app-lock-card.app-lock-success{animation:none!important}.networth-trend-chart .networth-trend-line{stroke-dashoffset:0}}
+
+/* v163: Third-level investment history is a clean, icon-free ListView. */
+html .app-shell .investment-third-level .stock-history-entry.stock-detail-trade {
+  grid-template-columns:minmax(0,1fr) 18px!important;
+  gap:12px!important;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-content {
+  grid-column:1!important;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-chevron {
+  grid-column:2!important;
+}
+html .app-shell .investment-third-listview .investment-history-button{padding-inline:0!important;}
+@media(max-width:390px){
+ html .app-shell .investment-third-level .stock-history-entry.stock-detail-trade{grid-template-columns:minmax(0,1fr) 16px!important;gap:8px!important;}
+}
+/* Goal progress animates on overview entry and when the goal changes. */
+html .app-shell .networth-goal-track>div{transition:width 850ms cubic-bezier(.22,1,.36,1)!important;}
+@media(prefers-reduced-motion:reduce){html .app-shell .networth-goal-track>div{transition:none!important;}}
+
+/* v165: category left drag grip and right editing tools share a vertical centerline.
+   Keep the account-style bottom alignment at all responsive widths and in both states. */
+html .app-shell .category-section .category-stack-peek { position:relative; }
+html .app-shell .category-section .category-stack-peek>.category-drag-handle,
+html .app-shell .category-section .category-stack-peek>.category-tools {
+  bottom:44px!important;
+  top:auto!important;
+  transform:translateY(50%)!important;
+}
+html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek>.category-drag-handle,
+html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek>.category-tools {
+  bottom:24px!important;
+  top:auto!important;
+  transform:translateY(50%)!important;
+}
+@media (max-width:650px) {
+  html .app-shell .category-section .category-stack-peek>.category-drag-handle,
+  html .app-shell .category-section .category-stack-peek>.category-tools { bottom:44px!important; }
+  html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek>.category-drag-handle,
+  html .app-shell .category-section .category-stack-card.category-stack-expanded .category-stack-peek>.category-tools { bottom:24px!important; }
+}
