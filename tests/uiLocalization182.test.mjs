@@ -13,7 +13,8 @@ assert.match(app,/is-weekend/);
 assert.match(css,/week-day\.is-weekend/);
 assert.match(app,/\{i18n\(item\.title\)\}/);
 assert.match(app,/\{i18n\(detail\)\}/);
-assert.match(app,/updateFabPosition\(value\)\}\>\{tr\(label\)\}/);
+assert.match(app,/onChange=\{e=>updateFabPosition\(e\.target\.value\)\}/);
+assert.match(app,/className="preferences-select"/);
 for (const locale of ['en','ja','zh-CN']) {
  for(const label of ['左側','右側','股票','持股信託','投資保單','投資總覽','估算現值','股票持股、買賣與股利','持股信託與追加投入','投資保單與現值紀錄','投資分類與績效','點選類別查看資產及交易紀錄']){
   assert.ok(typeof t(label,locale)==='string' && t(label,locale).length>0,`${locale} missing ${label}`);

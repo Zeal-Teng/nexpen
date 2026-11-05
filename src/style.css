@@ -2169,3 +2169,14 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 .calculator-sheet input.calc-editable{width:calc(100% - 34px);display:block;flex-shrink:0;border:0;border-bottom:1px solid var(--theme-border,#42617c);border-radius:0;outline:0;background:transparent!important;color:var(--theme-text,#eaf7ff)!important;caret-color:var(--theme-primary,#13d5ea);-webkit-user-select:text;user-select:text;appearance:none;-webkit-appearance:none}
 .calculator-sheet input.calc-editable:focus{border-bottom-color:var(--theme-primary,#13d5ea)}
 .calculator-sheet .calc-error{margin:2px 18px;color:#ff8998;font-size:12px;flex-shrink:0}
+
+/* v197 — Larger, edge-to-edge 12-key PIN entry in the password wizard. */
+.app-pin-wizard-backdrop{padding:calc(12px + env(safe-area-inset-top,0px)) 10px calc(12px + env(safe-area-inset-bottom,0px))}
+.app-pin-wizard{width:min(490px,100%)!important;max-width:calc(100vw - 20px)!important;padding:22px clamp(16px,4vw,28px)!important;box-sizing:border-box}
+.app-pin-wizard .cp-pin-pad{width:100%!important;max-width:none!important;margin:0!important;gap:16px}
+.app-pin-wizard .cp-pin-grid{width:100%!important;max-width:none!important;margin:0!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:clamp(9px,2.5vw,14px)!important}
+.app-pin-wizard .cp-pin-key{width:100%!important;min-width:0!important;min-height:clamp(65px,9.5vh,82px)!important;font-size:clamp(25px,5.6vw,31px)!important;border-radius:18px!important;font-weight:600}
+.app-pin-wizard .cp-pin-key-tool{font-size:clamp(15px,3.8vw,19px)!important}
+.app-pin-wizard .cp-pin-dots{gap:clamp(12px,4vw,19px);padding:10px 0 8px}
+.app-pin-wizard .cp-pin-dots>span{width:15px;height:15px}
+@media(max-height:690px){.app-pin-wizard .cp-pin-key{min-height:52px!important}.app-pin-wizard .cp-pin-pad{gap:8px}.app-pin-wizard .cp-pin-grid{gap:8px!important}.app-pin-wizard{padding-top:13px!important;padding-bottom:13px!important}.app-pin-wizard-subtitle{margin:5px 0 8px}}
