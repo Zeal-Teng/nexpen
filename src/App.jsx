@@ -18,6 +18,7 @@ import AnimatedNumber from './AnimatedNumber.jsx';
 import {runDueRecurring} from './recurringAutomation.js';
 import {diaryTransactionTitle} from './recurringDisplay.js';
 import {matchesDiaryAccount,filterDiaryByAccount} from './diaryAccountFilter.js';
+import {availableDiaryFilters,matchesDiaryType} from './diaryFilterOptions.js';
 import InstallHint from './InstallHint.jsx';
 import {normalizeTemplates,applyTransactionTemplate,templatePayload} from './transactionTemplates.js';
 import {useConfirmDialog} from './ConfirmDialog.jsx';
@@ -1112,9 +1113,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   const searchTerm=query.trim().toLocaleLowerCase();
   const amountSearchTerm=searchTerm.replace(/^(?:nt\$?|twd|ntd|\$|＄)\s*/i,'').replace(/[\s,，$＄\u00a0]/g,'');
   const isAmountQuery=/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(amountSearchTerm);
-  const dayTx=visibleDiaryRecords.filter(r=>{
-    if(!(filter==='all'||(filter==='stock'?(r.isStockDividend||r.isStockTrade):filter===r.type&&!(r.isStockDividend||r.isStockTrade))))return false;
-    if(!matchesDiaryAccount(r,accountFilter,accounts))return false;
+  const matchesDiarySearch=r=>{
     if(!searchTerm)return true;
     const text=`${r.note||''} ${r.mainCategory||''} ${r.subCategory||''} ${r.stockSymbol||''} ${projects.find(p=>p.id===r.projectId)?.name||''}`.toLocaleLowerCase();
     if(text.includes(searchTerm))return true;
@@ -1122,14 +1121,27 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
     const amount=Number(r.amount);
     if(!Number.isFinite(amount))return false;
     const numericValue=String(amount);
-    // 千分位輸入例如 1,200 也能找到 1200；符號可用於指定負金額。
     const normalizedNeedle=amountSearchTerm.replace(/^\+/,'');
     return numericValue.includes(normalizedNeedle)||
       (amountSearchTerm[0]!=='-'&&Math.abs(amount).toString().includes(normalizedNeedle));
-  }).sort((a,b)=>{
-  const dateOrder=(b.date||'').localeCompare(a.date||'');
-  return dateOrder||String(b.id||'').localeCompare(String(a.id||''));
- });
+  };
+  // Search and selected date range define the current diary list universe.
+  // Each menu also respects the *other* facet, so it never offers an option
+  // with no matching transaction. 'All' always remains available to clear it.
+  const searchableDiaryRecords=visibleDiaryRecords.filter(matchesDiarySearch);
+  const diaryFilterOptions=availableDiaryFilters(searchableDiaryRecords,accounts,filter,accountFilter);
+  const dayTx=searchableDiaryRecords.filter(r=>
+    matchesDiaryType(r,filter)&&matchesDiaryAccount(r,accountFilter,accounts)
+  ).sort((a,b)=>{
+    const dateOrder=(b.date||'').localeCompare(a.date||'');
+    return dateOrder||String(b.id||'').localeCompare(String(a.id||''));
+  });
+  // Date/search changes can invalidate a previously selected facet. Clear it
+  // instead of leaving a hidden selection that makes the diary look empty.
+  useEffect(()=>{
+    if(filter!=='all'&&!diaryFilterOptions.types.includes(filter))setFilter('all');
+    if(accountFilter!=='all'&&!diaryFilterOptions.accounts.some(a=>String(a.id)===String(accountFilter)))setAccountFilter('all');
+  },[date,diaryView,query,filter,accountFilter,accounts,records,stocks]);
  const periodSummaryRecords=filterDiaryByAccount(visibleDiaryRecords,accountFilter,accounts);
  const dayIncome=periodSummaryRecords.filter(r=>r.type==='income').reduce((sum,r)=>sum+toTWD(r.amount,r.account),0);
  const dayExpense=periodSummaryRecords.filter(r=>r.type==='expense').reduce((sum,r)=>sum+toTWD(r.amount,r.account),0);
@@ -1219,7 +1231,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  </div>
  <div className="stats-three diary-finance-summary" aria-label={i18n('收支統計')}><div className="glass stat diary-stat-out"><small>{diaryView==='year'?i18n('本年支出'):diaryView==='month'?tr('本月支出'):tr('當日支出')}</small><strong className="expense"><AnimatedNumber value={fmtPrimaryNumber(dayExpense)}/></strong></div><div className="glass stat diary-stat-in"><small>{diaryView==='year'?i18n('本年收入'):diaryView==='month'?tr('本月收入'):tr('當日收入')}</small><strong className="income"><AnimatedNumber value={fmtPrimaryNumber(dayIncome)}/></strong></div><div className="glass stat diary-stat-net"><small>{diaryView==='year'?i18n('本年淨額'):diaryView==='month'?i18n('本月淨額'):tr('當日淨額')}</small><strong className={dayIncome-dayExpense>=0?'income':'expense'}><AnimatedNumber value={fmtPrimaryNumber(dayIncome-dayExpense)}/></strong></div></div>
  {diaryView==='day'&&<div className="week-strip" role="group" aria-label={i18n("選擇一週中的日期；左右滑動切換週別")} onTouchStart={onWeekTouchStart} onTouchEnd={onWeekTouchEnd}>{week.map((d,i)=><button type="button" key={d} aria-label={`${d} 星期${'日一二三四五六'[i]}`} aria-pressed={d===date} className={'week-day '+(d===date?'active':'')+(d===today()?' is-today':'')} onClick={()=>setDate(d)}><small>{'日一二三四五六'[i]}</small><b>{Number(d.slice(-2))}</b><i className={diaryRecords.some(x=>x.date===d)?'dot visible':'dot'}/></button>)}</div>}
-</section><section className="daily-transactions diary-listview" aria-label={i18n("交易明細")}><div className="diary-search-filter"><div className="searchbox"><Search size={17}/><input placeholder={i18n("搜尋備註、分類、金額")} aria-label={i18n("搜尋交易")} value={query} onChange={e=>setQuery(e.target.value)}/></div><DiaryFilterIcon Icon={Tags} label={i18n('交易類型')} value={filter} options={[{value:'all',label:i18n('全部')},{value:'expense',label:i18n('支出')},{value:'income',label:i18n('收入')},{value:'transfer',label:i18n('轉帳')},{value:'stock',label:i18n('股票交易')}]} onChange={setFilter}/><DiaryFilterIcon Icon={Wallet} label={accountFilter==='all'?i18n('篩選帳戶'):`${i18n('篩選帳戶')}：${accounts.find(a=>String(a.id)===String(accountFilter))?.name||i18n('未知帳戶')}`} value={accountFilter} options={[{value:'all',label:i18n('全部帳戶')},...accounts.filter(a=>!['trust','policy'].includes(a.type)).map(a=>({value:String(a.id),label:a.name}))]} onChange={setAccountFilter}/></div><div className="diary-transaction-list" role="list" aria-label={i18n('交易明細')}>
+</section><section className="daily-transactions diary-listview" aria-label={i18n("交易明細")}><div className="diary-search-filter"><div className="searchbox"><Search size={17}/><input placeholder={i18n("搜尋備註、分類、金額")} aria-label={i18n("搜尋交易")} value={query} onChange={e=>setQuery(e.target.value)}/></div><DiaryFilterIcon Icon={Tags} label={i18n('交易類型')} value={filter} options={[{value:'all',label:i18n('全部')},...diaryFilterOptions.types.map(type=>({value:type,label:i18n(({expense:'支出',income:'收入',transfer:'轉帳',stock:'股票交易'})[type])}))]} onChange={setFilter}/><DiaryFilterIcon Icon={Wallet} label={accountFilter==='all'?i18n('篩選帳戶'):`${i18n('篩選帳戶')}：${accounts.find(a=>String(a.id)===String(accountFilter))?.name||i18n('未知帳戶')}`} value={accountFilter} options={[{value:'all',label:i18n('全部帳戶')},...diaryFilterOptions.accounts.map(a=>({value:String(a.id),label:a.name}))]} onChange={setAccountFilter}/></div><div className="diary-transaction-list" role="list" aria-label={i18n('交易明細')}>
 {dayTx.length?dayTx.map((x,i)=>{
   const account=accounts.find(a=>a.id===x.account);
   const accountLabel=x.type==='transfer'?`${accounts.find(a=>a.id===x.fromAccount)?.name||i18n('未指定轉出帳戶')} → ${accounts.find(a=>a.id===x.toAccount)?.name||i18n('未指定轉入帳戶')}`:(account?.name||i18n('未指定帳戶'));

@@ -36,3 +36,58 @@ class Tests(unittest.TestCase):
         with self.assertRaises(RuntimeError):mod.merge_markets(fresh,{'quotes':{}})
 
 if __name__=='__main__': unittest.main()
+
+class HistoricalTests(unittest.TestCase):
+    def setUp(self):
+        self.day = dt.date(2026, 11, 5)
+        self.listed_fields = ['證券代號', '證券名稱', '成交股數', '成交筆數', '成交金額', '開盤價', '最高價', '最低價', '收盤價', '漲跌(+/-)', '漲跌價差']
+        self.twse = {'stat':'OK', 'tables':[{'title':'每日收盤行情', 'fields':self.listed_fields,
+                     'data':[[str(2300+i),'上市'+str(i),'100','1','100','11','12','10','20.5','+','0.2'] for i in range(110)]}]}
+        self.tpex = {'date':'20261105','tables':[{'fields':['代號','名稱','收盤','漲跌','開盤','最高','最低','成交股數','成交金額','成交筆數','備註'],
+                     'data':[[str(6000+i),'上櫃'+str(i),'35.6','+0.1','35','36','34','100','1000','15',''] for i in range(110)]}]}
+
+    def test_verified_historical_response(self):
+        quotes, names = mod.parse_history(self.twse,'twse',self.day)
+        self.assertEqual(len(quotes),110)
+        self.assertEqual(quotes['2300']['price'],20.5)
+        self.assertEqual(quotes['2300']['date'],'2026-11-05')
+        self.assertEqual(names['2300']['market'],'twse')
+        quotes, names = mod.parse_history(self.tpex,'tpex',self.day)
+        self.assertEqual(len(quotes),110)
+        self.assertEqual(quotes['6000']['price'],35.6)
+
+    def test_reject_wrong_date_and_partial_response(self):
+        from copy import deepcopy
+        bad=deepcopy(self.tpex)
+        bad['date']='20261104'
+        with self.assertRaises(ValueError):mod.parse_history(bad,'tpex',self.day)
+        bad=deepcopy(self.twse)
+        bad['tables'][0]['data']=bad['tables'][0]['data'][:5]
+        with self.assertRaises(ValueError):mod.parse_history(bad,'twse',self.day)
+
+    def test_history_first_and_openapi_fallback(self):
+        calls=[]
+        def fetch(url,**kwargs):
+            calls.append(url)
+            if 'MI_INDEX' in url:return self.twse
+            raise ValueError('should not call fallback')
+        quotes,_,source=mod.fetch_preferred_market('twse',today=self.day,fetcher=fetch)
+        self.assertEqual(source,'history:2026-11-05')
+        self.assertEqual(len(calls),1)
+        self.assertEqual(len(quotes),110)
+        calls=[]
+        def fallback(url,**kwargs):
+            calls.append(url)
+            if 'STOCK_DAY_ALL' in url:
+                return [{'Code':str(2300+i),'Date':'1151104','Name':'測試','ClosingPrice':'25'} for i in range(110)]
+            raise ValueError('history not ready')
+        quotes,_,source=mod.fetch_preferred_market('twse',today=self.day,fetcher=fallback)
+        self.assertEqual(source,'openapi')
+        self.assertEqual(len(quotes),110)
+        self.assertTrue(any('STOCK_DAY_ALL' in x for x in calls))
+
+    def test_history_column_name_reorder(self):
+        altered={'stat':'OK','tables':[{'title':'每日收盤行情','fields':['收盤價','證券名稱','證券代號'],
+                'data':[['43.9','測試',str(2300+i)] for i in range(110)]}]}
+        quotes,_=mod.parse_history(altered,'twse',self.day)
+        self.assertEqual(quotes['2300']['price'],43.9)

@@ -15,12 +15,18 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import urllib.parse
 
 PUBLIC = pathlib.Path(__file__).resolve().parents[1] / 'public'
 URLS = {
     'twse': 'https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL',
     'tpex': 'https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes',
 }
+HISTORY_URLS = {
+    'twse': 'https://www.twse.com.tw/exchangeReport/MI_INDEX',
+    'tpex': 'https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotes',
+}
+
 PREVIOUS_URL = os.getenv('NEXPEN_PREVIOUS_QUOTES_URL', 'https://zeal-teng.github.io/nexpen/market-quotes.json')
 MIN_MARKET_ROWS = 100
 RETRY_CODES = {408, 425, 429, 500, 502, 503, 504}
@@ -96,6 +102,142 @@ def parse_quotes(rows, market, *, today=None):
     return quotes, names
 
 
+
+def _column_index(fields, candidates):
+    """Resolve indices from source-provided table headings, not table position."""
+    if not isinstance(fields, list):
+        return None
+    for index, field in enumerate(fields):
+        label = re.sub(r'[\s\u3000()（）]', '', str(field))
+        if any(candidate in label for candidate in candidates):
+            return index
+    return None
+
+
+def _read_history_table(table, market, trade_date):
+    rows = table.get('data') or table.get('aaData') or []
+    fields = table.get('fields') or table.get('header') or table.get('columns') or []
+    if not isinstance(rows, list) or not rows:
+        return [], []
+    if market == 'twse':
+        code_idx = _column_index(fields, ('證券代號', '股票代號', '代號'))
+        name_idx = _column_index(fields, ('證券名稱', '股票名稱', '名稱'))
+        price_idx = _column_index(fields, ('收盤價',))
+        # The TWSE MI_INDEX body sometimes supplies no headings for data9/10.
+        if code_idx is None or price_idx is None:
+            if not fields and all(isinstance(row, list) and len(row) >= 11 for row in rows[:10]):
+                code_idx, name_idx, price_idx = 0, 1, 8
+            else:
+                return [], []
+    else:
+        code_idx = _column_index(fields, ('代號', '股票代號', '證券代號'))
+        name_idx = _column_index(fields, ('名稱', '股票名稱', '證券名稱'))
+        price_idx = _column_index(fields, ('收盤',))
+        if code_idx is None or price_idx is None:
+            # The provided TPEx history function uses [code,name,close,...].
+            if not fields and all(isinstance(row, list) and len(row) >= 11 for row in rows[:10]):
+                code_idx, name_idx, price_idx = 0, 1, 2
+            else:
+                return [], []
+    found = []
+    titles = []
+    for row in rows:
+        if not isinstance(row, list) or max(code_idx, price_idx) >= len(row):
+            continue
+        code = str(row[code_idx]).strip().upper()
+        price_text = str(row[price_idx]).replace(',', '').strip()
+        if not re.fullmatch(r'[0-9A-Z]{4,8}', code):
+            continue
+        try:
+            price = float(price_text)
+        except (TypeError, ValueError):
+            continue
+        if not (0 < price < 1_000_000):
+            continue
+        found.append((code, price))
+        name = str(row[name_idx]).strip() if name_idx is not None and name_idx < len(row) else ''
+        if name:
+            titles.append((code, name))
+    return found, titles
+
+
+def parse_history(payload, market, target_date):
+    """Verify exact response date, then parse a market-wide closing-price table."""
+    target = target_date.isoformat()
+    if not isinstance(payload, dict):
+        raise ValueError(f'{market}: history response is not a JSON object')
+    if market == 'twse':
+        if payload.get('stat') != 'OK':
+            raise ValueError(f'twse: historical data unavailable: {payload.get("stat")}')
+        reported = parse_date(payload.get('date') or payload.get('Date'))
+        # TWSE MI_INDEX JSON may not contain a top-level date. In that case,
+        # the endpoint was explicitly queried by date; never infer a different day.
+        if reported and reported != target:
+            raise ValueError(f'twse: requested {target}, received {reported}')
+        tables = payload.get('tables', [])
+        if not tables:
+            tables = [dict(data=payload.get(key, [])) for key in ('data9','data10','data11','data8') if isinstance(payload.get(key), list)]
+    else:
+        reported = parse_date(payload.get('date') or payload.get('Date'))
+        if reported != target:
+            raise ValueError(f'tpex: requested {target}, received {reported or "no date"}')
+        tables = payload.get('tables', [])
+    if not isinstance(tables, list):
+        raise ValueError(f'{market}: history tables malformed')
+    best = ([], [])
+    for table in tables:
+        if not isinstance(table, dict):
+            continue
+        result = _read_history_table(table, market, target)
+        if len(result[0]) > len(best[0]):
+            best = result
+    if len(best[0]) < MIN_MARKET_ROWS:
+        raise ValueError(f'{market}: insufficient history prices ({len(best[0])}) for {target}')
+    quotes, names = {}, {}
+    for code, price in best[0]:
+        quotes[code] = {'price': price, 'date': target, 'source': SOURCES[market]}
+    for code, name in best[1]:
+        etf = code.startswith('00')
+        bond = etf and (code.endswith(('B','C','D')) or any(term in name for term in ('債券','美債','公債','公司債')))
+        names[code] = {'name': name, 'market': market, 'kind': 'bondEtf' if bond else 'etf' if etf else 'stock', 'category': '官方收盤行情'}
+    return quotes, names
+
+
+def history_url(market, day):
+    if market == 'twse':
+        params = {'response':'json', 'date':day.strftime('%Y%m%d'), 'type':'ALLBUT0999'}
+    else:
+        params = {'date':day.strftime('%Y/%m/%d'), 'response':'json'}
+    return HISTORY_URLS[market] + '?' + urllib.parse.urlencode(params)
+
+
+def fetch_preferred_market(market, *, today=None, fetcher=fetch_json):
+    """Try dated history first, falling back to official latest OpenAPI.
+
+    Weekend days are skipped; market holidays return no/invalid history data.
+    Do not query farther back than seven calendar days, and avoid many costly
+    retry rounds for an ordinary not-yet-published trading day.
+    """
+    today = today or dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date()
+    failures = []
+    for offset in range(8):
+        day = today - dt.timedelta(days=offset)
+        if day.weekday() >= 5:
+            continue
+        url = history_url(market, day)
+        try:
+            quotes, names = parse_history(fetcher(url, retries=1), market, day)
+            print(f'{market}: history {day} contains {len(quotes)} verified prices')
+            return quotes, names, f'history:{day.isoformat()}'
+        except Exception as exc:
+            failures.append(f'{day.isoformat()}: {exc}')
+    try:
+        quotes, names = parse_quotes(fetcher(URLS[market]), market, today=today)
+        print(f'{market}: latest OpenAPI fallback has {len(quotes)} prices')
+        return quotes, names, 'openapi'
+    except Exception as exc:
+        raise RuntimeError(f'{market}: history and OpenAPI both failed; latest={exc}; historical attempts={"; ".join(failures[:3])}') from exc
+
 def valid_old_quote(code, record):
     if not isinstance(record, dict) or not re.fullmatch(r'[0-9A-Z]{4,8}', str(code)):
         return False
@@ -152,17 +294,20 @@ def main():
     except Exception:
         pass
 
-    fresh, errors = {}, {}
-    for market, url in URLS.items():
+    fresh, errors, origins = {}, {}, {}
+    for market in URLS:
         try:
-            quotes, names = parse_quotes(fetch_json(url), market)
+            quotes, names, source = fetch_preferred_market(market)
             fresh[market] = (quotes, names)
-            print(f'{market}: {len(quotes)} valid prices; latest {max(q["date"] for q in quotes.values())}')
+            origins[market] = source
+            print(f'{market}: {len(quotes)} valid prices; latest {max(q["date"] for q in quotes.values())}; source={source}')
         except Exception as exc:
             errors[market] = str(exc)
             print(f'WARNING {market}: {exc}', file=sys.stderr)
 
     quotes, names, markets = merge_markets(fresh, previous)
+    for market, source in origins.items():
+        markets[market]['method'] = source
     now = dt.datetime.now(dt.timezone.utc).isoformat()
     PUBLIC.mkdir(parents=True, exist_ok=True)
     out = PUBLIC / 'market-quotes.json'
