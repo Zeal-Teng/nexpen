@@ -93,3 +93,17 @@ class HistoricalTests(unittest.TestCase):
                 'data':[['43.9','測試',str(2300+i)] for i in range(110)]}]}
         quotes,_=mod.parse_history(altered,'twse',self.day)
         self.assertEqual(quotes['2300']['price'],43.9)
+
+class TrendSign225Tests(unittest.TestCase):
+    def test_explicit_down_mark_overrides_unsigned_difference(self):
+        self.assertEqual(mod._signed_change('1.50', '-'), -1.5)
+        self.assertEqual(mod._signed_change('1.50', '<p style="color:green">▼</p>'), -1.5)
+        self.assertEqual(mod._signed_change('▼1.50'), -1.5)
+        self.assertEqual(mod._signed_change('0.3', '▲'), 0.3)
+        self.assertIsNone(mod._signed_change('—'))
+    def test_history_decline_with_separate_twse_sign(self):
+        day=dt.date(2026,11,5)
+        table={'fields':['證券代號','證券名稱','收盤價','漲跌(+/-)','漲跌價差'],
+               'data':[['2330','股票','100','<span>－</span>','2.0']]}
+        found,_=mod._read_history_table(table,'twse',day)
+        self.assertEqual(found[0][2],-2.0)

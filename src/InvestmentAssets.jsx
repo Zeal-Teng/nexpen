@@ -114,6 +114,8 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
  })).filter(({redemptions})=>redemptions.length>0);
  const realizedSingleCurrency=realizedItems.every(({asset})=>asset.currency===realizedItems[0]?.asset.currency);
  const realizedTotal=realizedItems.reduce((sum,{position})=>sum+position.realized,0);
+ const realizedProceedsTotal=realizedItems.reduce((sum,{redemptions})=>sum+redemptions.reduce((part,f)=>part+number(f.amount),0),0);
+ const realizedBasisTotal=realizedItems.reduce((sum,{position,redemptions})=>sum+redemptions.reduce((part,f)=>part+number(f.amount),0)-position.realized,0);
  const overall=items.map(metrics);
  const homogeneous=items.every(a=>a.currency===items[0]?.currency);
  const summary=homogeneous&&items.length?overall.reduce((r,m)=>({cost:r.cost+m.cost,value:r.value===null||m.value===null?null:r.value+m.value}),{cost:0,value:0}):null;
@@ -206,6 +208,9 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
     title={i18n('目前持有')}
     summary={`${items.length} ${i18n('筆')}`}
     amount={summary&&summary.value!==null?summaryMoney(summary.value,items[0].currency):items.length?'—':null}
+    profit={summary&&summary.value!==null?`${summary.value-summary.cost>=0?'+':''}${summaryMoney(summary.value-summary.cost,items[0].currency)}`:null}
+    rate={summary&&summary.value!==null&&summary.cost>0?`${((summary.value-summary.cost)/summary.cost*100)>=0?'+':''}${((summary.value-summary.cost)/summary.cost*100).toFixed(2)}%`:null}
+    profitTone={summary&&summary.value!==null?(summary.value-summary.cost>=0?'income':'expense'):''}
    >
     <section className="glass panel investment-stage-list investment-holdings-list" aria-label={`${i18n(label[type])} · ${i18n('目前持有')}`}>
      {items.length?<div className="investment-tier-stack investment-asset-substack">
@@ -231,7 +236,9 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
      </div>:<p className="hint investment-empty-assets">{i18n('尚未建立')}{i18n(label[type])}{i18n('帳戶。請至「帳戶管理」新增，並選擇帳戶類型「')}{i18n(label[type])}」。</p>}
     </section>
    </InvestmentStackCard>
-   <InvestmentStackCard accent="coral" title={i18n('已實現交易')} summary={`${realizedItems.length} ${i18n('筆')}`} amount={realizedSingleCurrency&&realizedItems.length?`${realizedTotal>=0?'+':''}${summaryMoney(realizedTotal,realizedItems[0].asset.currency)}`:realizedItems.length?'—':null}>
+   <InvestmentStackCard accent="coral" title={i18n('已實現交易')} summary={`${realizedItems.length} ${i18n('筆')}`} amount={realizedSingleCurrency&&realizedItems.length?summaryMoney(realizedProceedsTotal,realizedItems[0].asset.currency):realizedItems.length?'—':null}
+    profit={realizedSingleCurrency&&realizedItems.length?`${realizedTotal>=0?'+':''}${summaryMoney(realizedTotal,realizedItems[0].asset.currency)}`:null}
+    rate={realizedItems.length&&realizedBasisTotal>0?`${realizedTotal>=0?'+':''}${(realizedTotal/realizedBasisTotal*100).toFixed(2)}%`:null} profitTone={realizedTotal>=0?'income':'expense'}>
     <section className="glass panel investment-stage-list investment-holdings-list" aria-label={`${i18n(label[type])} · ${i18n('已實現交易')}`}>
      {type==='policy'&&realizedItems.length>0&&<p className="hint investment-policy-realized-note">保單贖回金額不是獲利。已實現損益＝贖回入帳－依贖回前現值比例分攤的投入成本；百分比是相對於該筆分攤成本的報酬率，非贖回比例。此為估算，請以保險公司明細為準。</p>}
      {realizedItems.length?<div className="investment-tier-stack investment-asset-substack">{realizedItems.map(({asset,position,redemptions})=>{
@@ -241,6 +248,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
        topRight={type==='trust'&&contributionTrustShares(latest)>0?fmt(number(latest.amount)/contributionTrustShares(latest)):`${redemptions.length} ${i18n('筆')}`}
        sharesLine={type==='trust'?`${i18n('股數')} ${fmt(redemptions.reduce((sum,f)=>sum+contributionTrustShares(f),0))}`:`贖回入帳 ${displayMoney(redemptions.reduce((sum,f)=>sum+number(f.amount),0),asset.currency)}`}
        averageLine={type==='policy'?`分攤投入成本 ${displayMoney(costRealized,asset.currency)} · 已實現損益` : null}
+       valueLine={displayMoney(redemptions.reduce((sum,f)=>sum+number(f.amount),0),asset.currency)}
        profit={`${position.realized>=0?'+':''}${displayMoney(position.realized,asset.currency)}`}
        rate={costRealized>0?`${position.realized>=0?'+':''}${(position.realized/costRealized*100).toFixed(2)}%`:'—'}
        profitTone={position.realized>=0?'income':'expense'} onOpen={()=>setSelected(asset.id)}/>;

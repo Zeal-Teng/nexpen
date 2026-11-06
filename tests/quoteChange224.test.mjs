@@ -8,3 +8,6 @@ assert.equal(normalizeQuoteRows([{Code:'2330',ClosingPrice:'100',Date:'1151105',
 assert.equal(validateQuoteBundle({format:'cyberpulse-market-quotes-v1',quotes:{'2330':{price:100,date:'1151105',change:2}}})['2330'].change,2);
 assert.equal(validateQuoteBundle({format:'cyberpulse-market-quotes-v1',quotes:{'2330':{price:100,date:'1151105'}}})['2330'].change,undefined);
 console.log('Quote direction tests passed');
+assert.equal(normalizeQuoteChange('1.5','<span>▼</span>'),-1.5);
+assert.equal(normalizeQuoteChange('▼2.4'),-2.4);
+assert.equal(normalizeQuoteRows([{Code:'2330',ClosingPrice:'100',Date:'1151105',Change:'2',ChangeSign:'－'}],'twse')['2330'].change,-2);

@@ -6,6 +6,7 @@ recover its last valid quotes from the already deployed public JSON. If that
 fallback is unavailable, fail the deployment instead of publishing partial data.
 """
 import datetime as dt
+import html
 import json
 import os
 import pathlib
@@ -93,12 +94,9 @@ def parse_quotes(rows, market, *, today=None):
         if code not in quotes or date >= quotes[code]['date']:
             record = {'price': price, 'date': date, 'source': SOURCES[market]}
             raw_change = row.get('Change') if market == 'twse' else (row.get('Change') or row.get('PriceChange'))
-            try:
-                text_change = str(raw_change).replace(',', '').replace('＋', '+').replace('－', '-').strip()
-                if re.fullmatch(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)', text_change):
-                    record['change'] = float(text_change)
-            except (TypeError, ValueError):
-                pass
+            change = _signed_change(raw_change, row.get('ChangeSign') or row.get('UpDown') or row.get('ChangeType'))
+            if change is not None:
+                record['change'] = change
             quotes[code] = record
             name = str(row.get('Name') if market == 'twse' else (row.get('CompanyName') or row.get('Name') or '')).strip()
             if name:
@@ -120,6 +118,30 @@ def _column_index(fields, candidates):
         if any(candidate in label for candidate in candidates):
             return index
     return None
+
+
+def _quote_sign(raw):
+    """Recognize explicit exchange up/down marks, including HTML and Unicode."""
+    value = html.unescape(re.sub(r'<[^>]*>', '', str(raw or ''))).strip()
+    if value in ('-', '－', '−', '﹣', '▼', '▽', '↓') or value.startswith(('▼', '▽', '↓')):
+        return -1
+    if value in ('+', '＋', '﹢', '▲', '△', '↑') or value.startswith(('▲', '△', '↑')):
+        return 1
+    return None
+
+
+def _signed_change(raw, sign=None):
+    """Use the separate trend marker over an unsigned exchange price difference."""
+    value = html.unescape(re.sub(r'<[^>]*>', '', str(raw if raw is not None else ''))).strip()
+    value = value.replace(',', '').replace('＋', '+').replace('－', '-').replace('−', '-')
+    marker = _quote_sign(sign)
+    if marker is None:
+        marker = _quote_sign(value[:1])
+    value = value.lstrip('▲△↑▼▽↓').strip()
+    if not re.fullmatch(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)', value):
+        return None
+    n = float(value)
+    return abs(n) * marker if marker is not None else n
 
 
 def _read_history_table(table, market, trade_date):
@@ -148,8 +170,9 @@ def _read_history_table(table, market, trade_date):
             else:
                 return [], []
     change_idx = _column_index(fields, ('漲跌價差', '漲跌', '漲跌價'))
-    sign_idx = _column_index(fields, ('漲跌+/-', '漲跌符號', '漲跌(+/-)')) if market == 'twse' else None
-    if market == 'twse' and sign_idx == change_idx:
+    # Resolve columns independently: generic '漲跌' must not swallow '漲跌價差'.
+    sign_idx = next((i for i, f in enumerate(fields) if re.sub(r'[\s\u3000()（）]', '', str(f)) in ('漲跌+/-', '漲跌符號', '漲跌標記')), None) if market == 'twse' else None
+    if market == 'twse':
         change_idx = _column_index(fields, ('漲跌價差', '漲跌價'))
     if market == 'twse' and not fields and price_idx == 8:
         sign_idx, change_idx = 9, 10
@@ -170,15 +193,8 @@ def _read_history_table(table, market, trade_date):
             continue
         change = None
         if change_idx is not None and change_idx < len(row):
-            raw = str(row[change_idx]).strip().replace(',', '').replace('＋', '+').replace('－', '-')
-            if re.fullmatch(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)', raw):
-                change = float(raw)
-                if sign_idx is not None and sign_idx < len(row):
-                    sign = str(row[sign_idx]).strip()
-                    if sign in ('-', '－', '−'):
-                        change = -abs(change)
-                    elif sign in ('+', '＋'):
-                        change = abs(change)
+            marker = row[sign_idx] if sign_idx is not None and sign_idx < len(row) else None
+            change = _signed_change(row[change_idx], marker)
         found.append((code, price, change))
         name = str(row[name_idx]).strip() if name_idx is not None and name_idx < len(row) else ''
         if name:

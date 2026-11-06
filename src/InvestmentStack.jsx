@@ -13,12 +13,12 @@ export function InvestmentStack({children,className=''}) {
   }):child)}
  </div>;
 }
-export function InvestmentStackCard({title,summary,amount,accent='lavender',children,expanded=false,onToggle=()=>{},stackIndex=0,className=''}) {
+export function InvestmentStackCard({title,summary,amount,profit=null,rate=null,profitTone='',accent='lavender',children,expanded=false,onToggle=()=>{},stackIndex=0,className=''}) {
  return <article className={'investment-tier-card tier-'+accent+(expanded?' tier-expanded':'')+' '+className} style={{'--tier-index':stackIndex}}>
   <button type="button" className="investment-tier-peek" aria-expanded={expanded} onClick={onToggle}>
    <span className="investment-tier-top"><span className="investment-tier-marker"/><strong>{title}</strong><ChevronRight size={20} className="tier-chevron"/></span>
    {summary&&<span className="investment-tier-subtitle">{summary}</span>}
-   <span className="investment-tier-bottom">{amount&&<b>{amount}</b>}</span>
+   {(amount!=null||profit!=null||rate!=null)&&<span className="investment-tier-bottom investment-compact-summary"><b>{amount}</b>{(profit!=null||rate!=null)&&<span className="investment-performance-badges">{profit!=null&&<small className={'investment-tier-pnl '+profitTone}>{profit}</small>}{rate!=null&&<small className={'investment-tier-pnl '+profitTone}>{rate}</small>}</span>}</span>}
   </button>
   <div className={"investment-tier-collapse"+(expanded?" is-open":"")} aria-hidden={!expanded} inert={!expanded}><div className="investment-tier-body">{children}</div></div>
  </article>;
@@ -33,6 +33,17 @@ export function ClosingPrice({value,change}){
   <span>{value}</span>
  </span>;
 }
+// ListView only: compact direction + colored text, not pill badges.
+function ListViewPerformance({profit,rate,profitTone=''}) {
+ if(profit==null && rate==null)return null;
+ const tone=(profitTone||'').trim();
+ const Direction=tone==='income'?TrendingUp:tone==='expense'?TrendingDown:null;
+ return <span className={'investment-listview-performance '+tone}>
+  {Direction&&<Direction size={14} strokeWidth={2.3} aria-hidden="true"/>}
+  {profit!=null&&<span className="investment-listview-profit">{profit}</span>}
+  {rate!=null&&<span className="investment-listview-rate">{rate}</span>}
+ </span>;
+}
 export function InvestmentStackAsset({title,subtitle,amount,profit,rate,profitTone='',accent='lavender',onOpen,children,stockLayout=false,topRight=null,sharesLine=null,averageLine=null,valueLine=null}){
  if(stockLayout)return <button type="button" className={'investment-account-list-row investment-stock-list-row tier-'+accent} onClick={onOpen}>
   <span className="investment-stock-row-heading"><strong className="investment-stock-symbol">{title}</strong>{topRight!=null&&<span className="investment-stock-close">{topRight}</span>}</span>
@@ -40,17 +51,14 @@ export function InvestmentStackAsset({title,subtitle,amount,profit,rate,profitTo
    {sharesLine&&<small>{sharesLine}</small>}{averageLine&&<small>{averageLine}</small>}
   </span>
   <span className="investment-account-list-values investment-stock-row-results">
-   {valueLine&&<b>{valueLine}</b>}
-   {(profit!=null||rate)&&<span className="investment-performance-badges investment-listview-badges">
-    {profit!=null&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{profit}</small>}
-    {rate&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{rate}</small>}
-   </span>}
+   {valueLine!=null&&<b>{valueLine}</b>}
+   <ListViewPerformance profit={profit} rate={rate} profitTone={profitTone}/>
   </span>
   <ChevronRight size={18} aria-hidden="true" className="investment-account-list-chevron"/>
  </button>;
- return <button type="button" className={'investment-account-list-row tier-'+accent} onClick={onOpen}>
+ return <button type="button" className={'investment-account-list-row investment-generic-list-row tier-'+accent} onClick={onOpen}>
    <span className="investment-account-list-info"><strong>{title}</strong>{subtitle&&<small>{subtitle}</small>}{children&&<span className="investment-account-list-extra">{children}</span>}</span>
-   <span className="investment-account-list-values"><b>{amount}</b>{(profit!=null||rate)&&<span className="investment-performance-badges investment-listview-badges">{profit!=null&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{profit}</small>}{rate&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{rate}</small>}</span>}</span>
+   {(amount!=null||profit!=null||rate!=null)&&<span className="investment-account-list-values investment-generic-row-results"><b>{amount}</b><ListViewPerformance profit={profit} rate={rate} profitTone={profitTone}/></span>}
    <ChevronRight size={18} aria-hidden="true" className="investment-account-list-chevron"/>
  </button>;
 }

@@ -1332,7 +1332,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
     return <div className={'investment-reference-layer invest-stack-'+item.id} key={item.id}>
       <button type="button" className="investment-reference-card" onClick={()=>{setInvestSection(item.id);setSelectedStockSymbol(null)}} aria-label={`${i18n(item.title)}，${i18n('目前現值')} ${item.valueTwd===null?i18n('尚無報價'):fmtInvestmentMoney(item.valueTwd)}`}>
        <div className="investment-reference-main">
-        <div className="investment-reference-copy"><b>{i18n(item.title)}</b><small>{i18n(detail)} · {item.count} {i18n("筆")}</small></div>
+        <div className="investment-reference-copy"><b>{i18n(item.title)}</b></div>
         <div className="investment-reference-amount" aria-label={`${i18n('目前現值')}、${i18n('未實現損益')}、${i18n('損益百分比')}`}>
          <strong className="investment-reference-net">{item.valueTwd===null?i18n("尚無報價"):fmtInvestmentMoney(item.valueTwd)}</strong>
          <span className="investment-performance-badges investment-reference-badges">
@@ -1341,6 +1341,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
          </span>
         </div>
        </div>
+       <div className="investment-reference-meta">{i18n(detail)} · {item.count} {i18n("筆")}</div>
        <div className="investment-reference-footer"><span className="investment-reference-dots" aria-hidden="true"><i/><i/><i/></span></div>
       </button>
     </div>;
