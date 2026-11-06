@@ -2180,3 +2180,14 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 .app-pin-wizard .cp-pin-dots{gap:clamp(12px,4vw,19px);padding:10px 0 8px}
 .app-pin-wizard .cp-pin-dots>span{width:15px;height:15px}
 @media(max-height:690px){.app-pin-wizard .cp-pin-key{min-height:52px!important}.app-pin-wizard .cp-pin-pad{gap:8px}.app-pin-wizard .cp-pin-grid{gap:8px!important}.app-pin-wizard{padding-top:13px!important;padding-bottom:13px!important}.app-pin-wizard-subtitle{margin:5px 0 8px}}
+
+/* v205: investment add sheet uses the same header circle-close control as other sheets. */
+.investment-action-sheet .investment-action-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;}
+.investment-action-sheet .investment-action-header h3{margin:0;min-width:0;}
+.investment-action-sheet .investment-action-header .investment-action-close{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 44px!important;
+  width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;
+  margin:0!important;border:1px solid var(--theme-line)!important;border-radius:50%!important;
+  background:var(--theme-surface2)!important;color:var(--theme-text)!important;opacity:1!important;
+}
+.investment-action-sheet .investment-action-header .investment-action-close svg{margin:0!important;color:inherit!important;}

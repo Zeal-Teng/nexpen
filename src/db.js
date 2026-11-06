@@ -1,6 +1,9 @@
 import {calculateLots} from './stockLots.js';
 import Dexie from 'dexie';
-export const db = new Dexie('cyberpulse_liquid_v1');
+// Demo and personal finance use different IndexedDB databases. Never move or
+// overwrite the personal database when switching environments.
+export const isDemoMode = (() => { try { return sessionStorage.getItem('nexpen-demo-mode') === '1'; } catch { return false; } })();
+export const db = new Dexie(isDemoMode ? 'nexpen_demo_sandbox_v1' : 'cyberpulse_liquid_v1');
 db.version(1).stores({records:'id,date,type,account,mainCategory',accounts:'id,name,type',stocks:'id,date,symbol,action',recurring:'id,nextDate',settings:'key'});
 // v26 included a temporary local snapshots store. v29 removes it while preserving finance tables.
 db.version(2).stores({records:'id,date,type,account,mainCategory',accounts:'id,name,type',stocks:'id,date,symbol,action',recurring:'id,nextDate',settings:'key',localBackups:'++id,createdAt'});

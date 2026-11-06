@@ -1,0 +1,22 @@
+/* Distinct, non-blocking demo indicator in both mobile and desktop layouts. */
+.demo-banner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:4px 0 16px;padding:12px 15px;border:1px solid var(--accent,#1bd5de);border-radius:15px;background:color-mix(in srgb,var(--accent,#1bd5de) 9%,transparent);color:var(--text,#eaf3fb)}
+.demo-banner>div:first-child{display:grid;gap:4px;min-width:0;flex:1}.demo-banner strong{font-size:1rem}.demo-banner small{font-size:.78rem;color:var(--muted,#a0b4c1);line-height:1.5}
+.demo-banner-actions{display:flex;gap:8px;flex-wrap:wrap}.demo-banner-actions button,.demo-entry-button{min-height:40px;padding:8px 12px;border:1px solid var(--accent,#1bd5de);background:transparent;color:inherit;border-radius:11px;font:inherit;cursor:pointer}.demo-banner-actions button:last-child,.demo-entry-button{background:var(--accent,#18cade);color:#071626;font-weight:700}.demo-entry-panel{margin-bottom:16px}.demo-entry-panel .demo-entry-button{margin-top:12px}
+@media(max-width:480px){.demo-banner{padding:10px}.demo-banner-actions{width:100%}.demo-banner-actions button{flex:1}}
+
+.demo-welcome{border:1px solid var(--border,#3a5668);border-radius:18px;padding:18px;margin:8px 0 16px;background:color-mix(in srgb,var(--accent,#1bd5de) 5%,transparent);display:grid;gap:10px}.demo-welcome strong{font-size:1.12rem}.demo-welcome p{font-size:.85rem;color:var(--muted,#a0b4c1);margin:0}.demo-welcome button{justify-self:start}
+
+/* v207: Demo onboarding overlays are opaque, isolating them from lower
+   decorative/card layers so their strokes cannot bleed through. */
+.app-shell .demo-banner,
+.app-shell .demo-welcome,
+.app-shell .demo-entry-panel {
+  position:relative;
+  isolation:isolate;
+  background:var(--theme-card,var(--theme-surface,#14283a));
+}
+.app-shell .demo-banner {overflow:hidden;}
+
+/* v209: the demo theme is intentionally fixed and non-editable. */
+.demo-fixed-theme{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:8px 0;border-bottom:1px solid var(--border, #42566b);color:var(--text,#e9f2f9)}
+.demo-fixed-theme small{color:var(--muted,#a9becc);font-size:.75rem;text-align:right}

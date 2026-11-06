@@ -1,6 +1,25 @@
 // NEXPEN UI localization. Keys use the original Traditional Chinese source labels.
 // Account names, custom categories and transaction notes are never translated automatically.
 const catalog={
+  "先體驗 NEXPEN 完整功能":{"en": "Explore all NEXPEN features", "ja": "NEXPEN の全機能を体験", "zh-CN": "先体验 NEXPEN 全部功能"},
+  "不用輸入真實財務資料，也可以使用虛構交易探索所有頁面。":{"en": "Explore every page with fictional transactions. No personal financial information needed.", "ja": "個人の財務データを入力せずに、架空の取引で全ページを体験できます。", "zh-CN": "无需输入真实财务数据，即可通过虚构交易探索全部页面。"},
+  "試用演示資料":{"en": "Try sample data", "ja": "サンプルデータで試す", "zh-CN": "试用演示数据"},
+
+  "演示模式固定使用經典深色主題": {"en":"Demo mode uses the Classic Dark theme", "ja":"デモモードではクラシックダークテーマを使用します", "zh-CN":"演示模式固定使用经典深色主题"},
+  "演示模式": {"en": "Demo mode", "ja": "デモモード", "zh-CN": "演示模式"},
+  "所有金額與交易皆為虛構資料，與個人資料完全隔離。": {"en": "All amounts and transactions are fictional and kept separate from your data.", "ja": "すべての金額・取引は架空で、個人データとは分離されています。", "zh-CN": "所有金额与交易均为虚构数据，与个人数据完全隔离。"},
+  "重置示範": {"en": "Reset demo", "ja": "デモをリセット", "zh-CN": "重置演示"},
+  "退出演示": {"en": "Exit demo", "ja": "デモを終了", "zh-CN": "退出演示"},
+  "重置演示資料？": {"en": "Reset demo data?", "ja": "デモデータをリセットしますか？", "zh-CN": "重置演示数据？"},
+  "將清除演示模式中的修改，重新載入範例資料。個人資料不受影響。": {"en": "Your demo changes will be reset. Your personal records will not be affected.", "ja": "デモの変更を初期化します。個人データには影響しません。", "zh-CN": "将清除演示修改并恢复示例数据。个人数据不受影响。"},
+  "演示報價為虛構資料": {"en": "Demo prices are illustrative", "ja": "デモの価格は架空のデータです", "zh-CN": "演示报价为虚构数据"},
+  "演示模式無法還原個人備份": {"en": "Leave demo mode to restore your personal backup", "ja": "個人バックアップの復元はデモ終了後に行ってください", "zh-CN": "请退出演示模式后恢复个人备份"},
+  "演示資料僅供體驗，無法匯出": {"en": "Demo data cannot be exported", "ja": "デモデータはエクスポートできません", "zh-CN": "演示数据不可导出"},
+  "功能體驗": {"en": "Explore all features", "ja": "機能を体験", "zh-CN": "功能体验"},
+  "用一套虛構資料試用記帳、帳戶、投資、報表與排程。演示與個人帳本完全分開。": {"en": "Try transactions, accounts, investments, reports, and schedules with fictional data. Your personal ledger stays separate.", "ja": "架空のデータで取引・口座・投資・レポート・定期取引をお試しください。個人台帳とは完全に分離されます。", "zh-CN": "使用虚构数据体验记账、账户、投资、报表及定期交易，与个人账本完全隔离。"},
+  "返回個人帳本": {"en": "Return to my ledger", "ja": "自分の台帳に戻る", "zh-CN": "返回个人账本"},
+  "進入演示模式": {"en": "Try demo mode", "ja": "デモを試す", "zh-CN": "进入演示模式"},
+
   "一般": {"en":"Regular","ja":"通常","zh-CN":"一般"},
   "當沖": {"en":"Day trade","ja":"日計り取引","zh-CN":"当冲"},
   "儲存券商費率設定": {"en":"Save broker fee settings","ja":"証券会社の手数料設定を保存","zh-CN":"保存券商费率设置"},
@@ -3251,6 +3270,9 @@ const catalog={
   "主要貨幣匯率已更新": {"en": "Primary-currency exchange rate updated", "ja": "基準通貨の為替レートを更新", "zh-CN": "主要货币汇率已更新"},
   "無法更新主要貨幣匯率": {"en": "Could not update primary-currency exchange rate", "ja": "基準通貨の為替レートを更新できません", "zh-CN": "无法更新主要货币汇率"},
   "請連線後重試": {"en": "Try again when online", "ja": "接続後に再試行してください", "zh-CN": "请联网后重试"},
+  "存款": {"en": "Deposits", "ja": "預金", "zh-CN": "存款"},
+  "證券": {"en": "Securities", "ja": "証券", "zh-CN": "证券"},
+  "其他資產": {"en": "Other assets", "ja": "その他資産", "zh-CN": "其他资产"},
   "關閉": {"en": "Close", "ja": "閉じる", "zh-CN": "关闭"},
 };
 let activeLanguage='zh-TW';

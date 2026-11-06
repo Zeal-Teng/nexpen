@@ -4074,3 +4074,43 @@ html .app-shell .sheet-body .stock-action-date-grid .native-date-input {width:10
 .app-shell .diary-transaction-list .diary-swipe-surface .diary-list-action:active {
   background:var(--theme-soft,rgba(128,128,128,.08))!important;
 }
+
+/* v205: move account-type icon into the Card Stack header, not each ListView row. */
+.app-shell .accounts-group-section .account-stack-heading-icon {
+  width:34px;height:34px;flex:0 0 34px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:10px;color:var(--stack-stripe,#81b4c7);
+  background:color-mix(in srgb,var(--stack-stripe,#81b4c7) 13%,transparent);
+}
+.app-shell .accounts-group-section .account-stack-heading-icon svg {
+  margin:0!important;transform:none!important;color:inherit!important;flex-shrink:0;
+}
+.app-shell .accounts-group-section .account-stack-peek-top > .account-stack-heading-icon + strong{min-width:0;}
+.app-shell .accounts-group-section .account-row > .row-main{min-width:0;flex:1;}
+
+/* v210 — align the account-type drag handle to the vertical centre of the
+   amount row (account-stack-peek-bottom), not to the card's coloured edge.
+   The last/expanded cards have smaller peek bottom padding, so they need
+   their own offsets. Keep this handle independent of the clickable peek. */
+html .app-shell .accounts-group-section .account-stack-card:not(.is-expanded) > .account-stack-sort-handle {
+  top:auto!important;
+  bottom:61px!important;
+}
+html .app-shell .accounts-group-section .account-stack-card:last-child:not(.is-expanded) > .account-stack-sort-handle {
+  bottom:16px!important;
+}
+html .app-shell .accounts-group-section .account-stack-card.is-expanded > .account-stack-sort-handle {
+  top:auto!important;
+  bottom:10px!important;
+}
+@media(max-width:800px){
+  html .app-shell .accounts-group-section .account-stack-card:not(.is-expanded) > .account-stack-sort-handle {
+    bottom:58px!important;
+  }
+  html .app-shell .accounts-group-section .account-stack-card:last-child:not(.is-expanded) > .account-stack-sort-handle {
+    bottom:15px!important;
+  }
+  html .app-shell .accounts-group-section .account-stack-card.is-expanded > .account-stack-sort-handle {
+    top:auto!important;
+    bottom:8px!important;
+  }
+}

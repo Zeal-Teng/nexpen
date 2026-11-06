@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const demo=fs.readFileSync(new URL('../src/demoData.js',import.meta.url),'utf8');
+const app=fs.readFileSync(new URL('../src/App.jsx',import.meta.url),'utf8');
+assert.match(demo,/export function initializeDemoOnLaunch\(/);
+assert.match(demo,/await seedDemoIfEmpty\(\{reset:true\}\)/);
+assert.match(demo,/await ensureDefaults\(\)/);
+assert.match(demo,/demoBootstrapPromise/);
+assert.match(demo,/db\.netWorthHistory,db\.marketCache/);
+assert.match(app,/isDemoMode\?initializeDemoOnLaunch\(\):ensureDefaults\(\)/);
+assert.doesNotMatch(app,/seedDemoIfEmpty\(\{reset:true\}\);window\.location\.reload\(\)/);
+console.log('demo launch behavior source checks passed');
