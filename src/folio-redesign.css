@@ -5757,3 +5757,334 @@ html .app-shell .networth-trend-inline-return .networth-trend-return-amount svg 
 html .app-shell .networth-trend-inline-return .networth-trend-return-amount span {
   font-size:inherit!important;font-weight:inherit!important;
 }
+
+/* v237 — one continuous border owns the expanded net-worth card.
+   Previously the parent, header, and collapsing content each painted parts of
+   the outline, causing 1px seams at the header/detail junction. The outer
+   colored layer is now the sole stroke; child surfaces never draw an outer
+   right/bottom border. This preserves the Account Stack colored spine. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded {
+  box-sizing:border-box!important;
+  border:1px solid color-mix(in srgb,var(--peek) 72%,var(--theme-line))!important;
+  border-radius:24px!important;
+  overflow:hidden!important;
+  background:var(--peek)!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-reference-card,
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-card-expanded-body {
+  box-sizing:border-box!important;
+  margin-right:0!important;
+  border-right:0!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-reference-card {
+  border-top:0!important;
+  border-left:0!important;
+  border-radius:21px 0 0 0!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-card-expanded-body {
+  border-left:0!important;
+  border-top:0!important;
+  border-radius:0!important;
+  background:var(--theme-surface)!important;
+  position:relative!important;
+}
+/* Put only a *content* divider at the seam, not a second external stroke. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-card-expanded-body.is-open::before {
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:1px;
+  background:var(--theme-line);
+  pointer-events:none;
+  z-index:3;
+}
+/* Match the exact header inset at every breakpoint; no horizontal step. */
+@media(max-width:800px){
+ html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded {
+   border-radius:23px!important;
+ }
+}
+
+/* v238 — one unified account-style expanded Card Stack behavior.
+   A card expands in document flow; its successor remains stacked above its
+   bottom clearance. Do not elevate the expanded card above subsequent cards.
+   Preserve the colored outer spine as the only external border. */
+
+/* Every stack later sibling paints over the preceding card, even when expanded. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer:nth-child(1),
+html .app-shell .investment-dashboard .investment-first-level-stack > .investment-reference-layer:nth-child(1),
+html .app-shell .investment-second-level > .investment-tier-card:nth-child(1) { z-index:1!important; }
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer:nth-child(2),
+html .app-shell .investment-dashboard .investment-first-level-stack > .investment-reference-layer:nth-child(2),
+html .app-shell .investment-second-level > .investment-tier-card:nth-child(2) { z-index:2!important; }
+html .app-shell .investment-dashboard .investment-first-level-stack > .investment-reference-layer:nth-child(3),
+html .app-shell .investment-second-level > .investment-tier-card:nth-child(3) { z-index:3!important; }
+/* Important: previous versions gave expanded cards z-index 20/90 and an
+   additional bottom margin; those prevented the next card from overlapping. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded,
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded {
+  margin-bottom:0!important;
+  box-shadow:0 9px 22px rgba(13,20,24,.11),0 2px 5px rgba(13,20,24,.05)!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer + .networth-reference-layer {
+  margin-top:calc(-1 * var(--account-like-overlap,54px))!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card + .investment-tier-card {
+  margin-top:calc(-1 * var(--investment-overlap,52px))!important;
+}
+/* Net-worth layers behave exactly like Account cards: a colored outer shell,
+   a consistently inset white face + accordion detail, both borderless. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer,
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded {
+  --nw-inset:17px;
+  position:relative!important;
+  isolation:auto!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  background:var(--peek)!important;
+  border:1px solid color-mix(in srgb,var(--peek) 70%,var(--theme-line))!important;
+  border-radius:24px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer > .networth-reference-card,
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-reference-card,
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer > .networth-card-expanded-body,
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-card-expanded-body {
+  box-sizing:border-box!important;
+  margin:0 0 0 var(--nw-inset)!important;
+  width:calc(100% - var(--nw-inset))!important;
+  border:0!important;
+  outline:0!important;
+  background:var(--theme-surface)!important;
+  box-shadow:none!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer:not(.networth-layer-expanded) > .networth-reference-card {
+  border-radius:21px 0 0 21px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-reference-card {
+  border-radius:21px 0 0 0!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer > .networth-card-expanded-body,
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-card-expanded-body {
+  border-radius:0 0 0 19px!important;
+  padding:0!important;
+  background:var(--theme-surface)!important;
+}
+/* Seam divider is purely internal and does not interfere with the colored
+   frame. The inset is identical in the header and body at all widths. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-card-expanded-body.is-open::before {
+  left:0!important;
+  right:0!important;
+  top:0!important;
+  height:1px!important;
+  background:var(--theme-line)!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer .networth-card-expanded-inner {
+  box-sizing:border-box!important;
+  min-height:0!important;
+  padding:0 18px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer .networth-card-expanded-body.is-open .networth-card-expanded-inner {
+  padding:16px 18px 74px!important;
+}
+/* The next layer overlaps the blank 52-58px clearance at the bottom of the
+   expanded body; values and list rows stay above that clearance. */
+html .app-shell .investment-second-level > .investment-tier-card,
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded {
+  border-radius:24px!important;
+  overflow:hidden!important;
+  isolation:auto!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-peek {
+  border-radius:21px 0 0 0!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse.is-open > .investment-tier-body {
+  width:calc(100% - 17px)!important;
+  margin-left:17px!important;
+  padding:14px 16px 76px!important;
+  border-radius:0 0 0 19px!important;
+  background:var(--theme-surface)!important;
+}
+@media(max-width:800px){
+  html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer,
+  html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded {
+    --nw-inset:14px;
+    border-radius:23px!important;
+  }
+  html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer .networth-card-expanded-body.is-open .networth-card-expanded-inner {
+    padding:15px 13px 72px!important;
+  }
+  html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse.is-open > .investment-tier-body {
+    width:calc(100% - 14px)!important;
+    margin-left:14px!important;
+    padding:13px 13px 72px!important;
+  }
+}
+
+/* v239 — account-stack parity across the expandable groups.
+   Later sibling cards cover only the previous card's reserved empty tail. */
+html .app-shell .investment-second-level,
+html .app-shell .networth-stack-dashboard .networth-reference-stack,
+html .app-shell .category-section .category-card-stack {
+  isolation:isolate!important;
+  gap:0!important;
+}
+/* Preserve DOM paint order: do NOT raise the selected card above the next one. */
+html .app-shell .investment-second-level > .investment-tier-card,
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded,
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer,
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded,
+html .app-shell .category-section .category-card-stack > .category-stack-card,
+html .app-shell .category-section .category-card-stack > .category-stack-card.category-stack-expanded {
+  z-index:1!important;
+  margin-bottom:0!important;
+  transform:none!important;
+}
+/* The overlap masks the prior card's rounded bottom corners. */
+html .app-shell .investment-second-level > .investment-tier-card {--investment-overlap:64px!important;}
+html .app-shell .investment-second-level > .investment-tier-card + .investment-tier-card {
+  margin-top:-64px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack {--account-like-overlap:70px!important;}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer + .networth-reference-layer {
+  margin-top:-70px!important;
+}
+html .app-shell .category-section .category-card-stack > .category-stack-card {--stack-overlap:66px!important;}
+html .app-shell .category-section .category-card-stack > .category-stack-card + .category-stack-card {
+  margin-top:-66px!important;
+}
+/* Investment ListView: an open pane must take its natural content height.
+   Earlier nested grid/overflow styles could clip the final rows. */
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded {
+  height:auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse {
+  box-sizing:border-box!important;
+  flex:0 0 auto!important;
+  min-height:0!important;
+  width:100%!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse:not(.is-open) {
+  display:none!important;
+  height:0!important;
+  visibility:hidden!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse.is-open {
+  display:block!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  visibility:visible!important;
+  opacity:1!important;
+  grid-template-rows:none!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse.is-open > .investment-tier-body {
+  position:relative!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  margin-left:17px!important;
+  width:calc(100% - 17px)!important;
+  padding:16px 16px 93px!important;
+  border-top:1px solid var(--theme-line)!important;
+  border-radius:0 0 0 20px!important;
+  background:var(--theme-surface)!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse.is-open :is(.investment-stage-list,.investment-asset-substack,.investment-holdings-list,.stock-performance-section) {
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+}
+/* Empty tail belongs to the accordion body; entries must remain readable. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer .networth-card-expanded-body.is-open .networth-card-expanded-inner {
+  padding-bottom:98px!important;
+}
+html .app-shell .category-section .category-card-stack > .category-stack-card .category-stack-details.is-open .category-stack-details-inner {
+  padding-bottom:94px!important;
+}
+html .app-shell .category-section .category-card-stack > .category-stack-card.category-stack-expanded {
+  overflow:hidden!important;
+}
+@media(max-width:800px){
+ html .app-shell .investment-second-level > .investment-tier-card {--investment-overlap:60px!important;}
+ html .app-shell .investment-second-level > .investment-tier-card + .investment-tier-card {margin-top:-60px!important;}
+ html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer + .networth-reference-layer {margin-top:-66px!important;}
+ html .app-shell .category-section .category-card-stack > .category-stack-card + .category-stack-card {margin-top:-62px!important;}
+ html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse.is-open > .investment-tier-body {
+   margin-left:14px!important;
+   width:calc(100% - 14px)!important;
+   padding:13px 12px 88px!important;
+ }
+ html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer .networth-card-expanded-body.is-open .networth-card-expanded-inner {padding-bottom:92px!important;}
+ html .app-shell .category-section .category-card-stack > .category-stack-card .category-stack-details.is-open .category-stack-details-inner {padding-bottom:88px!important;}
+}
+
+/* v240 — one continuous inset for second-tier investment cards.
+   The colored left spine belongs to the outer article. Both the heading face
+   and the expanded white ledger must start at the EXACT same x-coordinate.
+   Keep the accordion's full-height flow and next-card-underlap from v239. */
+html .app-shell .investment-second-level > .investment-tier-card {
+  --tier-face-inset:17px;
+  box-sizing:border-box!important;
+  background:var(--tier-color)!important;
+  overflow:hidden!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-peek,
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse > .investment-tier-body,
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse.is-open > .investment-tier-body {
+  box-sizing:border-box!important;
+  width:calc(100% - var(--tier-face-inset))!important;
+  max-width:calc(100% - var(--tier-face-inset))!important;
+  margin-left:var(--tier-face-inset)!important;
+  margin-right:0!important;
+  background:var(--theme-surface)!important;
+  border-left:0!important;
+  border-right:0!important;
+  box-shadow:none!important;
+}
+/* The collapse wrapper must not introduce its own offset or create a thin
+   transparent seam between the header face and the list. */
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse,
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse.is-open {
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:var(--tier-color)!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-peek {
+  border-radius:21px 0 0 0!important;
+  border-bottom:0!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse.is-open > .investment-tier-body {
+  position:relative!important;
+  border-top:0!important;
+  border-radius:0 0 0 20px!important;
+  padding-top:15px!important;
+  /* Keep enough blank tail for the next stack layer to hide the lower corner. */
+  padding-bottom:94px!important;
+}
+/* Divider belongs to the white face only and is aligned to the same inset. */
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse.is-open > .investment-tier-body::before {
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:1px;
+  background:var(--theme-line);
+  pointer-events:none;
+}
+@media(max-width:800px){
+  html .app-shell .investment-second-level > .investment-tier-card {--tier-face-inset:14px;}
+  html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse.is-open > .investment-tier-body {
+    padding-top:13px!important;
+    padding-bottom:88px!important;
+  }
+}
