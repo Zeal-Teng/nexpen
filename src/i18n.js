@@ -658,6 +658,7 @@ const catalog={
     "ja": "ETF税区分",
     "zh-CN": "ETF税别"
   },
+  "賣價": {"en":"Sell price","ja":"売却単価","zh-CN":"卖价"},
   "股數": {
     "en": "Shares",
     "ja": "株数",

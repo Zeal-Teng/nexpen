@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const src=new URL('../src/',import.meta.url);
+const view=readFileSync(new URL('StockPerformanceView.jsx',src),'utf8');
+const component=readFileSync(new URL('InvestmentStack.jsx',src),'utf8');
+const css=readFileSync(new URL('folio-redesign.css',src),'utf8');
+const i18n=readFileSync(new URL('i18n.js',src),'utf8');
+assert.match(view,/averageLine=\{`\$\{tr\('賣價','Sell price'\)/);
+assert.doesNotMatch(view,/topRight=\{latestSell/);
+assert.match(view,/topRight=\{q>0\?fmtUnit\(q\):'—'\}/);
+assert.match(component,/topRight!=null&&<span className="investment-stock-close"/);
+assert.match(css,/v212 — Trade & dividend history/);
+assert.match(css,/\.stock-history-financials:has\(> :only-child\)/);
+assert.match(css,/grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+for(const label of ['"en":"Sell price"','"ja":"売却単価"','"zh-CN":"卖价"'])assert.ok(i18n.includes(label));
+console.log('v212 stock history layout checks passed');

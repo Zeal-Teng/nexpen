@@ -4114,3 +4114,218 @@ html .app-shell .accounts-group-section .account-stack-card.is-expanded > .accou
     bottom:8px!important;
   }
 }
+
+/* v211 — shared, full-width security header for current holdings and realized sales. */
+html .app-shell .investment-asset-substack .investment-stock-list-row {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,auto) 18px!important;
+  grid-template-rows:auto auto!important;
+  align-items:start!important;
+  column-gap:10px!important;
+  row-gap:8px!important;
+  padding:15px 3px!important;
+}
+html .app-shell .investment-stock-list-row .investment-stock-row-heading {
+  grid-column:1 / 3;
+  grid-row:1;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:12px;
+  min-width:0;
+}
+html .app-shell .investment-stock-list-row .investment-stock-symbol {
+  font-size:clamp(17px,3.9vw,21px)!important;
+  font-weight:780;
+  line-height:1.32;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+html .app-shell .investment-stock-list-row .investment-stock-close {
+  flex:0 0 auto;
+  color:var(--theme-text);
+  font-size:clamp(15px,3.7vw,19px);
+  font-weight:750;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+html .app-shell .investment-stock-list-row .investment-stock-row-details {
+  grid-column:1;
+  grid-row:2;
+  align-items:flex-start;
+  min-width:0;
+  gap:5px;
+}
+html .app-shell .investment-stock-list-row .investment-stock-row-results {
+  grid-column:2;
+  grid-row:2;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  text-align:right;
+  gap:5px;
+  min-width:0;
+  max-width:48vw;
+}
+html .app-shell .investment-stock-list-row .investment-stock-row-results .investment-tier-pnl {
+  display:block;
+  white-space:normal;
+  line-height:1.4;
+  font-variant-numeric:tabular-nums;
+}
+html .app-shell .investment-stock-list-row .investment-account-list-chevron {
+  grid-column:3;
+  grid-row:1 / 3;
+  align-self:center;
+}
+\n/* v212 — Trade & dividend history: use the full ListView width.
+   Header occupies its own row; trade specifics stay left and finance metrics right.
+   Both light and dark themes derive colors from existing theme variables. */
+html .app-shell .investment-third-level .stock-history-entry.stock-detail-trade {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 18px!important;
+  gap:0 10px!important;
+  width:100%;
+  padding:17px 0!important;
+  border-bottom:1px solid var(--theme-line);
+  background:transparent;
+  border-radius:0;
+  text-align:left;
+}
+html .app-shell .investment-third-level .stock-history-entry.stock-detail-trade:last-child {border-bottom:0;}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-content {
+  grid-column:1!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-rows:auto auto;
+  gap:10px 15px;
+  align-items:start;
+  min-width:0;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-heading {
+  grid-column:1 / -1;
+  grid-row:1;
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:7px 12px;
+  min-width:0;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-heading b {
+  display:inline-flex;
+  align-items:center;
+  font-size:clamp(16px,3.8vw,19px);
+  line-height:1.35;
+}
+html .app-shell .investment-third-level .stock-history-entry.stock-history-buy .stock-history-heading b{color:var(--theme-text)!important;}
+html .app-shell .investment-third-level .stock-history-entry.stock-history-sell .stock-history-heading b{color:var(--theme-text)!important;}
+html .app-shell .investment-third-level .stock-history-entry.stock-history-dividend .stock-history-heading b{color:var(--theme-text)!important;}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-details {
+  grid-column:1;
+  grid-row:2;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  gap:6px;
+  min-width:0;
+  color:var(--theme-muted);
+  font-size:clamp(12px,2.95vw,14px);
+  text-align:left;
+  line-height:1.55;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-financials,
+html .app-shell .investment-third-level .stock-history-entry .stock-history-financials:has(> :only-child) {
+  grid-column:2;
+  grid-row:2;
+  display:flex!important;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px!important;
+  min-width:0;
+  margin:0;
+  padding:0;
+  border:0;
+  text-align:right;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-financial {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+  width:100%;
+  min-width:0;
+  text-align:right;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-financial + .stock-history-financial {
+  padding:9px 0 0!important;
+  border-left:0!important;
+  border-top:1px solid var(--theme-line);
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-label{
+  display:block;
+  color:var(--theme-muted);
+  font-size:clamp(11px,2.6vw,13px);
+  font-weight:600;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-financial strong {
+  font-size:clamp(16px,3.7vw,21px);
+  font-weight:780;
+  line-height:1.3;
+  letter-spacing:-.025em;
+  font-variant-numeric:tabular-nums;
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-financial small {
+  font-size:clamp(13px,3vw,15px);
+  font-weight:750;
+  font-variant-numeric:tabular-nums;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-chevron {
+  grid-column:2!important;
+  grid-row:1;
+  align-self:center;
+  margin:0;
+  color:var(--theme-muted);
+}
+@media (max-width:390px){
+ html .app-shell .investment-third-level .stock-history-entry .stock-history-content{gap:9px 10px;}
+ html .app-shell .investment-third-level .stock-history-entry .stock-history-financial strong{font-size:clamp(15px,4vw,18px);}
+}
+
+/* v213 — Trade history heading: action on the left, equally sized date on the right. */
+html .app-shell .investment-third-level .stock-history-entry .stock-history-heading {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:baseline;
+  gap:8px 12px;
+  width:100%;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-heading b,
+html .app-shell .investment-third-level .stock-history-entry .stock-history-heading time {
+  font-size:clamp(16px,3.8vw,19px);
+  line-height:1.35;
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-heading time {
+  justify-self:end;
+  text-align:right;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+  color:var(--theme-muted);
+}
+
+/* v214 — Stock trade history: bold date on the left, action on the right. */
+html .app-shell .investment-third-level .stock-history-entry .stock-history-heading time {
+  grid-column:1;
+  grid-row:1;
+  justify-self:start;
+  text-align:left;
+  font-weight:750;
+  color:var(--theme-text);
+}
+html .app-shell .investment-third-level .stock-history-entry .stock-history-heading b {
+  grid-column:2;
+  grid-row:1;
+  justify-self:end;
+  text-align:right;
+}

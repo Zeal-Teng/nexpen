@@ -25,7 +25,19 @@ export function InvestmentStackCard({title,summary,amount,accent='lavender',chil
 }
 // Detail rows inside an expanded investment card match the Account Management
 // ListView: no nested cards, and one tap opens the asset detail screen.
-export function InvestmentStackAsset({title,subtitle,amount,profit,rate,profitTone='',accent='lavender',onOpen,children}){
+export function InvestmentStackAsset({title,subtitle,amount,profit,rate,profitTone='',accent='lavender',onOpen,children,stockLayout=false,topRight=null,sharesLine=null,averageLine=null,valueLine=null}){
+ if(stockLayout)return <button type="button" className={'investment-account-list-row investment-stock-list-row tier-'+accent} onClick={onOpen}>
+  <span className="investment-stock-row-heading"><strong className="investment-stock-symbol">{title}</strong>{topRight!=null&&<span className="investment-stock-close">{topRight}</span>}</span>
+  <span className="investment-account-list-info investment-stock-row-details">
+   {sharesLine&&<small>{sharesLine}</small>}{averageLine&&<small>{averageLine}</small>}
+  </span>
+  <span className="investment-account-list-values investment-stock-row-results">
+   {valueLine&&<b>{valueLine}</b>}
+   {profit!=null&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{profit}</small>}
+   {rate&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{rate}</small>}
+  </span>
+  <ChevronRight size={18} aria-hidden="true" className="investment-account-list-chevron"/>
+ </button>;
  return <button type="button" className={'investment-account-list-row tier-'+accent} onClick={onOpen}>
    <span className="investment-account-list-info"><strong>{title}</strong>{subtitle&&<small>{subtitle}</small>}{children&&<span className="investment-account-list-extra">{children}</span>}</span>
    <span className="investment-account-list-values"><b>{amount}</b>{profit&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{profit}{rate?` · ${rate}`:''}</small>}</span>

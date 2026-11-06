@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const dir=new URL('../src/',import.meta.url);
+const component=readFileSync(new URL('InvestmentStack.jsx',dir),'utf8');
+const view=readFileSync(new URL('StockPerformanceView.jsx',dir),'utf8');
+const css=readFileSync(new URL('folio-redesign.css',dir),'utf8');
+assert.match(component,/investment-stock-row-heading/);
+assert.match(component,/investment-stock-row-details/);
+assert.match(component,/investment-stock-row-results/);
+assert.match(component,/className=\{'investment-tier-pnl '[^\n]+>\{profit\}<\/small>/);
+assert.match(component,/className=\{'investment-tier-pnl '[^\n]+>\{rate\}<\/small>/);
+assert.match(view,/topRight=\{q>0\?fmtUnit\(q\):'—'\}/);
+assert.doesNotMatch(view,/topRight=\{latestSell/);
+assert.match(view,/tr\('賣價','Sell price'\)/);
+assert.match(view,/sharesLine=/);
+assert.match(view,/averageLine=/);
+assert.match(css,/\.investment-stock-row-heading\s*\{[\s\S]*?grid-column:1 \/ 3/);
+console.log('v211 stock list layout checks passed');
