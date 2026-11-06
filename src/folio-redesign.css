@@ -4619,3 +4619,1057 @@ html .app-shell .investment-asset-substack .investment-generic-list-row .investm
  html .app-shell .investment-asset-substack .investment-stock-list-row .investment-stock-row-results > b,
  html .app-shell .investment-asset-substack .investment-generic-row-results > b {font-size:12px!important;}
 }
+
+/* v227 — Editorial Portfolio. Four distinct reading levels, one numeric language.
+   Inherits all theme variables and user-configured profit/loss colors. */
+html .app-shell .investment-dashboard {
+  --portfolio-stroke:color-mix(in srgb,var(--theme-text,currentColor) 13%,transparent);
+  --portfolio-muted:var(--theme-muted,#838997);
+}
+/* OVERVIEW / SUMMARY: quiet typography, one clear portfolio total, a second-line return */
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) {
+  border-radius:23px!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.055)!important;
+  border:1px solid color-mix(in srgb,currentColor 10%,transparent)!important;
+  overflow:hidden!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-trigger {
+  min-height:154px!important;display:grid!important;grid-template-columns:minmax(0,1fr) 24px!important;
+  gap:13px 8px!important;align-content:start!important;align-items:start!important;
+  padding:20px 19px 19px!important;text-align:left!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-heading {
+  grid-column:1!important;display:flex!important;flex-direction:column!important;gap:3px!important;
+  align-items:flex-start!important;margin:0!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-eyebrow {
+  font-size:9px!important;letter-spacing:.19em!important;opacity:.64!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-title {
+  font-size:16px!important;letter-spacing:-.01em!important;font-weight:720!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-arrow {
+  grid-column:2!important;grid-row:1!important;justify-self:end!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-value {
+  grid-column:1/-1!important;grid-row:2!important;display:flex!important;flex-direction:column!important;
+  align-items:flex-start!important;width:100%!important;gap:5px!important;min-width:0!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-value > small {
+  font-size:11px!important;letter-spacing:.035em!important;opacity:.7!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-value > strong {
+  font-size:clamp(26px,7.4vw,37px)!important;line-height:1.12!important;letter-spacing:-.045em!important;
+  font-weight:780!important;font-variant-numeric:tabular-nums!important;white-space:nowrap!important;
+  max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-metrics {
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;
+}
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) .summary-hero-metrics > div {
+  min-width:0!important;padding:12px 13px!important;border-radius:13px!important;
+  background:color-mix(in srgb,currentColor 4%,transparent)!important;
+}
+/* SECOND LEVEL: white-space-heavy, restrained headers, no pills, slim return figure. */
+html .app-shell .investment-second-level {gap:10px!important;}
+html .app-shell .investment-second-level .investment-tier-card {
+  transform:none!important;margin:0!important;box-shadow:none!important;
+  border-radius:17px!important;overflow:hidden!important;
+}
+html .app-shell .investment-second-level .investment-tier-card > .investment-tier-peek {
+  min-height:112px!important;padding:16px 16px 15px!important;gap:7px!important;
+  border-radius:17px!important;box-shadow:none!important;
+}
+html .app-shell .investment-second-level .investment-tier-card > .investment-tier-peek::after {display:none!important;}
+html .app-shell .investment-second-level .investment-tier-top {display:flex!important;align-items:center!important;gap:8px!important;}
+html .app-shell .investment-second-level .investment-tier-top strong {font-size:15px!important;font-weight:750!important;letter-spacing:-.02em!important;}
+html .app-shell .investment-second-level .investment-tier-subtitle {font-size:11px!important;opacity:.64!important;line-height:1.3!important;}
+html .app-shell .investment-second-level .investment-tier-bottom.investment-compact-summary {
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:end!important;gap:8px!important;
+  margin-top:9px!important;
+}
+html .app-shell .investment-second-level .investment-tier-financial {
+  display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important;align-items:flex-start!important;
+}
+html .app-shell .investment-second-level .investment-tier-financial > small,
+html .app-shell .investment-second-level .investment-tier-pnl-caption {
+  color:var(--theme-muted,#87909a)!important;opacity:.85!important;font-weight:500!important;
+  font-size:10px!important;line-height:1.1!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom .investment-tier-financial > b {
+  font-size:clamp(17px,4.75vw,23px)!important;letter-spacing:-.03em!important;font-weight:770!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom > .investment-performance-badges {
+  display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important;
+  padding:0!important;margin:0!important;background:none!important;border:0!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom .investment-performance-badges > :is(strong,small) {
+  font-size:clamp(11px,3vw,14px)!important;white-space:nowrap!important;line-height:1.15!important;
+  border:0!important;border-radius:0!important;background:none!important;padding:0!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom .investment-performance-badges > strong {font-weight:760!important;}
+html .app-shell .investment-second-level .investment-tier-bottom .investment-performance-badges > .investment-tier-pnl-rate {font-size:11px!important;opacity:.8!important;}
+html .app-shell .investment-second-level .investment-tier-bottom .investment-performance-badges > .income {color:var(--user-income,var(--theme-income,#168c70))!important;}
+html .app-shell .investment-second-level .investment-tier-bottom .investment-performance-badges > .expense {color:var(--user-expense,var(--theme-expense,#d54e65))!important;}
+/* THIRD LEVEL: understated ledger rows. Small metadata above, no leading arrows on investment returns. */
+html .app-shell .investment-asset-substack {gap:0!important;border-radius:15px!important;overflow:hidden!important;}
+html .app-shell .investment-asset-substack .investment-account-list-row {
+  padding:14px 12px!important;border-radius:0!important;border:0!important;
+  border-bottom:1px solid color-mix(in srgb,currentColor 9%,transparent)!important;
+  background:transparent!important;box-shadow:none!important;min-width:0!important;
+}
+html .app-shell .investment-asset-substack .investment-account-list-row:last-child {border-bottom:0!important;}
+html .app-shell .investment-asset-substack .investment-stock-row-heading,
+html .app-shell .investment-asset-substack .investment-account-list-info > strong {
+  font-size:13px!important;font-weight:740!important;letter-spacing:-.01em!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-details > small,
+html .app-shell .investment-asset-substack .investment-account-list-info > small {font-size:10px!important;opacity:.70!important;}
+html .app-shell .investment-asset-substack :is(.investment-stock-row-results,.investment-generic-row-results) {
+  margin-top:6px!important;border-top:1px solid color-mix(in srgb,currentColor 7%,transparent)!important;
+  padding-top:9px!important;gap:8px!important;align-items:end!important;
+}
+html .app-shell .investment-asset-substack .investment-listview-main-value {
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;min-width:0!important;gap:4px!important;
+}
+html .app-shell .investment-asset-substack .investment-listview-main-value small {
+  color:var(--theme-muted,#87909a)!important;font-weight:500!important;font-size:10px!important;
+}
+html .app-shell .investment-asset-substack .investment-listview-main-value b {
+  display:block!important;font-size:clamp(13px,3.8vw,17px)!important;line-height:1.15!important;
+  font-weight:750!important;font-variant-numeric:tabular-nums!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;
+}
+html .app-shell .investment-asset-substack .investment-listview-performance {
+  display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important;
+  font-variant-numeric:tabular-nums!important;white-space:nowrap!important;
+}
+html .app-shell .investment-asset-substack .investment-listview-performance svg {display:none!important;}
+html .app-shell .investment-asset-substack .investment-listview-profit {font-size:clamp(12px,3.2vw,14px)!important;font-weight:740!important;}
+html .app-shell .investment-asset-substack .investment-listview-rate {font-size:11px!important;font-weight:610!important;opacity:.77!important;}
+html .app-shell .investment-asset-substack .investment-account-list-chevron {opacity:.32!important;width:14px!important;}
+@media(max-width:380px){
+ html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card {padding:13px 12px!important;}
+ html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-net {font-size:16px!important;}
+ html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-profit {font-size:11px!important;}
+ html .app-shell .investment-second-level .investment-tier-card > .investment-tier-peek {padding:13px 12px!important;}
+ html .app-shell .investment-second-level .investment-tier-bottom .investment-tier-financial > b {font-size:16px!important;}
+ html .app-shell .investment-second-level .investment-tier-bottom .investment-performance-badges > strong {font-size:11px!important;}
+}
+
+
+/* v228: Restore the earlier overlapping investment category cards.
+   Metadata precedes the bottom finance strip rather than competing with it. */
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card {
+ display:flex!important;flex-direction:column!important;justify-content:space-between!important;
+ gap:8px!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-main {
+ display:flex!important;flex-direction:column!important;gap:7px!important;width:100%!important;min-width:0!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-copy {
+ display:flex!important;flex-direction:row!important;align-items:center!important;
+ justify-content:space-between!important;min-width:0!important;gap:7px!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-meta {
+ display:block!important;min-width:0!important;white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount {
+ display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:end!important;
+ width:100%!important;min-width:0!important;gap:7px!important;
+ margin-top:auto!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-net {
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ font-size:clamp(15px,4.2vw,23px)!important;min-width:0!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-badges {
+ justify-self:end!important;display:flex!important;flex-direction:column!important;
+ align-items:flex-end!important;gap:3px!important;padding:0!important;
+ white-space:nowrap!important;min-width:0!important;background:none!important;border:0!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-badges > * {
+ font-variant-numeric:tabular-nums!important;white-space:nowrap!important;
+ font-size:clamp(10px,2.8vw,13px)!important;
+}
+
+/* The second-level title is sufficient; remove redundant "1 holding / 2 assets". */
+html .app-shell .investment-second-level .investment-tier-subtitle,
+html .app-shell .investment-second-level .investment-stage-count {
+ display:none!important;
+}
+
+/* A revealed list must connect squarely to its header, without a rounded inset. */
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded {
+ border-radius:17px 17px 0 0!important;
+ overflow:hidden!important;
+}
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded > .investment-tier-peek {
+ border-radius:17px 17px 0 0!important;
+}
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded > .investment-tier-collapse,
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded .investment-tier-body,
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded .investment-stage-list,
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded .investment-stage-history,
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded .investment-asset-substack {
+ border-radius:0!important;
+}
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded .investment-tier-body {
+ margin:0!important;width:100%!important;padding:0!important;
+}
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded .investment-stage-list,
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded .investment-stage-history {
+ padding:0!important;margin:0!important;overflow:hidden!important;
+}
+
+/* Two clearly different separator systems:
+   account-to-account = strong full-width line; inside the same account = soft dashed inset. */
+html .app-shell .investment-second-level .investment-asset-substack .investment-account-list-row {
+ border-radius:0!important;
+ border-bottom:2px solid color-mix(in srgb,var(--theme-muted,#87909a) 34%,transparent)!important;
+ padding:15px 12px!important;
+}
+html .app-shell .investment-second-level .investment-asset-substack .investment-account-list-row:last-child {
+ border-bottom:0!important;
+}
+html .app-shell .investment-second-level .investment-asset-substack
+:is(.investment-stock-row-results,.investment-generic-row-results) {
+ border-top:1px dashed color-mix(in srgb,var(--theme-muted,#87909a) 23%,transparent)!important;
+ margin-top:8px!important;padding-top:10px!important;
+}
+
+/* Net worth trend: explicit endpoint-to-baseline return for the chosen duration. */
+html .app-shell .networth-trend-comparison {
+ display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;
+ gap:7px 12px;margin:10px 0 12px;padding:11px 12px;
+ background:color-mix(in srgb,var(--theme-accent) 5%,transparent);
+ border:1px solid var(--theme-line);border-radius:12px;
+}
+html .app-shell .networth-trend-comparison > small {
+ font-size:11px;color:var(--theme-muted);line-height:1.4;
+}
+html .app-shell .networth-trend-return {display:flex;align-items:baseline;gap:9px;white-space:nowrap;font-variant-numeric:tabular-nums}
+html .app-shell .networth-trend-return strong {font-size:clamp(13px,3.6vw,18px);font-weight:750}
+html .app-shell .networth-trend-return span {font-size:12px;font-weight:650}
+html .app-shell .networth-trend-return.income {color:var(--user-income,var(--theme-income,#168c70))}
+html .app-shell .networth-trend-return.expense {color:var(--user-expense,var(--theme-expense,#d54e65))}
+html .app-shell .networth-trend-unavailable {font-size:11px;color:var(--theme-muted)}
+@media(max-width:380px){
+ html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-net {font-size:14px!important;}
+ html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-badges > * {font-size:10px!important;}
+}
+
+/* v229 — Investment hierarchy refresh.
+   Goals:
+   1) first-level investment cards return to the calmer stack language;
+   2) second-level cards drop noisy count labels;
+   3) expanded ListViews read like a continuous ledger, not rounded mini-cards;
+   4) investment/net-worth stacks regain the geometric accent language used by Accounts. */
+
+/* ---------- First level: title/meta first, amount + P/L on the last row ---------- */
+html .app-shell .investment-dashboard .investment-first-level-stack > .investment-reference-layer,
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer {
+  border-radius:26px!important;
+  overflow:visible!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card,
+html .app-shell .networth-stack-dashboard .networth-reference-card {
+  position:relative!important;
+  overflow:hidden!important;
+  border-radius:22px!important;
+  min-height:168px!important;
+  padding:18px 16px 22px!important;
+  background:var(--theme-surface)!important;
+  border:1px solid color-mix(in srgb,var(--theme-text,currentColor) 10%,transparent)!important;
+  box-shadow:0 10px 26px rgba(12,22,30,.09)!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card::before,
+html .app-shell .networth-stack-dashboard .networth-reference-card::before {
+  content:"";
+  position:absolute;
+  right:-24px; top:-18px;
+  width:128px; height:128px;
+  background:color-mix(in srgb,var(--stack-stripe,var(--theme-accent)) 15%,transparent);
+  clip-path:polygon(62% 0,100% 0,100% 100%,15% 100%,0 55%);
+  opacity:.95;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card::after,
+html .app-shell .networth-stack-dashboard .networth-reference-card::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--stack-stripe,var(--theme-accent)) 4%,transparent),transparent 42%);
+  pointer-events:none;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-main,
+html .app-shell .networth-stack-dashboard .networth-reference-card .investment-reference-main {
+  position:relative;z-index:1;
+  min-height:100%;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto 1fr auto!important;
+  align-items:start!important;
+  gap:8px!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-copy {
+  align-items:flex-start!important;
+  gap:4px!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-copy b,
+html .app-shell .networth-stack-dashboard .networth-reference-card .investment-reference-copy b {
+  font-size:clamp(17px,3.9vw,21px)!important;
+  font-weight:790!important;
+  line-height:1.32!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-type,
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-meta,
+html .app-shell .networth-stack-dashboard .networth-reference-card .investment-reference-copy small {
+  color:var(--theme-muted)!important;
+  font-size:clamp(11px,2.8vw,13px)!important;
+  line-height:1.45!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-meta {white-space:normal!important;overflow:visible!important;}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount,
+html .app-shell .networth-stack-dashboard .networth-reference-card .investment-reference-amount {
+  grid-row:4!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:end!important;
+  gap:8px!important;
+  width:100%!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-net,
+html .app-shell .networth-stack-dashboard .networth-reference-card .investment-reference-net {
+  font-size:clamp(24px,5.8vw,34px)!important;
+  font-weight:810!important;
+  line-height:1.08!important;
+  letter-spacing:-.04em!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-badges {
+  align-self:end!important;
+  justify-self:end!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-end!important;
+  gap:5px!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-badges :is(.investment-reference-profit,.investment-reference-rate) {
+  display:block!important;
+  padding:0!important;border:0!important;background:none!important;border-radius:0!important;
+  font-size:clamp(12px,3vw,16px)!important;
+  font-weight:760!important;
+  line-height:1.22!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-dots {opacity:.45;}
+
+/* ---------- Second level: use the same clean bottom-row balance, no count label ---------- */
+html .app-shell .investment-second-level .investment-tier-card {
+  border-radius:26px!important;
+}
+html .app-shell .investment-second-level .investment-tier-peek {
+  position:relative!important;
+  overflow:hidden!important;
+}
+html .app-shell .investment-second-level .investment-tier-peek::before {
+  content:"";
+  position:absolute;
+  right:-16px; top:-16px;
+  width:116px; height:112px;
+  background:color-mix(in srgb,var(--tier-color,#bfa3dc) 13%,transparent);
+  clip-path:polygon(60% 0,100% 0,100% 100%,14% 100%,0 54%);
+  pointer-events:none;
+}
+html .app-shell .investment-second-level .investment-tier-top,
+html .app-shell .investment-second-level .investment-tier-subtitle,
+html .app-shell .investment-second-level .investment-tier-bottom {position:relative;z-index:1;}
+html .app-shell .investment-second-level .investment-tier-subtitle:empty {display:none!important;}
+html .app-shell .investment-second-level .investment-tier-peek .investment-tier-bottom.investment-compact-summary {
+  margin-top:14px!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:end!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom.investment-compact-summary > .investment-tier-financial {
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;min-width:0!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom.investment-compact-summary > .investment-tier-financial small {
+  color:var(--theme-muted)!important;font-size:12px!important;line-height:1.2!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom.investment-compact-summary > .investment-tier-financial b {
+  font-size:clamp(22px,5vw,30px)!important;font-weight:800!important;line-height:1.08!important;letter-spacing:-.04em!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom.investment-compact-summary > .investment-performance-badges {
+  display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important;
+}
+html .app-shell .investment-second-level .investment-performance-badges > :is(.investment-performance-badge,.investment-tier-pnl) {
+  padding:0!important;border:0!important;background:none!important;border-radius:0!important;
+  font-size:clamp(12px,3vw,16px)!important;font-weight:760!important;
+}
+
+/* ---------- Expanded ListView: continuous ledger feel ---------- */
+html .app-shell .investment-asset-group-stack .investment-tier-card > .investment-tier-body {
+  padding-left:14px!important;padding-right:14px!important;padding-top:8px!important;
+}
+html .app-shell .investment-asset-group-stack .investment-holdings-list {
+  padding:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html .app-shell .investment-asset-group-stack .investment-asset-substack {
+  gap:0!important;
+  border-top:1px solid color-mix(in srgb,var(--theme-text,currentColor) 14%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--theme-text,currentColor) 14%,transparent);
+  border-radius:0!important;
+}
+html .app-shell .investment-asset-substack :is(.investment-stock-list-row,.investment-generic-list-row) {
+  position:relative!important;
+  border:0!important;
+  border-radius:0!important;
+  padding:16px 2px 15px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html .app-shell .investment-asset-substack :is(.investment-stock-list-row,.investment-generic-list-row) + :is(.investment-stock-list-row,.investment-generic-list-row) {
+  border-top:1px solid color-mix(in srgb,var(--theme-text,currentColor) 12%,transparent)!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-list-row {
+  grid-template-columns:minmax(0,1fr) 18px!important;
+  grid-template-rows:auto auto auto!important;
+  row-gap:8px!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-heading {
+  align-items:flex-start!important;
+  gap:12px!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-heading .investment-stock-symbol,
+html .app-shell .investment-asset-substack .investment-account-list-info strong {
+  font-size:clamp(16px,3.7vw,20px)!important;
+  font-weight:790!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-heading .investment-stock-close {
+  color:var(--theme-text)!important;
+  font-size:clamp(13px,3vw,15px)!important;
+  font-weight:730!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-details,
+html .app-shell .investment-asset-substack .investment-account-list-info {
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:6px 0!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-details > small,
+html .app-shell .investment-asset-substack .investment-account-list-info > small {
+  display:inline-flex!important;
+  align-items:center!important;
+  color:var(--theme-muted)!important;
+  font-size:clamp(12px,2.9vw,13px)!important;
+  line-height:1.42!important;
+  white-space:nowrap!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-details > small + small,
+html .app-shell .investment-asset-substack .investment-account-list-info > small + small {
+  margin-left:12px!important;
+  position:relative!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-details > small + small::before,
+html .app-shell .investment-asset-substack .investment-account-list-info > small + small::before {
+  content:"";
+  position:absolute;left:-7px;top:50%;transform:translateY(-50%);
+  width:3px;height:3px;border-radius:999px;background:color-mix(in srgb,var(--theme-text,currentColor) 26%,transparent);
+}
+html .app-shell .investment-asset-substack .investment-stock-row-results,
+html .app-shell .investment-asset-substack .investment-generic-row-results {
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:end!important;
+  gap:8px!important;
+  padding-top:3px!important;
+}
+html .app-shell .investment-asset-substack .investment-listview-main-value {
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;min-width:0!important;
+}
+html .app-shell .investment-asset-substack .investment-listview-main-value small {
+  color:var(--theme-muted)!important;font-size:11px!important;line-height:1.2!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-results > b,
+html .app-shell .investment-asset-substack .investment-generic-row-results > b,
+html .app-shell .investment-asset-substack .investment-listview-main-value b {
+  font-size:clamp(21px,4.9vw,28px)!important;
+  line-height:1.08!important;
+  font-weight:800!important;
+  letter-spacing:-.04em!important;
+  overflow-wrap:normal!important;
+}
+html .app-shell .investment-asset-substack .investment-listview-performance {
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-end!important;
+  gap:4px!important;
+  font-size:clamp(12px,3vw,15px)!important;
+  font-weight:760!important;
+}
+html .app-shell .investment-asset-substack .investment-listview-performance svg {display:none!important;}
+html .app-shell .investment-asset-substack .investment-account-list-chevron {
+  align-self:center!important;
+  color:color-mix(in srgb,var(--theme-text,currentColor) 48%,transparent)!important;
+}
+
+/* ---------- Keep account/category stacks on their own design system ---------- */
+html .app-shell .accounts-group-section :is(.account-stack-card,.account-stack-peek,.account-stack-details),
+html .app-shell .category-section :is(.category-stack-card,.category-stack-peek,.category-stack-details) {
+  filter:none!important;
+}
+
+/* ---------- Net worth trend comparison copy remains visible and uses the selected visible window ---------- */
+html .app-shell .networth-trend-comparison {
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  margin:10px 0 8px!important;
+}
+html .app-shell .networth-trend-comparison > small {
+  color:var(--theme-muted)!important;
+  font-size:12px!important;
+  line-height:1.45!important;
+}
+html .app-shell .networth-trend-return {
+  display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important;
+  font-variant-numeric:tabular-nums;
+}
+html .app-shell .networth-trend-return strong {font-size:clamp(15px,3.8vw,20px)!important;line-height:1.15!important;}
+html .app-shell .networth-trend-return span {font-size:clamp(12px,2.9vw,14px)!important;font-weight:720!important;}
+
+@media(max-width:460px){
+  html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card,
+  html .app-shell .networth-stack-dashboard .networth-reference-card {min-height:154px!important;padding:16px 12px 18px!important;}
+  html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-net,
+  html .app-shell .networth-stack-dashboard .networth-reference-card .investment-reference-net {font-size:clamp(20px,6vw,28px)!important;}
+  html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-badges :is(.investment-reference-profit,.investment-reference-rate),
+  html .app-shell .investment-second-level .investment-performance-badges > :is(.investment-performance-badge,.investment-tier-pnl),
+  html .app-shell .investment-asset-substack .investment-listview-performance {font-size:12px!important;}
+  html .app-shell .investment-second-level .investment-tier-bottom.investment-compact-summary > .investment-tier-financial b,
+  html .app-shell .investment-asset-substack .investment-stock-row-results > b,
+  html .app-shell .investment-asset-substack .investment-generic-row-results > b,
+  html .app-shell .investment-asset-substack .investment-listview-main-value b {font-size:clamp(18px,5.6vw,24px)!important;}
+}
+
+
+/* v230 — correct stack occlusion and restore account-style continuous expansion.
+   Scoped entirely to investment, leaving the existing Accounts geometry intact. */
+html .app-shell .investment-dashboard .investment-first-level-stack {
+  padding-top:8px!important;
+  padding-bottom:28px!important;
+  gap:0!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack > .investment-reference-layer {
+  --account-like-overlap:18px!important;
+  min-height:194px!important;
+  border-radius:25px!important;
+  overflow:hidden!important;
+  flex-shrink:0!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack > .investment-reference-layer + .investment-reference-layer {
+  margin-top:-18px!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card {
+  min-height:194px!important;
+  height:194px!important;
+  width:calc(100% - 17px)!important;
+  margin:0 0 0 17px!important;
+  padding:18px 18px 22px!important;
+  border-radius:22px 0 0 22px!important;
+  background:var(--theme-surface)!important;
+  box-shadow:none!important;
+  justify-content:stretch!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-main {
+  min-height:0!important;
+  height:100%!important;
+  flex:1!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:7px!important;
+  justify-content:flex-start!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-copy {
+  width:100%!important;
+  gap:3px!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-meta {
+  flex:none!important;
+  line-height:1.35!important;
+  margin:0!important;
+  max-height:34px!important;
+  overflow:hidden!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:end!important;
+  width:100%!important;
+  min-height:44px!important;
+  margin-top:auto!important;
+  padding-bottom:0!important;
+  gap:7px!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-net {
+  font-size:clamp(20px,5.3vw,30px)!important;
+  line-height:1.08!important;
+  min-width:0!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-badges {
+  display:flex!important;
+  flex-flow:column nowrap!important;
+  align-items:flex-end!important;
+  justify-content:flex-end!important;
+  gap:3px!important;
+  min-width:0!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-badges > * {
+  font-size:clamp(11px,2.9vw,15px)!important;
+  line-height:1.18!important;
+  white-space:nowrap!important;
+}
+/* Reserve a real bottom strip, never place important data under the next layer. */
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-footer {
+  display:none!important;
+}
+
+/* Continuous tier expansion: same colored side + uninterrupted foreground as Account stack. */
+html .app-shell .investment-second-level {
+  display:flex!important;
+  flex-direction:column!important;
+  gap:0!important;
+  padding:7px 0 26px!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card {
+  --investment-overlap:20px!important;
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:164px!important;
+  border-radius:25px!important;
+  background:var(--tier-color)!important;
+  border:1px solid color-mix(in srgb,var(--tier-color) 65%,var(--theme-line))!important;
+  overflow:hidden!important;
+  margin:0!important;
+  box-shadow:0 9px 22px rgba(13,20,24,.12)!important;
+  transform:none!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card + .investment-tier-card {
+  margin-top:-20px!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-peek {
+  flex-shrink:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:space-between!important;
+  min-height:164px!important;
+  width:calc(100% - 17px)!important;
+  margin-left:17px!important;
+  padding:20px 18px 22px!important;
+  border:0!important;
+  border-radius:22px 0 0 22px!important;
+  background:var(--theme-surface)!important;
+  box-shadow:none!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-peek {
+  min-height:155px!important;
+  padding:19px 18px 14px!important;
+  border-radius:22px 0 0 0!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse {
+  width:100%!important;
+  background:transparent!important;
+  border-radius:0!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse > .investment-tier-body,
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse > .investment-tier-body {
+  width:calc(100% - 17px)!important;
+  margin:0 0 0 17px!important;
+  background:var(--theme-surface)!important;
+  border-radius:0 0 0 20px!important;
+  box-sizing:border-box!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse > .investment-tier-body {
+  padding:0!important;
+  border-top:0!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse.is-open > .investment-tier-body {
+  padding:13px 16px 42px!important;
+  border-top:1px solid var(--theme-line)!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card .investment-holdings-list,
+html .app-shell .investment-second-level > .investment-tier-card .investment-asset-substack {
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html .app-shell .investment-second-level .investment-tier-top,
+html .app-shell .investment-second-level .investment-tier-bottom {
+  width:100%!important;
+  min-width:0!important;
+}
+html .app-shell .investment-second-level .investment-tier-top strong {
+  font-size:clamp(17px,4.2vw,21px)!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom.investment-compact-summary {
+  margin-top:19px!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:8px!important;
+  align-items:end!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom .investment-tier-financial b {
+  font-size:clamp(19px,5vw,28px)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+html .app-shell .investment-second-level .investment-tier-bottom .investment-performance-badges > :is(strong,small) {
+  white-space:nowrap!important;
+  font-size:clamp(11px,2.9vw,15px)!important;
+}
+/* New list entries have stronger rules than the intra-entry dashed divider. */
+html .app-shell .investment-second-level .investment-asset-substack .investment-account-list-row + .investment-account-list-row {
+  border-top:2px solid color-mix(in srgb,var(--theme-muted) 35%,transparent)!important;
+}
+html .app-shell .investment-second-level .investment-asset-substack :is(.investment-stock-row-results,.investment-generic-row-results) {
+  border-top:1px dashed color-mix(in srgb,var(--theme-muted) 20%,transparent)!important;
+}
+
+/* Plot-owned metrics: they are not a detached comparison card. */
+html .app-shell .networth-trend-plot {
+  position:relative!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--theme-line) 60%,transparent)!important;
+  background:color-mix(in srgb,var(--theme-accent) 2.5%,var(--theme-surface))!important;
+  padding:72px 9px 8px!important;
+}
+html .app-shell .networth-trend-plot-metrics {
+  position:absolute!important;
+  top:12px!important;
+  right:14px!important;
+  z-index:2!important;
+  display:grid!important;
+  grid-template-columns:auto auto!important;
+  gap:3px 9px!important;
+  justify-items:end!important;
+  align-items:baseline!important;
+  white-space:nowrap!important;
+  font-variant-numeric:tabular-nums!important;
+}
+html .app-shell .networth-trend-plot-caption {
+  grid-column:1/-1!important;
+  font-size:11px!important;
+  color:var(--theme-muted)!important;
+}
+html .app-shell .networth-trend-plot-metrics strong {
+  font-size:clamp(13px,3.5vw,18px)!important;
+  line-height:1.2!important;
+}
+html .app-shell .networth-trend-plot-rate {
+  font-size:clamp(12px,3vw,15px)!important;
+  font-weight:740!important;
+}
+html .app-shell .networth-trend-plot-metrics.income {color:var(--user-income,var(--theme-income))!important;}
+html .app-shell .networth-trend-plot-metrics.expense {color:var(--user-expense,var(--theme-expense))!important;}
+html .app-shell .networth-trend-plot-metrics.neutral {color:var(--theme-text)!important;}
+html .app-shell .networth-trend-plot > svg {width:100%!important;display:block!important;}
+@media(max-width:440px) {
+ html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-card {
+  min-height:184px!important;height:184px!important;padding:16px 12px 20px!important;
+ }
+ html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-net {font-size:clamp(19px,5vw,25px)!important;}
+ html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-peek {
+  padding-left:12px!important;padding-right:11px!important;
+ }
+ html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-peek {
+  padding-left:12px!important;padding-right:11px!important;
+ }
+ html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-collapse.is-open > .investment-tier-body {
+  padding:11px 11px 40px!important;
+ }
+}
+
+/* v231 — Restore the v225 exposed card layout. The layer's lower padding is
+   deliberately hidden by the following card, but no financial information is. */
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack {
+  display:flex!important; flex-direction:column!important; gap:0!important;
+  padding:7px 0 26px!important; isolation:isolate!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack > .investment-reference-layer {
+  --account-like-overlap:58px!important;
+  min-height:0!important; height:auto!important;
+  background:var(--peek)!important;
+  border-radius:24px!important; overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--peek) 65%,var(--theme-line))!important;
+  box-shadow:0 8px 20px rgba(13,20,24,.11)!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack > .investment-reference-layer + .investment-reference-layer {
+  margin-top:calc(-1 * var(--account-like-overlap))!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-card {
+  box-sizing:border-box!important;
+  min-height:0!important; height:auto!important;
+  width:calc(100% - 17px)!important; margin-left:17px!important;
+  border:0!important; border-radius:21px 0 0 21px!important;
+  background:var(--theme-surface)!important; box-shadow:none!important;
+  display:flex!important; flex-direction:column!important;
+  justify-content:flex-start!important; align-items:stretch!important;
+  padding:17px 18px 70px!important;
+  gap:0!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-main {
+  display:flex!important; flex-direction:column!important;
+  justify-content:flex-start!important; align-items:stretch!important;
+  min-height:0!important; height:auto!important; flex:none!important;
+  width:100%!important; gap:6px!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-copy {
+  width:100%!important; display:flex!important; flex-direction:row!important;
+  align-items:center!important; justify-content:space-between!important;
+  gap:8px!important; margin:0!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-meta {
+  margin:0!important; max-height:none!important;
+  font-size:clamp(11px,2.8vw,13px)!important;
+  line-height:1.38!important; white-space:nowrap!important;
+  overflow:hidden!important; text-overflow:ellipsis!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-amount {
+  display:grid!important; grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:end!important; width:100%!important;
+  min-height:0!important; margin:8px 0 0!important;
+  padding:0!important; gap:7px!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-net {
+  font-size:clamp(20px,5.4vw,31px)!important;
+  line-height:1.1!important; font-weight:800!important;
+  white-space:nowrap!important; overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-badges {
+  align-self:end!important; justify-self:end!important;
+  display:flex!important; flex-flow:column nowrap!important;
+  align-items:flex-end!important; gap:3px!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-badges > * {
+  font-size:clamp(11px,2.9vw,14px)!important;
+  white-space:nowrap!important; line-height:1.22!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-footer {
+  display:none!important;
+}
+@media(max-width:440px){
+  html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack > .investment-reference-layer {
+    --account-like-overlap:54px!important;
+  }
+  html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-card {
+    width:calc(100% - 14px)!important;margin-left:14px!important;
+    min-height:0!important;height:auto!important;
+    padding:15px 13px 66px!important;
+  }
+  html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-net {
+    font-size:clamp(18px,5.5vw,24px)!important;
+  }
+}
+
+/* v231 — chart's return on the SAME baseline row as .nexpen-countup,
+   with no detached comparison block or date-to-date caption. */
+html .app-shell .networth-trend-selected {
+  display:flex!important; flex-direction:row!important;
+  align-items:flex-end!important; justify-content:space-between!important;
+  flex-wrap:nowrap!important; gap:8px!important;
+  width:100%!important; min-width:0!important;
+  margin:8px 0 12px!important;
+}
+html .app-shell .networth-trend-current {
+  display:flex!important; flex-direction:column!important;
+  align-items:flex-start!important; gap:3px!important;
+  min-width:0!important; flex:1 1 auto!important;
+}
+html .app-shell .networth-trend-current > strong {
+  display:block!important; min-width:0!important;
+  font-size:clamp(16px,4.6vw,27px)!important;
+  line-height:1.16!important;
+  white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important;
+  font-variant-numeric:tabular-nums!important;
+}
+html .app-shell .networth-trend-current .nexpen-countup {
+  display:inline-block!important; max-width:100%!important;
+  white-space:nowrap!important;
+}
+html .app-shell .networth-trend-inline-return {
+  display:flex!important; flex-direction:column!important;
+  align-items:flex-end!important; justify-content:flex-end!important;
+  flex:0 0 auto!important; gap:3px!important;
+  font-variant-numeric:tabular-nums!important; white-space:nowrap!important;
+  line-height:1.16!important; padding-bottom:1px!important;
+}
+html .app-shell .networth-trend-inline-return strong {
+  font-size:clamp(12px,3.2vw,17px)!important; font-weight:780!important;
+}
+html .app-shell .networth-trend-inline-return span {
+  font-size:clamp(11px,2.8vw,14px)!important; font-weight:680!important;
+}
+html .app-shell .networth-trend-inline-return.income {color:var(--user-income,var(--theme-income))!important;}
+html .app-shell .networth-trend-inline-return.expense {color:var(--user-expense,var(--theme-expense))!important;}
+html .app-shell .networth-trend-inline-return.neutral {color:var(--theme-text)!important;}
+html .app-shell .networth-trend-plot {
+  padding:8px 9px!important; border:0!important; border-radius:0!important;
+  background:transparent!important; overflow:visible!important;
+}
+@media(max-width:380px){
+ html .app-shell .networth-trend-current > strong {font-size:clamp(14px,4.1vw,20px)!important;}
+ html .app-shell .networth-trend-inline-return strong {font-size:11px!important;}
+ html .app-shell .networth-trend-inline-return span {font-size:10px!important;}
+}
+
+/* v232 — Net worth asset/debt stack: restore v225 count placement.
+   The count belongs directly beneath the title on the LEFT, not in the
+   investment-category card's upper-right metadata position. Scoped to the
+   net-worth cards so investment first-tier layout is unaffected. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .investment-reference-main {
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  min-height:85px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .investment-reference-copy {
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:flex-start!important;
+  align-self:stretch!important;
+  width:100%!important;
+  gap:7px!important;
+  flex:0 0 auto!important;
+  text-align:left!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .networth-peek-heading {
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  width:100%!important;
+  gap:10px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .investment-reference-copy > small {
+  display:block!important;
+  position:static!important;
+  margin:0!important;
+  align-self:flex-start!important;
+  width:auto!important;
+  max-width:100%!important;
+  line-height:1.45!important;
+  white-space:nowrap!important;
+  text-align:left!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .investment-reference-amount {
+  grid-row:auto!important;
+  margin-top:auto!important;
+}
+
+/* v233: trend heading has the selected date aligned right; number and return remain paired beneath. */
+html .app-shell .networth-trend-heading {
+  display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:10px!important;min-width:0!important;
+}
+html .app-shell .networth-trend-heading h3 {margin:0!important;flex:0 0 auto!important;}
+html .app-shell .networth-trend-heading-date {
+  color:var(--theme-muted)!important;font-size:clamp(11px,2.8vw,13px)!important;
+  line-height:1.35!important;text-align:right!important;white-space:nowrap!important;
+  font-variant-numeric:tabular-nums!important;
+}
+/* Hide empty spacing formerly occupied by the date below the large amount. */
+html .app-shell .networth-trend-current {justify-content:flex-end!important;}
+
+/* v235 — Net-worth asset/debt amount baseline matches portfolio category cards.
+   Use the same compact content rhythm and reserve overlap space in bottom
+   padding, rather than stretching the center of the card. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer {
+  min-height:0!important;
+  height:auto!important;
+  --account-like-overlap:58px;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card {
+  box-sizing:border-box!important;
+  min-height:0!important;
+  height:auto!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  align-items:stretch!important;
+  padding:17px 18px 70px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .investment-reference-main {
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  align-items:stretch!important;
+  min-height:0!important;
+  height:auto!important;
+  flex:none!important;
+  width:100%!important;
+  gap:6px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .investment-reference-copy {
+  width:100%!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+  gap:6px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .investment-reference-amount {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-items:end!important;
+  justify-content:start!important;
+  width:100%!important;
+  min-height:0!important;
+  margin:8px 0 0!important;
+  padding:0!important;
+  flex:0 0 auto!important;
+  text-align:left!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .investment-reference-net {
+  justify-self:start!important;
+  text-align:left!important;
+  font-size:clamp(20px,5.4vw,31px)!important;
+  line-height:1.1!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+/* Preserve the seamless account-style expansion with a short header and body. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-layer-expanded > .networth-reference-card {
+  min-height:0!important;
+  height:auto!important;
+  padding-bottom:18px!important;
+}
+@media(max-width:440px){
+  html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer {
+    --account-like-overlap:54px;
+  }
+  html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card {
+    padding:15px 13px 66px!important;
+  }
+  html .app-shell .networth-stack-dashboard .networth-reference-stack .networth-reference-card .investment-reference-net {
+    font-size:clamp(18px,5.5vw,24px)!important;
+  }
+  html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-layer-expanded > .networth-reference-card {
+    padding-bottom:18px!important;
+  }
+}

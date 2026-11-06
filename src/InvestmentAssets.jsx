@@ -206,7 +206,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
    <InvestmentStackCard
     accent={type==='trust'?'coral':'mint'}
     title={i18n('目前持有')}
-    summary={`${items.length} ${i18n('筆')}`}
+    summary={null}
     amount={summary&&summary.value!==null?summaryMoney(summary.value,items[0].currency):items.length?'—':null}
     profit={summary&&summary.value!==null?`${summary.value-summary.cost>=0?'+':''}${summaryMoney(summary.value-summary.cost,items[0].currency)}`:null}
     rate={summary&&summary.value!==null&&summary.cost>0?`${((summary.value-summary.cost)/summary.cost*100)>=0?'+':''}${((summary.value-summary.cost)/summary.cost*100).toFixed(2)}%`:null}
@@ -236,7 +236,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
      </div>:<p className="hint investment-empty-assets">{i18n('尚未建立')}{i18n(label[type])}{i18n('帳戶。請至「帳戶管理」新增，並選擇帳戶類型「')}{i18n(label[type])}」。</p>}
     </section>
    </InvestmentStackCard>
-   <InvestmentStackCard accent="coral" title={i18n('已實現交易')} summary={`${realizedItems.length} ${i18n('筆')}`} amount={realizedSingleCurrency&&realizedItems.length?summaryMoney(realizedProceedsTotal,realizedItems[0].asset.currency):realizedItems.length?'—':null}
+   <InvestmentStackCard accent="coral" title={i18n('已實現交易')} summary={null} amount={realizedSingleCurrency&&realizedItems.length?summaryMoney(realizedProceedsTotal,realizedItems[0].asset.currency):realizedItems.length?'—':null}
     profit={realizedSingleCurrency&&realizedItems.length?`${realizedTotal>=0?'+':''}${summaryMoney(realizedTotal,realizedItems[0].asset.currency)}`:null}
     rate={realizedItems.length&&realizedBasisTotal>0?`${realizedTotal>=0?'+':''}${(realizedTotal/realizedBasisTotal*100).toFixed(2)}%`:null} profitTone={realizedTotal>=0?'income':'expense'}>
     <section className="glass panel investment-stage-list investment-holdings-list" aria-label={`${i18n(label[type])} · ${i18n('已實現交易')}`}>

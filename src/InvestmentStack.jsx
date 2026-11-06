@@ -18,7 +18,7 @@ export function InvestmentStackCard({title,summary,amount,profit=null,rate=null,
   <button type="button" className="investment-tier-peek" aria-expanded={expanded} onClick={onToggle}>
    <span className="investment-tier-top"><span className="investment-tier-marker"/><strong>{title}</strong><ChevronRight size={20} className="tier-chevron"/></span>
    {summary&&<span className="investment-tier-subtitle">{summary}</span>}
-   {(amount!=null||profit!=null||rate!=null)&&<span className="investment-tier-bottom investment-compact-summary"><b>{amount}</b>{(profit!=null||rate!=null)&&<span className="investment-performance-badges">{profit!=null&&<small className={'investment-tier-pnl '+profitTone}>{profit}</small>}{rate!=null&&<small className={'investment-tier-pnl '+profitTone}>{rate}</small>}</span>}</span>}
+   {(amount!=null||profit!=null||rate!=null)&&<span className="investment-tier-bottom investment-compact-summary"><span className="investment-tier-financial"><small>{tr('金額')}</small><b>{amount??'—'}</b></span>{(profit!=null||rate!=null)&&<span className="investment-performance-badges"><small className="investment-tier-pnl-caption">{tr('損益')}</small>{profit!=null&&<strong className={'investment-tier-pnl '+profitTone}>{profit}</strong>}{rate!=null&&<small className={'investment-tier-pnl-rate '+profitTone}>{rate}</small>}</span>}</span>}
   </button>
   <div className={"investment-tier-collapse"+(expanded?" is-open":"")} aria-hidden={!expanded} inert={!expanded}><div className="investment-tier-body">{children}</div></div>
  </article>;
@@ -44,21 +44,21 @@ function ListViewPerformance({profit,rate,profitTone=''}) {
   {rate!=null&&<span className="investment-listview-rate">{rate}</span>}
  </span>;
 }
-export function InvestmentStackAsset({title,subtitle,amount,profit,rate,profitTone='',accent='lavender',onOpen,children,stockLayout=false,topRight=null,sharesLine=null,averageLine=null,valueLine=null}){
+export function InvestmentStackAsset({title,subtitle,amount,profit,rate,profitTone='',accent='lavender',onOpen,children,stockLayout=false,topRight=null,sharesLine=null,averageLine=null,valueLine=null,metaLine=null}){
  if(stockLayout)return <button type="button" className={'investment-account-list-row investment-stock-list-row tier-'+accent} onClick={onOpen}>
   <span className="investment-stock-row-heading"><strong className="investment-stock-symbol">{title}</strong>{topRight!=null&&<span className="investment-stock-close">{topRight}</span>}</span>
   <span className="investment-account-list-info investment-stock-row-details">
-   {sharesLine&&<small>{sharesLine}</small>}{averageLine&&<small>{averageLine}</small>}
+   {sharesLine&&<small>{sharesLine}</small>}{averageLine&&<small>{averageLine}</small>}{metaLine&&<small>{metaLine}</small>}
   </span>
   <span className="investment-account-list-values investment-stock-row-results">
-   {valueLine!=null&&<b>{valueLine}</b>}
+   {valueLine!=null&&<span className="investment-listview-main-value"><small>{tr('金額')}</small><b>{valueLine}</b></span>}
    <ListViewPerformance profit={profit} rate={rate} profitTone={profitTone}/>
   </span>
   <ChevronRight size={18} aria-hidden="true" className="investment-account-list-chevron"/>
  </button>;
  return <button type="button" className={'investment-account-list-row investment-generic-list-row tier-'+accent} onClick={onOpen}>
    <span className="investment-account-list-info"><strong>{title}</strong>{subtitle&&<small>{subtitle}</small>}{children&&<span className="investment-account-list-extra">{children}</span>}</span>
-   {(amount!=null||profit!=null||rate!=null)&&<span className="investment-account-list-values investment-generic-row-results"><b>{amount}</b><ListViewPerformance profit={profit} rate={rate} profitTone={profitTone}/></span>}
+   {(amount!=null||profit!=null||rate!=null)&&<span className="investment-account-list-values investment-generic-row-results"><span className="investment-listview-main-value"><small>{tr('金額')}</small><b>{amount}</b></span><ListViewPerformance profit={profit} rate={rate} profitTone={profitTone}/></span>}
    <ChevronRight size={18} aria-hidden="true" className="investment-account-list-chevron"/>
  </button>;
 }
