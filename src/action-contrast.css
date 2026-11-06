@@ -1,0 +1,67 @@
+/* v203: readable secondary and dismissal actions in light and dark themes.
+   Portal pickers are mounted under body; use root theme variables instead of
+   app-shell inherited colors. Do not change filled primary/destructive buttons. */
+:root[data-theme] .picker-sheet .picker-heading,
+:root[data-theme] .calculator-sheet .calculator-heading {
+  color:var(--theme-text,#243041)!important;
+}
+:root[data-theme] .picker-sheet .picker-heading > button,
+:root[data-theme] .calculator-sheet .calculator-heading > button,
+:root[data-theme] .picker-sheet .picker-heading .sheet-close-button,
+:root[data-theme] .calculator-sheet .calculator-heading .sheet-close-button {
+  display:grid!important;
+  place-items:center!important;
+  background:var(--theme-surface2,#edf2f8)!important;
+  color:var(--theme-text,#243041)!important;
+  border:1px solid var(--theme-line,#cbd6e3)!important;
+  opacity:1!important;
+  visibility:visible!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+:root[data-theme] .picker-sheet .picker-heading > button svg,
+:root[data-theme] .calculator-sheet .calculator-heading > button svg {
+  stroke:currentColor!important;
+  opacity:1!important;
+}
+:root[data-theme] .picker-sheet .picker-heading > button:focus-visible,
+:root[data-theme] .calculator-sheet .calculator-heading > button:focus-visible,
+:root[data-theme] .nexpen-confirm-close:focus-visible,
+:root[data-theme] .nexpen-confirm-cancel:focus-visible {
+  outline:2px solid var(--theme-accent,#3577b8)!important;
+  outline-offset:2px;
+}
+/* Additional dismiss/secondary controls, including the theme sheet's options,
+   the investment action cancel row, and transaction template dialog. */
+:root[data-theme] .picker-sheet .picker-option:not(.picked),
+:root[data-theme] .calculator-sheet .calc-key:not(.finish),
+:root[data-theme] .nexpen-confirm-cancel,
+:root[data-theme] .nexpen-confirm-close,
+:root[data-theme] .investment-action-sheet .investment-action-cancel,
+:root[data-theme] .transaction-category-dialog .transaction-category-close,
+:root[data-theme] .app-pin-wizard-heading button {
+  color:var(--theme-text,#243041)!important;
+  -webkit-text-fill-color:currentColor!important;
+  opacity:1!important;
+}
+:root[data-theme] .nexpen-confirm-cancel {
+  background:var(--theme-surface2,#edf2f8)!important;
+  border:1px solid var(--theme-line,#cbd6e3)!important;
+}
+:root[data-theme] .nexpen-confirm-close {
+  background:var(--theme-surface2,#edf2f8)!important;
+  border:1px solid var(--theme-line,#cbd6e3)!important;
+}
+:root[data-theme] .investment-action-sheet .investment-action-cancel {
+  background:var(--theme-surface2,#edf2f8)!important;
+  border:1px solid var(--theme-line,#cbd6e3)!important;
+  border-radius:12px;
+}
+:root[data-theme] .app-shell .sheet-head-actions .sheet-close-btn {
+  color:var(--theme-text,#243041)!important;
+  background:var(--theme-surface2,#edf2f8)!important;
+  border-color:var(--theme-line,#cbd6e3)!important;
+}
+@media(prefers-reduced-motion:reduce){
+  :root[data-theme] .picker-sheet .picker-heading > button,
+  :root[data-theme] .calculator-sheet .calculator-heading > button{transition:none!important}
+}

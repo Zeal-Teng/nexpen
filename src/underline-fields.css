@@ -1,0 +1,139 @@
+/* v202 — unified underline-only field system.
+   These rules intentionally style data fields and pickers, NOT actions,
+   tab bars, category options, modal surfaces, or calculator keys. */
+:root {
+  --nexpen-field-rule: var(--theme-line, var(--cp-border, rgba(129,156,178,.45)));
+  --nexpen-field-focus: var(--theme-accent, var(--cp-action, #26bdca));
+}
+
+/* Native inputs in all account, category, recurring, transaction and stock sheets.
+   Exclude switches, file inputs, and the visually hidden native date layer. */
+html body .app-shell .field > input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not(.native-date-input),
+html body .app-shell .field > .marquee-input-wrap > input:not([type="checkbox"]),
+html body .app-shell .field > select,
+html body .app-shell .field > textarea,
+html body .app-shell .sheet-body .field input.stock-fee-readonly,
+html body .app-shell .investment-field > input,
+html body .app-shell .investment-field > select,
+html body .app-shell .investment-field > textarea,
+html body .app-shell .template-editor input,
+html body .app-shell .template-editor select,
+html body .app-shell .transaction-inline-template-save > input,
+html body .nexpen-confirm-dialog.transaction-template-name-dialog input#transaction-template-name,
+html body .app-shell .networth-goal-editor input {
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  border-bottom:1px solid var(--nexpen-field-rule)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  color:var(--theme-text,var(--cp-text,inherit))!important;
+  padding-inline:5px!important;
+  outline:none;
+  min-width:0;
+}
+
+/* Clear focus indication without restoring a four-sided box. */
+html body .app-shell .field > input:not([type="checkbox"]):not(.native-date-input):focus,
+html body .app-shell .field > .marquee-input-wrap:focus-within > input,
+html body .app-shell .field > select:focus,
+html body .app-shell .field > textarea:focus,
+html body .app-shell .investment-field > :is(input,select,textarea):focus,
+html body .app-shell .template-editor :is(input,select):focus,
+html body .nexpen-confirm-dialog.transaction-template-name-dialog input#transaction-template-name:focus,
+html body .app-shell .networth-goal-editor input:focus {
+  border-bottom:2px solid var(--nexpen-field-focus)!important;
+  outline:none!important;
+  box-shadow:0 2px 0 -1px var(--nexpen-field-focus)!important;
+}
+
+/* Non-native selection surfaces: still full-size tap targets with right chevrons. */
+html body .app-shell .field > .smart-select,
+html body .app-shell .field > .money-trigger,
+html body .app-shell .sheet-body .field .smart-select,
+html body .app-shell .sheet-body .field .money-trigger,
+html body .app-shell .transaction-category-trigger,
+html body .app-shell .font-scale-block > .smart-select.preferences-select,
+html body .app-shell .preferences-panel .smart-select,
+html body .app-shell .theme-picker-trigger,
+html body .app-shell .investment-field > .money-trigger,
+html body .app-shell .investment-number-trigger {
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  border-bottom:1px solid var(--nexpen-field-rule)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  color:var(--theme-text,var(--cp-text,inherit))!important;
+  padding-inline:5px!important;
+  min-height:46px!important;
+}
+html body .app-shell .field > .smart-select:focus-visible,
+html body .app-shell .field > .money-trigger:focus-visible,
+html body .app-shell .transaction-category-trigger:focus-visible,
+html body .app-shell .font-scale-block > .smart-select.preferences-select:focus-visible,
+html body .app-shell .preferences-panel .smart-select:focus-visible,
+html body .app-shell .theme-picker-trigger:focus-visible,
+html body .app-shell .investment-field > .money-trigger:focus-visible {
+  border-bottom:2px solid var(--nexpen-field-focus)!important;
+  outline:2px solid transparent!important;
+  box-shadow:0 2px 0 -1px var(--nexpen-field-focus)!important;
+}
+
+/* A native date picker uses an invisible input on top of its visible wrapper.
+   Style the wrapper, not the native input overlay. */
+html body .app-shell .sheet-body .native-date-control,
+html body .app-shell .sheet-body .form-grid .native-date-control,
+html body .app-shell .investment-modal .native-date-control {
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  border-bottom:1px solid var(--nexpen-field-rule)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  padding-inline:5px!important;
+}
+html body .app-shell .sheet-body .native-date-control:focus-within,
+html body .app-shell .investment-modal .native-date-control:focus-within {
+  border-bottom:2px solid var(--nexpen-field-focus)!important;
+  outline:none!important;
+}
+
+/* Search is a distinct input surface; filter buttons remain framed icons. */
+html body .app-shell .diary-search-filter > .searchbox,
+html body .app-shell .searchbox {
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  border-bottom:1px solid var(--nexpen-field-rule)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  min-height:44px!important;
+  padding:8px 7px!important;
+}
+html body .app-shell .searchbox:focus-within {
+  border-bottom:2px solid var(--nexpen-field-focus)!important;
+}
+
+/* Textarea and direct settings inputs elsewhere in the app. */
+html body .app-shell .sheet-body textarea:not(.calc-display),
+html body .app-shell .preferences-panel input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+html body .app-shell .preferences-panel select,
+html body .app-shell .account-setup-section input:not([type="checkbox"]):not(.native-date-input) {
+  background:transparent!important;
+  border:0!important;
+  border-bottom:1px solid var(--nexpen-field-rule)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  color:var(--theme-text,var(--cp-text,inherit))!important;
+}
+
+/* Preserve hierarchy and small-screen 2-column layout; no height/flex-basis changes. */
+@media (max-width:600px) {
+  html body .app-shell .sheet-body .field > .smart-select,
+  html body .app-shell .sheet-body .field > .money-trigger,
+  html body .app-shell .sheet-body .transaction-category-trigger {
+    max-width:100%!important;
+    min-width:0!important;
+  }
+}

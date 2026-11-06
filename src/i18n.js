@@ -1,6 +1,9 @@
 // NEXPEN UI localization. Keys use the original Traditional Chinese source labels.
 // Account names, custom categories and transaction notes are never translated automatically.
 const catalog={
+  "一般": {"en":"Regular","ja":"通常","zh-CN":"一般"},
+  "當沖": {"en":"Day trade","ja":"日計り取引","zh-CN":"当冲"},
+  "儲存券商費率設定": {"en":"Save broker fee settings","ja":"証券会社の手数料設定を保存","zh-CN":"保存券商费率设置"},
   "定期": {"en":"Recurring","ja":"定期","zh-CN":"定期"},
   "分類": {"en":"Categories","ja":"カテゴリ","zh-CN":"分类"},
   "個人財務": {"en":"PERSONAL FINANCE","ja":"個人財務","zh-CN":"个人财务"},
