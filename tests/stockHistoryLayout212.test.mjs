@@ -7,7 +7,7 @@ const css=readFileSync(new URL('folio-redesign.css',src),'utf8');
 const i18n=readFileSync(new URL('i18n.js',src),'utf8');
 assert.doesNotMatch(view,/averageLine=\{`\$\{tr\('賣價','Sell price'\)/);
 assert.match(view,/topRight=\{latestSell/);
-assert.match(view,/topRight=\{q>0\?fmtUnit\(q\):'—'\}/);
+assert.match(view,/topRight=\{q>0\?<ClosingPrice value=\{fmtUnit\(q\)\} change=\{quotes\[h\.symbol\]\?\.change\}/);
 assert.match(component,/topRight!=null&&<span className="investment-stock-close"/);
 assert.match(css,/v212 — Trade & dividend history/);
 assert.match(css,/\.stock-history-financials:has\(> :only-child\)/);

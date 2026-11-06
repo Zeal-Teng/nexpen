@@ -4442,3 +4442,16 @@ html .app-shell .investment-asset-substack .investment-stock-list-row {
 html .app-shell .investment-stock-list-row .investment-stock-row-heading .investment-stock-close {
  white-space:nowrap!important;overflow-wrap:normal!important;max-width:none!important;
 }
+
+/* v224: closing quote trend, using the user's configured gain/loss colors. */
+html .app-shell .investment-stock-list-row .investment-stock-close .investment-quote-direction {
+ display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;white-space:nowrap;
+}
+html .app-shell .investment-stock-list-row .investment-stock-close .investment-quote-direction.income {
+ color:var(--user-income,var(--theme-income,#168c70))!important;
+}
+html .app-shell .investment-stock-list-row .investment-stock-close .investment-quote-direction.expense {
+ color:var(--user-expense,var(--theme-expense,#d54e65))!important;
+}
+html .app-shell .investment-stock-list-row .investment-stock-close .investment-quote-direction svg{flex-shrink:0;}
+html .app-shell .investment-policy-realized-note{padding:8px 12px;line-height:1.5;}

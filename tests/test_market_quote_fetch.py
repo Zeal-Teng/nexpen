@@ -52,9 +52,11 @@ class HistoricalTests(unittest.TestCase):
         self.assertEqual(quotes['2300']['price'],20.5)
         self.assertEqual(quotes['2300']['date'],'2026-11-05')
         self.assertEqual(names['2300']['market'],'twse')
+        self.assertEqual(quotes['2300']['change'],0.2)
         quotes, names = mod.parse_history(self.tpex,'tpex',self.day)
         self.assertEqual(len(quotes),110)
         self.assertEqual(quotes['6000']['price'],35.6)
+        self.assertEqual(quotes['6000']['change'],0.1)
 
     def test_reject_wrong_date_and_partial_response(self):
         from copy import deepcopy

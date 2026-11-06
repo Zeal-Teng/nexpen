@@ -8,6 +8,13 @@ export const rocDate=raw=>{
  if(date.getUTCFullYear()!==y||date.getUTCMonth()!==m-1||date.getUTCDate()!==d)return '';
  return `${normalized.slice(0,4)}-${normalized.slice(4,6)}-${normalized.slice(6,8)}`;
 };
+export function normalizeQuoteChange(raw){
+ if(raw===null||raw===undefined||String(raw).trim()==='')return null;
+ const cleaned=String(raw).replaceAll(',','').replace(/[＋﹢]/g,'+').replace(/[－−﹣]/g,'-').trim();
+ // +/− and empty markers without a number are not a quote change.
+ if(!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(cleaned))return null;
+ return Number(cleaned);
+}
 export function normalizeQuoteRows(rows,market){
  if(!Array.isArray(rows))throw Error('行情 JSON 格式錯誤');
  const out={};
@@ -17,7 +24,8 @@ export function normalizeQuoteRows(rows,market){
   const raw=String(market==='twse'?row.ClosingPrice:row.Close??row.ClosingPrice??'').replaceAll(',','').trim();
   const price=Number(raw),date=rocDate(row.Date);
   if(!raw||!Number.isFinite(price)||price<=0||!date)continue;
-  const item={price,date,source:market==='twse'?'證交所（上市）':'櫃買中心（上櫃）'};
+  const change=normalizeQuoteChange(row.Change??row.change??row.PriceChange??row.Difference);
+  const item={price,date,source:market==='twse'?'證交所（上市）':'櫃買中心（上櫃）',...(change===null?{}:{change})};
   if(!out[code]||item.date>=out[code].date)out[code]=item;
  }
  return out;
@@ -28,7 +36,8 @@ export function validateQuoteBundle(bundle){
  for(const [code,q] of Object.entries(bundle.quotes)){
   const price=Number(q?.price),date=rocDate(q?.date);
   if(!/^[0-9A-Z]{4,8}$/.test(code)||!Number.isFinite(price)||price<=0||!date)continue;
-  out[code]={price,date,source:String(q.source||'官方收盤行情')};
+  const change=normalizeQuoteChange(q.change);
+  out[code]={price,date,source:String(q.source||'官方收盤行情'),...(change===null?{}:{change})};
  }
  return out;
 }

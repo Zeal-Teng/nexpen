@@ -9,7 +9,7 @@ assert.match(component,/investment-stock-row-details/);
 assert.match(component,/investment-stock-row-results/);
 assert.match(component,/className=\{'investment-tier-pnl '[^\n]+>\{profit\}<\/small>/);
 assert.match(component,/className=\{'investment-tier-pnl '[^\n]+>\{rate\}<\/small>/);
-assert.match(view,/topRight=\{q>0\?fmtUnit\(q\):'—'\}/);
+assert.match(view,/topRight=\{q>0\?<ClosingPrice value=\{fmtUnit\(q\)\} change=\{quotes\[h\.symbol\]\?\.change\}/);
 assert.match(view,/topRight=\{latestSell/);
 assert.match(view,/topRight=\{latestSell&&Number\.isFinite/);
 assert.match(view,/sharesLine=/);

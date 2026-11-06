@@ -91,7 +91,15 @@ def parse_quotes(rows, market, *, today=None):
         if day > today or (today - day).days > 14:
             continue
         if code not in quotes or date >= quotes[code]['date']:
-            quotes[code] = {'price': price, 'date': date, 'source': SOURCES[market]}
+            record = {'price': price, 'date': date, 'source': SOURCES[market]}
+            raw_change = row.get('Change') if market == 'twse' else (row.get('Change') or row.get('PriceChange'))
+            try:
+                text_change = str(raw_change).replace(',', '').replace('＋', '+').replace('－', '-').strip()
+                if re.fullmatch(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)', text_change):
+                    record['change'] = float(text_change)
+            except (TypeError, ValueError):
+                pass
+            quotes[code] = record
             name = str(row.get('Name') if market == 'twse' else (row.get('CompanyName') or row.get('Name') or '')).strip()
             if name:
                 etf = code.startswith('00')
@@ -139,6 +147,12 @@ def _read_history_table(table, market, trade_date):
                 code_idx, name_idx, price_idx = 0, 1, 2
             else:
                 return [], []
+    change_idx = _column_index(fields, ('漲跌價差', '漲跌', '漲跌價'))
+    sign_idx = _column_index(fields, ('漲跌+/-', '漲跌符號', '漲跌(+/-)')) if market == 'twse' else None
+    if market == 'twse' and sign_idx == change_idx:
+        change_idx = _column_index(fields, ('漲跌價差', '漲跌價'))
+    if market == 'twse' and not fields and price_idx == 8:
+        sign_idx, change_idx = 9, 10
     found = []
     titles = []
     for row in rows:
@@ -154,7 +168,18 @@ def _read_history_table(table, market, trade_date):
             continue
         if not (0 < price < 1_000_000):
             continue
-        found.append((code, price))
+        change = None
+        if change_idx is not None and change_idx < len(row):
+            raw = str(row[change_idx]).strip().replace(',', '').replace('＋', '+').replace('－', '-')
+            if re.fullmatch(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)', raw):
+                change = float(raw)
+                if sign_idx is not None and sign_idx < len(row):
+                    sign = str(row[sign_idx]).strip()
+                    if sign in ('-', '－', '−'):
+                        change = -abs(change)
+                    elif sign in ('+', '＋'):
+                        change = abs(change)
+        found.append((code, price, change))
         name = str(row[name_idx]).strip() if name_idx is not None and name_idx < len(row) else ''
         if name:
             titles.append((code, name))
@@ -194,8 +219,10 @@ def parse_history(payload, market, target_date):
     if len(best[0]) < MIN_MARKET_ROWS:
         raise ValueError(f'{market}: insufficient history prices ({len(best[0])}) for {target}')
     quotes, names = {}, {}
-    for code, price in best[0]:
+    for code, price, change in best[0]:
         quotes[code] = {'price': price, 'date': target, 'source': SOURCES[market]}
+        if change is not None:
+            quotes[code]['change'] = change
     for code, name in best[1]:
         etf = code.startswith('00')
         bond = etf and (code.endswith(('B','C','D')) or any(term in name for term in ('債券','美債','公債','公司債')))

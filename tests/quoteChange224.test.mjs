@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {normalizeQuoteRows,normalizeQuoteChange,validateQuoteBundle} from '../src/marketQuotes.js';
+assert.equal(normalizeQuoteChange('+1.2'),1.2);
+assert.equal(normalizeQuoteChange('－2.5'),-2.5);
+assert.equal(normalizeQuoteChange('--'),null);
+assert.equal(normalizeQuoteChange(null),null);
+assert.equal(normalizeQuoteRows([{Code:'2330',ClosingPrice:'100',Date:'1151105',Change:'-1.5'}],'twse')['2330'].change,-1.5);
+assert.equal(validateQuoteBundle({format:'cyberpulse-market-quotes-v1',quotes:{'2330':{price:100,date:'1151105',change:2}}})['2330'].change,2);
+assert.equal(validateQuoteBundle({format:'cyberpulse-market-quotes-v1',quotes:{'2330':{price:100,date:'1151105'}}})['2330'].change,undefined);
+console.log('Quote direction tests passed');

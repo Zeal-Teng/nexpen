@@ -1,5 +1,5 @@
 import React,{useState} from 'react';
-import {ChevronRight} from 'lucide-react';
+import {ChevronRight,TrendingUp,TrendingDown} from 'lucide-react';
 import {t as tr} from './i18n.js';
 
 // Interactive overlapping cards: the exposed header always shows the financial summary.
@@ -25,6 +25,14 @@ export function InvestmentStackCard({title,summary,amount,accent='lavender',chil
 }
 // Detail rows inside an expanded investment card match the Account Management
 // ListView: no nested cards, and one tap opens the asset detail screen.
+export function ClosingPrice({value,change}){
+ const n=change===null||change===undefined||change===''?null:Number(change);
+ const direction=n!==null&&Number.isFinite(n)?Math.sign(n):0;
+ return <span className={'investment-quote-direction'+(direction>0?' income':direction<0?' expense':'')}>
+  {direction>0?<TrendingUp size={15} aria-label="上漲"/>:direction<0?<TrendingDown size={15} aria-label="下跌"/>:null}
+  <span>{value}</span>
+ </span>;
+}
 export function InvestmentStackAsset({title,subtitle,amount,profit,rate,profitTone='',accent='lavender',onOpen,children,stockLayout=false,topRight=null,sharesLine=null,averageLine=null,valueLine=null}){
  if(stockLayout)return <button type="button" className={'investment-account-list-row investment-stock-list-row tier-'+accent} onClick={onOpen}>
   <span className="investment-stock-row-heading"><strong className="investment-stock-symbol">{title}</strong>{topRight!=null&&<span className="investment-stock-close">{topRight}</span>}</span>
