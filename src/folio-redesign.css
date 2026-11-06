@@ -6088,3 +6088,53 @@ html .app-shell .investment-second-level > .investment-tier-card.tier-expanded >
     padding-bottom:88px!important;
   }
 }
+
+/* v241 — minimal corner-cover overlap. The account card stack remains the
+   visual reference; only non-account stacks are adjusted. Previous 60–70px
+   overlaps were swallowing valuable financial information. */
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack > .investment-reference-layer {
+  --account-like-overlap:30px!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack > .investment-reference-layer + .investment-reference-layer {
+  margin-top:-30px!important;
+}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-card {
+  padding-bottom:43px!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card {
+  --investment-overlap:32px!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card + .investment-tier-card {
+  margin-top:-32px!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse.is-open > .investment-tier-body {
+  padding-bottom:53px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack {
+  --account-like-overlap:32px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer + .networth-reference-layer {
+  margin-top:-32px!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer .networth-card-expanded-body.is-open .networth-card-expanded-inner {
+  padding-bottom:54px!important;
+}
+html .app-shell .category-section .category-card-stack > .category-stack-card {
+  --stack-overlap:32px!important;
+}
+html .app-shell .category-section .category-card-stack > .category-stack-card + .category-stack-card {
+  margin-top:-32px!important;
+}
+html .app-shell .category-section .category-card-stack > .category-stack-card .category-stack-details.is-open .category-stack-details-inner {
+  padding-bottom:54px!important;
+}
+@media(max-width:800px){
+  html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack > .investment-reference-layer + .investment-reference-layer {margin-top:-30px!important;}
+  html .app-shell .investment-second-level > .investment-tier-card + .investment-tier-card {margin-top:-30px!important;}
+  html .app-shell .investment-second-level > .investment-tier-card {--investment-overlap:30px!important;}
+  html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse.is-open > .investment-tier-body {padding-bottom:50px!important;}
+  html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer + .networth-reference-layer {margin-top:-30px!important;}
+  html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer .networth-card-expanded-body.is-open .networth-card-expanded-inner {padding-bottom:50px!important;}
+  html .app-shell .category-section .category-card-stack > .category-stack-card + .category-stack-card {margin-top:-30px!important;}
+  html .app-shell .category-section .category-card-stack > .category-stack-card .category-stack-details.is-open .category-stack-details-inner {padding-bottom:50px!important;}
+}
