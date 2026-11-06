@@ -1,5 +1,6 @@
 import React,{useMemo,useState} from 'react';
 import AnimatedNumber from './AnimatedNumber.jsx';
+import {TrendingUp,TrendingDown,Minus} from 'lucide-react';
 
 const i18n={
  'zh-TW':{title:'淨資產走勢',desc:'每日快照（以當天最後一次開啟或更新時的金額為準）',empty:'尚未有歷史紀錄；開啟 APP 後會開始逐日累積。',one:'目前只有一天的紀錄，累積第二天後會呈現趨勢。',incomplete:'當日部分投資缺少報價',all:'全部',days:'天',difference:'期间变化',noBaseline:'缺少期初记录，无法计算期间变化',difference:'期間變化',noBaseline:'缺少期初快照，無法計算期間變化'},
@@ -41,7 +42,7 @@ export default function NetWorthTrend({history=[],format,language='zh-TW',curren
      <strong><AnimatedNumber value={value(point.netWorth)} /></strong>
     </div>
     {comparison&&<div className={'networth-trend-inline-return '+(comparison.change>0?'income':comparison.change<0?'expense':'neutral')} aria-label={`${t.difference} ${comparison.change>0?'+':''}${value(comparison.change)} ${comparison.pct===null?'':comparison.pct.toFixed(2)+'%'}`}>
-     <strong>{comparison.change>0?'+':comparison.change<0?'−':''}{value(Math.abs(comparison.change))}</strong>
+     <strong className="networth-trend-return-amount">{comparison.change>0?<TrendingUp aria-hidden="true" size={17} strokeWidth={2.5}/>:comparison.change<0?<TrendingDown aria-hidden="true" size={17} strokeWidth={2.5}/>:<Minus aria-hidden="true" size={17} strokeWidth={2.5}/>}<span>{comparison.change>0?'+':comparison.change<0?'−':''}{value(Math.abs(comparison.change))}</span></strong>
      <span>{comparison.pct===null?'—':`${comparison.pct>0?'+':''}${comparison.pct.toFixed(2)}%`}</span>
     </div>}
    </div>

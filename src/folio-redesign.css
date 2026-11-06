@@ -5673,3 +5673,87 @@ html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-
     padding-bottom:18px!important;
   }
 }
+
+
+/* v236 — continuous colored outline on expanded net worth asset/liability cards.
+   Keep the same colored backing as My Accounts and extend the outer stroke
+   along the detail pane's right and bottom, without adding nested rounded cards. */
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded {
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--peek) 70%,var(--theme-line))!important;
+  background:var(--peek)!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-reference-card {
+  border-radius:21px 0 0 0!important;
+  border-right:0!important;
+  border-bottom:0!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-card-expanded-body {
+  box-sizing:border-box!important;
+  background:var(--theme-surface)!important;
+  border-top:1px solid var(--theme-line)!important;
+  border-right:1px solid color-mix(in srgb,var(--peek) 70%,var(--theme-line))!important;
+  border-bottom:1px solid color-mix(in srgb,var(--peek) 70%,var(--theme-line))!important;
+  border-left:0!important;
+  border-radius:0 0 21px 0!important;
+  box-shadow:none!important;
+}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer.networth-layer-expanded > .networth-card-expanded-body:not(.is-open) {
+  border-top-width:0!important; border-bottom-width:0!important;
+}
+
+/* Second investment level: align its amount/P&L row with the first-level
+   investment-reference-amount row, after title + secondary-info height.
+   Keep the empty overlap clearance exclusively in the bottom padding. */
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-peek {
+  justify-content:flex-start!important;
+  padding-top:17px!important;
+  padding-bottom:70px!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-peek .investment-tier-bottom.investment-compact-summary {
+  margin-top:32px!important;
+  align-items:end!important;
+  min-height:0!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-peek .investment-tier-bottom .investment-tier-financial b {
+  line-height:1.1!important;
+  font-size:clamp(20px,5.4vw,31px)!important;
+}
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-peek {
+  padding-bottom:18px!important;
+}
+@media(max-width:440px){
+ html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-peek {
+   padding-top:15px!important;padding-bottom:66px!important;
+ }
+ html .app-shell .investment-second-level > .investment-tier-card > .investment-tier-peek .investment-tier-bottom.investment-compact-summary {margin-top:28px!important;}
+ html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-peek {padding-bottom:18px!important;}
+}
+
+/* Net worth chart: account for user-configurable gain/loss colors and show
+   direction adjacent to the amount. Icons never change the calculation. */
+html .app-shell .networth-trend-inline-return.income,
+html .app-shell .networth-trend-inline-return.income * {
+  color:var(--user-income,var(--theme-income,#168c70))!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html .app-shell .networth-trend-inline-return.expense,
+html .app-shell .networth-trend-inline-return.expense * {
+  color:var(--user-expense,var(--theme-expense,#d54e65))!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html .app-shell .networth-trend-inline-return.neutral,
+html .app-shell .networth-trend-inline-return.neutral * {
+  color:var(--theme-muted)!important;
+}
+html .app-shell .networth-trend-inline-return .networth-trend-return-amount {
+  display:inline-flex!important;align-items:center!important;justify-content:flex-end!important;
+  gap:5px!important;white-space:nowrap!important;font-variant-numeric:tabular-nums!important;
+}
+html .app-shell .networth-trend-inline-return .networth-trend-return-amount svg {
+  display:block;flex:0 0 auto;width:clamp(13px,3.5vw,17px);height:clamp(13px,3.5vw,17px);
+  stroke:currentColor!important;-webkit-text-fill-color:initial!important;
+}
+html .app-shell .networth-trend-inline-return .networth-trend-return-amount span {
+  font-size:inherit!important;font-weight:inherit!important;
+}
