@@ -10,7 +10,7 @@ export function createDemoDataset() {
   {id:'demo-cash',name:'現金錢包',type:'cash',openingBalance:5800,currency:'TWD',fxRate:1,decimalPlaces:0,includeInAssets:true},
   {id:'demo-credit',name:'示範信用卡',type:'credit',openingBalance:-12500,currency:'TWD',fxRate:1,decimalPlaces:0,includeInAssets:true},
   {id:'demo-broker',name:'星辰證券交割帳戶',type:'brokerage',openingBalance:920000,currency:'TWD',fxRate:1,decimalPlaces:0,includeInAssets:true},
-  {id:'demo-trust',name:'範例持股信託',type:'trust',openingBalance:0,investmentCost:240000,trustSymbol:'2330',trustLots:0.4,currency:'TWD',fxRate:1,decimalPlaces:2,includeInAssets:true},
+  {id:'demo-trust',name:'範例持股信託',type:'trust',openingBalance:0,investmentCost:240000,trustSymbol:'2330',trustShares:400,currency:'TWD',fxRate:1,decimalPlaces:2,includeInAssets:true},
   {id:'demo-policy',name:'範例投資保單',type:'policy',openingBalance:0,investmentCost:380000,policyValue:418500,policyValueDate:daysBefore(2),currency:'TWD',fxRate:1,decimalPlaces:2,includeInAssets:true},
  ];
  const records = [];
@@ -43,7 +43,7 @@ export function createDemoDataset() {
   {id:'demo-sub-rule',name:'影音訂閱示例',type:'expense',amount:390,account:'demo-credit',mainCategory:'訂閱服務',subCategory:'影音串流',freq:'monthly',nextDate:nextMonth()},
  ];
  const investmentValuations=[{assetId:'demo-policy',date:daysBefore(2),value:418500,createdAt:new Date().toISOString()}];
- const investmentFlows=[{id:'demo-trust-flow',assetId:'demo-trust',kind:'contribution',date:daysBefore(35),amount:60000,units:0.1,sourceAccount:'demo-bank',note:'示範追加投入',createdAt:new Date().toISOString()}];
+ const investmentFlows=[{id:'demo-trust-flow',assetId:'demo-trust',kind:'contribution',date:daysBefore(35),amount:60000,shares:100,sourceAccount:'demo-bank',note:'示範追加投入',createdAt:new Date().toISOString()}];
  // A demo trend must span multiple days so all 7/30/90-day tabs show
  // meaningful movement immediately. These are fictional daily snapshots,
  // not historical market observations or data from a real user's ledger.

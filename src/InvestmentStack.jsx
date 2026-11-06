@@ -33,14 +33,16 @@ export function InvestmentStackAsset({title,subtitle,amount,profit,rate,profitTo
   </span>
   <span className="investment-account-list-values investment-stock-row-results">
    {valueLine&&<b>{valueLine}</b>}
-   {profit!=null&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{profit}</small>}
-   {rate&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{rate}</small>}
+   {(profit!=null||rate)&&<span className="investment-performance-badges investment-listview-badges">
+    {profit!=null&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{profit}</small>}
+    {rate&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{rate}</small>}
+   </span>}
   </span>
   <ChevronRight size={18} aria-hidden="true" className="investment-account-list-chevron"/>
  </button>;
  return <button type="button" className={'investment-account-list-row tier-'+accent} onClick={onOpen}>
    <span className="investment-account-list-info"><strong>{title}</strong>{subtitle&&<small>{subtitle}</small>}{children&&<span className="investment-account-list-extra">{children}</span>}</span>
-   <span className="investment-account-list-values"><b>{amount}</b>{profit&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{profit}{rate?` · ${rate}`:''}</small>}</span>
+   <span className="investment-account-list-values"><b>{amount}</b>{(profit!=null||rate)&&<span className="investment-performance-badges investment-listview-badges">{profit!=null&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{profit}</small>}{rate&&<small className={'investment-tier-pnl '+(profitTone||'').trim()}>{rate}</small>}</span>}</span>
    <ChevronRight size={18} aria-hidden="true" className="investment-account-list-chevron"/>
  </button>;
 }

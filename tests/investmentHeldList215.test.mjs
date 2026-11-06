@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const src=new URL('../src/',import.meta.url);
+const asset=readFileSync(new URL('InvestmentAssets.jsx',src),'utf8');
+const stock=readFileSync(new URL('StockPerformanceView.jsx',src),'utf8');
+const css=readFileSync(new URL('folio-redesign.css',src),'utf8');
+const i18n=readFileSync(new URL('i18n.js',src),'utf8');
+assert.match(asset,/investment-asset-group-stack/);
+assert.match(asset,/title=\{i18n\('目前持有'\)\}/);
+assert.match(asset,/items\.map\(asset=>/);
+assert.match(asset,/InvestmentStackAsset[\s\S]*?stockLayout/);
+assert.match(asset,/onOpen=\{\(\)=>setSelected\(asset\.id\)\}/);
+assert.doesNotMatch(asset,/title=\{asset\.name\}\s+summary=/);
+assert.match(stock,/title=\{tr\("目前持有","Current holdings"\)\}/);
+assert.match(css,/investment-asset-group-stack \.investment-holdings-list/);
+assert.match(i18n,/'?"目前持有"'?:\s*\{/);
+console.log('v215 currently held ListView structure: PASS');

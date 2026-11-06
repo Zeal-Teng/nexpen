@@ -17,7 +17,7 @@ export function availableDiaryFilters(records, accounts, selectedType = 'all', s
   const presentTypes = new Set(typeCandidates.map(diaryFilterType));
   const presentAccountIds = new Set(accountCandidates.flatMap(diaryAccountIds));
   return {
-    types: ['expense', 'income', 'transfer', 'stock'].filter(type => presentTypes.has(type)),
+    types: ['expense', 'income', 'transfer', 'stock', 'investment'].filter(type => presentTypes.has(type)),
     accounts: accounts.filter(account => presentAccountIds.has(String(account.id))),
   };
 }

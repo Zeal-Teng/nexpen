@@ -1,3 +1,5 @@
+import {investmentPosition} from './investmentLedger.js';
+import {totalTrustShares} from './trustShares.js';
 export const ASSET_GROUPS = [
   {id:'cash', label:'現金'},
   {id:'deposit', label:'存款'},
@@ -10,7 +12,7 @@ export const ASSET_GROUPS = [
 const accountBalance=(a,records,stocks,flows)=> finite(a.openingBalance)
  + records.reduce((s,t)=>s+(t.type==='income'&&t.account===a.id?finite(t.amount):t.type==='expense'&&t.account===a.id?-finite(t.amount):t.type==='transfer'&&t.toAccount===a.id?finite(t.amount):t.type==='transfer'&&t.fromAccount===a.id?-finite(t.amount):0),0)
  + stocks.reduce((s,t)=>s+(t.account!==a.id?0:t.action==='buy'?-finite(t.totalAmount):t.action==='sell'?finite(t.totalAmount):t.action==='dividend'?finite(t.amount):0),0)
- - flows.reduce((sum,f)=>sum+(f.kind==='contribution'&&f.sourceAccount===a.id?finite(f.amount):0),0);
+ + flows.reduce((sum,f)=>sum+(f.sourceAccount===a.id?(f.kind==='redemption'?finite(f.amount):f.kind==='contribution'?-finite(f.amount):0):0),0);
 
 const finite = value => Number.isFinite(Number(value)) ? Number(value) : 0;
 export const DEFAULT_ASSET_GROUP_BY_TYPE = Object.freeze({cash:'cash',bank:'deposit',ewallet:'deposit',brokerage:'deposit',trust:'trust',policy:'insurance'});
@@ -32,11 +34,10 @@ export function computeNetWorth({accounts=[],records=[],stocks=[],investmentFlow
     let value;
     if(account.type==='trust') {
       const symbol=String(account.trustSymbol||'').trim().toUpperCase();
-      const added=investmentFlows.filter(f=>f.assetId===account.id&&f.kind==='contribution');
-      const lots=finite(account.trustLots)+added.reduce((s,f)=>s+finite(f.units),0);
+      const {shares}=investmentPosition(account,investmentFlows);
       const price=Number(quotes[symbol]?.price);
-      if(lots>0&&!(price>0)) missingQuotes.push(account.name||symbol||'持股信託');
-      value=price>0 ? lots*1000*price : 0; // trust symbols are TWD-listed securities
+      if(shares>0&&!(price>0)) missingQuotes.push(account.name||symbol||'持股信託');
+      value=price>0 ? shares*price : 0; // trust symbols are TWD-listed securities
     } else if(account.type==='policy') {
       value=finite(account.policyValue)*rate;
     } else {

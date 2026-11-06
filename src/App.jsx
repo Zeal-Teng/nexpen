@@ -1,3 +1,6 @@
+import {investmentDiaryRows} from './investmentDiary.js';
+import {investmentPosition} from './investmentLedger.js';
+import {initialTrustShares, contributionTrustShares, totalTrustShares, trustMarketValue} from './trustShares.js';
 import MarqueeInput from './MarqueeInput.jsx';
 import {t as i18n,setLocale} from './i18n.js';
 import AmountCalculator from './AmountCalculator.jsx';
@@ -620,7 +623,7 @@ export default function App(){
   compareAccountsWithinType(a,b)
  );
  const transactionAccountChoices=transactionAccountOptions.map(a=><option key={a.id} value={a.id}>{a.name}</option>);
- const open=(kind,item=null)=>{setEditing(item);if(kind==='transaction'){setSelectedTemplateId('');setTemplateTab(false);setTemplateName('');setTemplateEditorId('');setTemplateNaming(false);}const eligibleAccounts=accounts.filter(a=>!['trust','policy'].includes(a.type));const preferredAccount=eligibleAccounts.find(a=>a.isDefault===true)||eligibleAccounts[0];const alternativeAccount=eligibleAccounts.find(a=>a.id!==preferredAccount?.id);const base={date:date,type:'expense',amount:'',account:preferredAccount?.id||'',fromAccount:preferredAccount?.id||'',toAccount:alternativeAccount?.id||preferredAccount?.id||'',mainCategory:Object.keys(categories.expense)[0]||'',subCategory:(categories.expense[Object.keys(categories.expense)[0]]||[])[0]||'',note:'',name:'',projectId:'',includeInAssets:true,isDefault:false,openingBalance:'0',investmentCost:'',trustSymbol:'',trustLots:'',policyValue:'',policyValueDate:today(),currency:'TWD',decimalPlaces:2,fxRate:1,fxDate:'',fxSource:'',symbol:'',securityName:'',matchedBuyId:'',action:'buy',shares:'',price:'',fee:'0',tax:'0',securityType:'stock',dayTrade:false,feeRate:'0.1425',feeDiscount:String(brokerFees.discount),feeMinimum:String(brokerFees.minimum),feeMode:'auto',freq:'monthly',nextDate:today(),parent:'',categoryType:'expense',mode:'main',icon:'tags'};const initial=item?{...base,...item,decimalPlaces:item.decimalPlaces??precisionFor(item),amount:item.amount??'',openingBalance:item.openingBalance??0}:{...base,isDefault:kind==='account'&&!eligibleAccounts.length,type:kind==='account'?(accountTypes[0]?.id||'bank'):'expense',...(kind==='transaction'?{date}:{} )};if(kind==='stock'){initial.feeMode='auto';setStockTypeStatus('');setCatalogAutoName('');if(item){initial.feeDiscount=String(brokerFees.discount);initial.feeMinimum=String(brokerFees.minimum)}}if(kind==='accountType'||kind==='project'){initial.name=item?.name||'';initial.id=item?.id||'';if(kind==='accountType')initial.assetGroup=item?assetGroupForType(item.id,accountTypes):'other'}if(kind==='category'){const flow=initial.categoryType||'expense';const key=initial.mode==='sub'?`${flow}/sub/${initial.parent}/${initial.name}`:`${flow}/main/${initial.name}`;initial.icon=categoryIcons[key]||suggestedIcon(initial.name||initial.parent||'')}if(kind==='recurring'&&initial.type==='transfer'){initial.mainCategory='帳戶互轉';initial.subCategory='內部轉帳'}setForm(initial);setDialog(kind);if(kind==='transaction'&&!item){setCalculator({field:'amount',value:''})}};
+ const open=(kind,item=null)=>{setEditing(item);if(kind==='transaction'){setSelectedTemplateId('');setTemplateTab(false);setTemplateName('');setTemplateEditorId('');setTemplateNaming(false);}const eligibleAccounts=accounts.filter(a=>!['trust','policy'].includes(a.type));const preferredAccount=eligibleAccounts.find(a=>a.isDefault===true)||eligibleAccounts[0];const alternativeAccount=eligibleAccounts.find(a=>a.id!==preferredAccount?.id);const base={date:date,type:'expense',amount:'',account:preferredAccount?.id||'',fromAccount:preferredAccount?.id||'',toAccount:alternativeAccount?.id||preferredAccount?.id||'',mainCategory:Object.keys(categories.expense)[0]||'',subCategory:(categories.expense[Object.keys(categories.expense)[0]]||[])[0]||'',note:'',name:'',projectId:'',includeInAssets:true,isDefault:false,openingBalance:'0',investmentCost:'',trustSymbol:'',trustShares:'',policyValue:'',policyValueDate:today(),currency:'TWD',decimalPlaces:2,fxRate:1,fxDate:'',fxSource:'',symbol:'',securityName:'',matchedBuyId:'',action:'buy',shares:'',price:'',fee:'0',tax:'0',securityType:'stock',dayTrade:false,feeRate:'0.1425',feeDiscount:String(brokerFees.discount),feeMinimum:String(brokerFees.minimum),feeMode:'auto',freq:'monthly',nextDate:today(),parent:'',categoryType:'expense',mode:'main',icon:'tags'};const initial=item?{...base,...item,...(item.type==='trust'?{trustShares:String(initialTrustShares(item))}:{}),decimalPlaces:item.decimalPlaces??precisionFor(item),amount:item.amount??'',openingBalance:item.openingBalance??0}:{...base,isDefault:kind==='account'&&!eligibleAccounts.length,type:kind==='account'?(accountTypes[0]?.id||'bank'):'expense',...(kind==='transaction'?{date}:{} )};if(kind==='stock'){initial.feeMode='auto';setStockTypeStatus('');setCatalogAutoName('');if(item){initial.feeDiscount=String(brokerFees.discount);initial.feeMinimum=String(brokerFees.minimum)}}if(kind==='accountType'||kind==='project'){initial.name=item?.name||'';initial.id=item?.id||'';if(kind==='accountType')initial.assetGroup=item?assetGroupForType(item.id,accountTypes):'other'}if(kind==='category'){const flow=initial.categoryType||'expense';const key=initial.mode==='sub'?`${flow}/sub/${initial.parent}/${initial.name}`:`${flow}/main/${initial.name}`;initial.icon=categoryIcons[key]||suggestedIcon(initial.name||initial.parent||'')}if(kind==='recurring'&&initial.type==='transfer'){initial.mainCategory='帳戶互轉';initial.subCategory='內部轉帳'}setForm(initial);setDialog(kind);if(kind==='transaction'&&!item){setCalculator({field:'amount',value:''})}};
  const close=()=>{setCategoryPickerOpen(false);setTemplateTab(false);setTemplateNaming(false);setDialog('');setEditing(null)};
  const saveTransactionTemplate=async template=>{
   const next=template.id?transactionTemplates.map(t=>t.id===template.id?template:t):[...transactionTemplates,{...template,id:uid()}];
@@ -714,17 +717,17 @@ export default function App(){
    await db.records.put({...form,projectId:form.projectId||'',id:editing?.id||uid(),amount,date:form.date,mainCategory:form.type==='transfer'?'帳戶互轉':form.mainCategory,subCategory:form.type==='transfer'?'內部轉帳':form.subCategory});
  }
  if(dialog==='account'){if(!accountTypes.some(t=>t.id===form.type))throw Error(i18n("請選擇有效的帳戶類型"));if(!form.name.trim())throw Error(i18n("請輸入帳戶名稱"));const currency=form.currency||'TWD';const balance=Number(form.openingBalance);const fxRate=currency==='TWD'?1:Number(form.fxRate);if(!Number.isFinite(balance)||!Number.isFinite(fxRate)||fxRate<=0)throw Error(i18n("請輸入有效期初餘額及匯率"));const decimalPlaces=Number(form.decimalPlaces);if(!Number.isInteger(decimalPlaces)||decimalPlaces<0||decimalPlaces>6)throw Error(i18n("帳戶小數位數請選擇 0～6"));if(!withinPrecision(balance,decimalPlaces))throw Error(`${i18n('期初餘額最多允許')} ${decimalPlaces} ${i18n('位小數')}`);const investmentType=['trust','policy'].includes(form.type);
- const cost=Number(form.investmentCost),policyValue=Number(form.policyValue),trustLots=Number(form.trustLots);
+ const cost=Number(form.investmentCost),policyValue=Number(form.policyValue),trustShares=Number(form.trustShares);
  if(investmentType&&(!Number.isFinite(cost)||cost<0||String(form.investmentCost).trim()===''))throw Error(i18n("請填寫有效的累計取得成本"));
- if(form.type==='trust'&&(!/^[0-9]{4,6}[A-Z]?$/.test(String(form.trustSymbol||'').trim().toUpperCase())||!Number.isFinite(trustLots)||trustLots<0))throw Error(i18n("請輸入有效的股票代號及初始持有張數（可為 0）"));
+ if(form.type==='trust'&&(!/^[0-9]{4,6}[A-Z]?$/.test(String(form.trustSymbol||'').trim().toUpperCase())||!Number.isFinite(trustShares)||trustShares<0))throw Error(i18n("請輸入有效的股票代號及初始持有股數（可為 0）"));
  if(form.type==='trust'&&currency!=='TWD')throw Error(i18n("台灣持股信託帳戶請使用 TWD"));
  if(form.type==='policy'&&(!Number.isFinite(policyValue)||policyValue<0||String(form.policyValue).trim()===''))throw Error(i18n("請輸入有效的保單現值"));
  const id=editing?.id||uid();const existing=editing?.id?await db.accounts.get(editing.id):null;
- if(existing&&['trust','policy'].includes(existing.type)){const linked=await db.investmentFlows.where('assetId').equals(id).count();if(linked&&(cost!==Number(existing.investmentCost)||form.type!==existing.type||String(form.trustSymbol||'').toUpperCase()!==String(existing.trustSymbol||'').toUpperCase()||Number(form.trustLots)!==Number(existing.trustLots)))throw Error(i18n("此投資帳戶已有追加投入紀錄，初始成本、股票代號及初始張數不可直接修改；請從投資頁記錄新增投入"));}
+ if(existing&&['trust','policy'].includes(existing.type)){const linked=await db.investmentFlows.where('assetId').equals(id).count();if(linked&&(cost!==Number(existing.investmentCost)||form.type!==existing.type||String(form.trustSymbol||'').toUpperCase()!==String(existing.trustSymbol||'').toUpperCase()||trustShares!==initialTrustShares(existing)))throw Error(i18n("此投資帳戶已有投入或贖回紀錄，初始成本、股票代號及初始股數不可直接修改；請從投資頁記錄資金異動"));}
  await db.transaction('rw',db.accounts,db.investmentValuations,async()=>{
   const setAsDefault=!investmentType&&form.isDefault===true;
   if(setAsDefault){await db.accounts.toCollection().modify(a=>{if(a.id!==id&&a.isDefault)a.isDefault=false;});}
-  await db.accounts.put({id,name:form.name.trim(),type:form.type||'bank',openingBalance:investmentType?0:balance,includeInAssets:form.includeInAssets!==false,isDefault:setAsDefault,currency,decimalPlaces,fxRate,fxDate:currency==='TWD'?'':form.fxDate||'',fxSource:currency==='TWD'?'':form.fxSource||'manual',...(investmentType?{investmentCost:cost}:{}),...(form.type==='trust'?{trustSymbol:String(form.trustSymbol||'').trim().toUpperCase(),trustLots}:{}),...(form.type==='policy'?{policyValue,policyValueDate:form.policyValueDate||today()}:{} )});
+  await db.accounts.put({id,name:form.name.trim(),type:form.type||'bank',openingBalance:investmentType?0:balance,includeInAssets:form.includeInAssets!==false,isDefault:setAsDefault,currency,decimalPlaces,fxRate,fxDate:currency==='TWD'?'':form.fxDate||'',fxSource:currency==='TWD'?'':form.fxSource||'manual',...(investmentType?{investmentCost:cost}:{}),...(form.type==='trust'?{trustSymbol:String(form.trustSymbol||'').trim().toUpperCase(),trustShares}:{}),...(form.type==='policy'?{policyValue,policyValueDate:form.policyValueDate||today()}:{} )});
  if(form.type==='policy'&&(!existing||Number(existing.policyValue)!==policyValue||existing.policyValueDate!==(form.policyValueDate||today())))await db.investmentValuations.add({assetId:id,date:form.policyValueDate||today(),value:policyValue,createdAt:new Date().toISOString()});
  });}
  if(dialog==='accountType'){
@@ -1089,7 +1092,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  const availableBuyLots=form.action==='sell'&&form.symbol?buyLotsForSale(stocks,form.symbol,form.date||date,editing?.id):[];
  const chosenBuyLot=availableBuyLots.find(l=>l.id===form.matchedBuyId);
  const stockPerformance=useMemo(()=>analyzeStockPerformance(stocks),[stocks]);
- const bal=a=>a.type==='trust'?(Number(quotes[String(a.trustSymbol||'').toUpperCase()]?.price)>0?(Number(a.trustLots||0)+investmentFlows.filter(f=>f.assetId===a.id&&f.kind==='contribution').reduce((sum,f)=>sum+Number(f.units||0),0))*1000*Number(quotes[String(a.trustSymbol||'').toUpperCase()].price):0):a.type==='policy'?Number(a.policyValue||0):accountBalance(a,records,stocks,investmentFlows);const includedAccounts=accounts.filter(a=>a.includeInAssets!==false);const includedIds=new Set(includedAccounts.map(a=>a.id));const hs=holdings(stocks);const netHoldings=holdings(stocks.filter(x=>includedIds.has(x.account)));const pricedHs=hs.filter(h=>Number(quotes[h.symbol]?.price)>0);const unpricedHs=hs.filter(h=>!(Number(quotes[h.symbol]?.price)>0));const stockVal=pricedHs.reduce((s,h)=>s+h.shares*Number(quotes[h.symbol].price),0);const stockCost=hs.reduce((s,h)=>s+h.cost,0);const pricedCost=pricedHs.reduce((s,h)=>s+h.cost,0);const netStockVal=netHoldings.reduce((sum,h)=>sum+h.shares*(Number(quotes[h.symbol]?.price)||0),0);const totalNet=includedAccounts.reduce((s,a)=>s+bal(a)*fxOf(a),0)+netStockVal;const netWorthData=computeNetWorth({accounts,records,stocks,investmentFlows,quotes,includedHoldings:netHoldings,accountTypes});const netWorthHistory=useNetWorthHistory(ready,netWorthData);
+ const bal=a=>a.type==='trust'?(Number(quotes[String(a.trustSymbol||'').toUpperCase()]?.price)>0?trustMarketValue(a,investmentFlows.filter(f=>f.assetId===a.id),Number(quotes[String(a.trustSymbol||'').toUpperCase()].price)):0):a.type==='policy'?Number(a.policyValue||0):accountBalance(a,records,stocks,investmentFlows);const includedAccounts=accounts.filter(a=>a.includeInAssets!==false);const includedIds=new Set(includedAccounts.map(a=>a.id));const hs=holdings(stocks);const netHoldings=holdings(stocks.filter(x=>includedIds.has(x.account)));const pricedHs=hs.filter(h=>Number(quotes[h.symbol]?.price)>0);const unpricedHs=hs.filter(h=>!(Number(quotes[h.symbol]?.price)>0));const stockVal=pricedHs.reduce((s,h)=>s+h.shares*Number(quotes[h.symbol].price),0);const stockCost=hs.reduce((s,h)=>s+h.cost,0);const pricedCost=pricedHs.reduce((s,h)=>s+h.cost,0);const netStockVal=netHoldings.reduce((sum,h)=>sum+h.shares*(Number(quotes[h.symbol]?.price)||0),0);const totalNet=includedAccounts.reduce((s,a)=>s+bal(a)*fxOf(a),0)+netStockVal;const netWorthData=computeNetWorth({accounts,records,stocks,investmentFlows,quotes,includedHoldings:netHoldings,accountTypes});const netWorthHistory=useNetWorthHistory(ready,netWorthData);
  // v65: Investment overview: three category summaries, without tabs.
  // Values are aggregated through the established TWD internal basis; unknown quotes are not valued at cost.
  const investmentOverview=[
@@ -1097,11 +1100,9 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   ...(['trust','policy'].map(type=>{
    const assets=accounts.filter(a=>a.type===type);
    const amounts=assets.map(a=>{
-    const added=investmentFlows.filter(f=>f.assetId===a.id&&f.kind==='contribution');
-    const cost=(Number(a.investmentCost)||0)+added.reduce((v,f)=>v+(Number(f.amount)||0),0);
-    const lots=(Number(a.trustLots)||0)+added.reduce((v,f)=>v+(Number(f.units)||0),0);
+    const {cost,shares}=investmentPosition(a,investmentFlows);
     const quote=quotes[String(a.trustSymbol||'').trim().toUpperCase()];
-    const value=type==='trust'?(Number(quote?.price)>0?lots*1000*Number(quote.price):null):(Number(a.policyValue)||0)*fxOf(a);
+    const value=type==='trust'?(Number(quote?.price)>0?shares*Number(quote.price):null):(Number(a.policyValue)||0)*fxOf(a);
     return {costTwd:cost*fxOf(a),valueTwd:value};
    });
    return {id:type,title:type==='trust'?'持股信託':'投資保單',count:assets.length,
@@ -1120,7 +1121,10 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   mainCategory:'股票交易',subCategory:x.action==='buy'?'股票買進':'股票賣出',
   note:`${x.symbol} · ${x.action==='buy'?'買進':'賣出'}${x.securityName?`（${x.securityName}）`:''}`
  }));
- const diaryRecords=[...records,...dividendDiaryRows,...tradeDiaryRows];
+ // 投資贖回及投入款使用 investmentFlows 做唯一帳務來源；這裡僅投影到日記帳。
+ // 不新增 records，否則會與 accountBalance 中的 flows 重複入帳。
+ const projectedInvestmentDiaryRows=investmentDiaryRows(investmentFlows,accounts);
+ const diaryRecords=[...records,...dividendDiaryRows,...tradeDiaryRows,...projectedInvestmentDiaryRows];
  const month=date.slice(0,7);
  const selectedYear=date.slice(0,4);
  const yearTx=diaryRecords.filter(r=>r.date?.startsWith(`${selectedYear}-`));
@@ -1161,7 +1165,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   useEffect(()=>{
     if(filter!=='all'&&!diaryFilterOptions.types.includes(filter))setFilter('all');
     if(accountFilter!=='all'&&!diaryFilterOptions.accounts.some(a=>String(a.id)===String(accountFilter)))setAccountFilter('all');
-  },[date,diaryView,query,filter,accountFilter,accounts,records,stocks]);
+  },[date,diaryView,query,filter,accountFilter,accounts,records,stocks,investmentFlows]);
  const periodSummaryRecords=filterDiaryByAccount(visibleDiaryRecords,accountFilter,accounts);
  const dayIncome=periodSummaryRecords.filter(r=>r.type==='income').reduce((sum,r)=>sum+toTWD(r.amount,r.account),0);
  const dayExpense=periodSummaryRecords.filter(r=>r.type==='expense').reduce((sum,r)=>sum+toTWD(r.amount,r.account),0);
@@ -1251,25 +1255,27 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  </div>
  <div className="stats-three diary-finance-summary" aria-label={i18n('收支統計')}><div className="glass stat diary-stat-out"><small>{diaryView==='year'?i18n('本年支出'):diaryView==='month'?tr('本月支出'):tr('當日支出')}</small><strong className="expense"><AnimatedNumber value={fmtPrimaryNumber(dayExpense)}/></strong></div><div className="glass stat diary-stat-in"><small>{diaryView==='year'?i18n('本年收入'):diaryView==='month'?tr('本月收入'):tr('當日收入')}</small><strong className="income"><AnimatedNumber value={fmtPrimaryNumber(dayIncome)}/></strong></div><div className="glass stat diary-stat-net"><small>{diaryView==='year'?i18n('本年淨額'):diaryView==='month'?i18n('本月淨額'):tr('當日淨額')}</small><strong className={dayIncome-dayExpense>=0?'income':'expense'}><AnimatedNumber value={fmtPrimaryNumber(dayIncome-dayExpense)}/></strong></div></div>
  {diaryView==='day'&&<div key={week[0]} className={`week-strip week-strip-slide-${weekSlideDirection}`} role="group" aria-label={i18n("選擇一週中的日期；左右滑動切換週別")} onTouchStart={onWeekTouchStart} onTouchEnd={onWeekTouchEnd}>{week.map((d,i)=><button type="button" key={d} aria-label={`${d} ${weekdayFullLabels[language]?.[parseDate(d).getDay()]||weekdayFullLabels['zh-TW'][parseDate(d).getDay()]}`} aria-pressed={d===date} className={'week-day '+(d===date?'active':'')+(d===today()?' is-today':'')+([0,6].includes(parseDate(d).getDay())?' is-weekend':'')} onClick={()=>setDate(d)}><small>{weekdayLabels[language]?.[parseDate(d).getDay()]||weekdayLabels['zh-TW'][parseDate(d).getDay()]}</small><b>{Number(d.slice(-2))}</b><i className={diaryRecords.some(x=>x.date===d)?'dot visible':'dot'}/></button>)}</div>}
-</section><section className="daily-transactions diary-listview" aria-label={i18n("交易明細")}><div className="diary-search-filter"><div className="searchbox"><Search size={17}/><MarqueeInput placeholder={i18n("搜尋備註、分類、金額")} aria-label={i18n("搜尋交易")} value={query} onChange={e=>setQuery(e.target.value)}/></div><DiaryFilterIcon Icon={Tags} label={i18n('交易類型')} value={filter} options={[{value:'all',label:i18n('全部')},...diaryFilterOptions.types.map(type=>({value:type,label:i18n(({expense:'支出',income:'收入',transfer:'轉帳',stock:'股票交易'})[type])}))]} onChange={setFilter}/><DiaryFilterIcon Icon={Wallet} label={accountFilter==='all'?i18n('篩選帳戶'):`${i18n('篩選帳戶')}：${accounts.find(a=>String(a.id)===String(accountFilter))?.name||i18n('未知帳戶')}`} value={accountFilter} options={[{value:'all',label:i18n('全部帳戶')},...diaryFilterOptions.accounts.map(a=>({value:String(a.id),label:a.name}))]} onChange={setAccountFilter}/></div><div className="diary-transaction-list" role="list" aria-label={i18n('交易明細')}>
+</section><section className="daily-transactions diary-listview" aria-label={i18n("交易明細")}><div className="diary-search-filter"><div className="searchbox"><Search size={17}/><MarqueeInput placeholder={i18n("搜尋備註、分類、金額")} aria-label={i18n("搜尋交易")} value={query} onChange={e=>setQuery(e.target.value)}/></div><DiaryFilterIcon Icon={Tags} label={i18n('交易類型')} value={filter} options={[{value:'all',label:i18n('全部')},...diaryFilterOptions.types.map(type=>({value:type,label:i18n(({expense:'支出',income:'收入',transfer:'轉帳',stock:'股票交易',investment:'投資異動'})[type])}))]} onChange={setFilter}/><DiaryFilterIcon Icon={Wallet} label={accountFilter==='all'?i18n('篩選帳戶'):`${i18n('篩選帳戶')}：${accounts.find(a=>String(a.id)===String(accountFilter))?.name||i18n('未知帳戶')}`} value={accountFilter} options={[{value:'all',label:i18n('全部帳戶')},...diaryFilterOptions.accounts.map(a=>({value:String(a.id),label:a.name}))]} onChange={setAccountFilter}/></div><div className="diary-transaction-list" role="list" aria-label={i18n('交易明細')}>
 {dayTx.length?dayTx.map((x,i)=>{
   const account=accounts.find(a=>a.id===x.account);
   const accountLabel=x.type==='transfer'?`${accounts.find(a=>a.id===x.fromAccount)?.name||i18n('未指定轉出帳戶')} → ${accounts.find(a=>a.id===x.toAccount)?.name||i18n('未指定轉入帳戶')}`:(account?.name||i18n('未指定帳戶'));
   const rawTitle=diaryTransactionTitle(x,picker[x.type]);
   const displayTitle=(rawTitle===x.subCategory||rawTitle===x.mainCategory)?i18n(rawTitle):rawTitle;
-  const signedAmount=`${x.type==='expense'||(x.isStockTrade&&x.stockAction==='buy')?'-':x.type==='income'||(x.isStockTrade&&x.stockAction==='sell')?'+':''}${fmtAccountFigure(x.amount,accounts.find(a=>a.id===(x.type==='transfer'?x.fromAccount:x.account)))}`;
-  const Icon=CATEGORY_ICONS[x.type==='stock'?'trend':x.type==='transfer'?'transfer':categoryIcons[`${x.type}/sub/${x.mainCategory}/${x.subCategory}`]||categoryIcons[`${x.type}/main/${x.mainCategory}`]||suggestedIcon(x.mainCategory||'')]||Tags;
+  const signedAmount=`${x.type==='expense'||(x.isStockTrade&&x.stockAction==='buy')||(x.isInvestmentFlow&&x.investmentAction==='contribution')?'-':x.type==='income'||(x.isStockTrade&&x.stockAction==='sell')||(x.isInvestmentFlow&&x.investmentAction==='redemption')?'+':''}${fmtAccountFigure(x.amount,accounts.find(a=>a.id===(x.type==='transfer'?x.fromAccount:x.account)))}`;
+  const Icon=CATEGORY_ICONS[x.isInvestmentFlow?'trend':x.type==='stock'?'trend':x.type==='transfer'?'transfer':categoryIcons[`${x.type}/sub/${x.mainCategory}/${x.subCategory}`]||categoryIcons[`${x.type}/main/${x.mainCategory}`]||suggestedIcon(x.mainCategory||'')]||Tags;
+  const editDiaryRow=()=>{if(x.isInvestmentFlow){const f=investmentFlows.find(f=>f.id===x.investmentFlowId);const asset=accounts.find(a=>a.id===f?.assetId);setTab('stocks');setInvestSection(asset?.type==='policy'?'policy':'trust');setSelectedStockSymbol(null);return;}if(x.isStockDividend||x.isStockTrade)open('stock',stocks.find(s=>s.id===x.stockId));else open('transaction',x)};
+  const deleteDiaryRow=()=>{if(x.isInvestmentFlow){editDiaryRow();toast('請在投資資產的資金異動紀錄中編輯或刪除此筆交易');return;}remove(x.isStockDividend||x.isStockTrade?'stocks':'records',x.isStockDividend||x.isStockTrade?x.stockId:x.id)};
   return <React.Fragment key={x.id}>
     {diaryView!=='day'&&(i===0||dayTx[i-1].date!==x.date)&&<div className="diary-month-date-heading">{x.date} <small>{weekdayLabels[language]?.[parseDate(x.date).getDay()]||weekdayLabels['zh-TW'][parseDate(x.date).getDay()]}</small></div>}
     <article role="listitem" className={`diary-list-row diary-type-${x.type}`}>
       <SwipeableDiaryRow id={x.id} editLabel={i18n('編輯')} deleteLabel={i18n('刪除')}
-        onEdit={()=>(x.isStockDividend||x.isStockTrade)?open('stock',stocks.find(s=>s.id===x.stockId)):open('transaction',x)}
-        onDelete={()=>remove(x.isStockDividend||x.isStockTrade?'stocks':'records',x.isStockDividend||x.isStockTrade?x.stockId:x.id)}>
-      <button type="button" className="diary-list-action" aria-label={`${displayTitle} · ${signedAmount} · ${accountLabel} · ${i18n('編輯')}`} onClick={()=>(x.isStockDividend||x.isStockTrade)?open('stock',stocks.find(s=>s.id===x.stockId)):open('transaction',x)}>
+        onEdit={editDiaryRow}
+        onDelete={deleteDiaryRow}>
+      <button type="button" className="diary-list-action" aria-label={`${displayTitle} · ${signedAmount} · ${accountLabel} · ${i18n('編輯')}`} onClick={editDiaryRow}>
         <span className="diary-list-main">
           <span className={'transaction-icon '+x.type}><Icon size={20}/></span>
           <span className="diary-list-name"><b>{displayTitle}</b><small>{x.type==='transfer'?i18n('帳戶轉帳'):i18n(x.mainCategory)||picker[x.type]}{x.projectId&&projects.some(p=>p.id===x.projectId)?' · '+projects.find(p=>p.id===x.projectId).name:''}</small></span>
-          <span className="diary-list-amount"><strong className={x.type==='expense'?'expense':x.type==='income'?'income':''}>{signedAmount}</strong><small>{accountLabel}</small></span>
+          <span className="diary-list-amount"><strong className={x.type==='expense'?'expense':x.type==='income'||(x.isInvestmentFlow&&x.investmentAction==='redemption')?'income':''}>{signedAmount}</strong><small>{accountLabel}</small></span>
           <ChevronRight size={18} className="diary-list-chevron" aria-hidden="true"/>
         </span>
       </button>
@@ -1329,8 +1335,10 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
         <div className="investment-reference-copy"><b>{i18n(item.title)}</b><small>{i18n(detail)} · {item.count} {i18n("筆")}</small></div>
         <div className="investment-reference-amount" aria-label={`${i18n('目前現值')}、${i18n('未實現損益')}、${i18n('損益百分比')}`}>
          <strong className="investment-reference-net">{item.valueTwd===null?i18n("尚無報價"):fmtInvestmentMoney(item.valueTwd)}</strong>
-         <small className={'investment-reference-profit '+(pnl===null?'':pnl>=0?'income':'expense')}>{pnl===null?'—':`${pnl>=0?'+':''}${fmtInvestmentMoney(pnl)}`}</small>
-         <small className={'investment-reference-rate '+(pct===null?'':pct>=0?'income':'expense')}>{pct===null?'—':`${pct>=0?'+':''}${pct.toFixed(2)}%`}</small>
+         <span className="investment-performance-badges investment-reference-badges">
+          <small className={'investment-reference-profit investment-performance-badge '+(pnl===null?'':pnl>=0?'income':'expense')}>{pnl===null?'—':`${pnl>=0?'+':''}${fmtInvestmentMoney(pnl)}`}</small>
+          <small className={'investment-reference-rate investment-performance-badge '+(pct===null?'':pct>=0?'income':'expense')}>{pct===null?'—':`${pct>=0?'+':''}${pct.toFixed(2)}%`}</small>
+         </span>
         </div>
        </div>
        <div className="investment-reference-footer"><span className="investment-reference-dots" aria-hidden="true"><i/><i/><i/></span></div>
@@ -1421,17 +1429,17 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   <div className="account-setup-section" role="group" aria-label={i18n('投資資產建檔')}>
    <strong className="account-setup-heading">{form.type==='trust'?i18n('持股信託建檔'):i18n('投資保單建檔')}</strong>
    <p className="hint account-setup-intro">{form.type==='trust'
-     ?i18n('請填入建立此信託時已持有的張數及累計取得成本；現值會依股票收盤價自動估算，不需要填期初餘額。')
+     ?i18n('請填入建立此信託時已持有的股數及累計取得成本；現值會依股票收盤價自動估算，不需要填期初餘額。')
      :i18n('累計投入成本與目前保單現值是不同欄位：前者用來計算損益，後者才是計入淨資產的估值；不需要填期初餘額。')}</p>
    {form.type==='trust'?<>
     <div className="account-setup-readonly"><span>{i18n('計價幣別')}</span><strong>TWD · {i18n('新台幣')}</strong></div>
     <Field label={i18n('股票代號')}><MarqueeInput autoCapitalize="characters" required value={form.trustSymbol||''} placeholder={i18n('例如 2330')} onChange={e=>patch('trustSymbol',e.target.value.toUpperCase())}/></Field>
-    <Field label={i18n('初始持有張數（每張 1,000 股）')}><button type="button" className="money-trigger" onClick={()=>setCalculator({field:'trustLots',value:form.trustLots||''})}><span>{String(form.trustLots??'')||i18n('點擊輸入張數')}</span><span className="calc-mini">⌗</span></button></Field>
+    <Field label={i18n('初始持有股數')}><button type="button" className="money-trigger" onClick={()=>setCalculator({field:'trustShares',value:form.trustShares||''})}><span>{String(form.trustShares??'')||i18n('點擊輸入股數')}</span><span className="calc-mini">⌗</span></button></Field>
    </>:<>
     <Field label={i18n('保單幣別')}><SmartSelect value={form.currency||'TWD'} onChange={e=>changeCurrency(e.target.value)}>{[['TWD','新台幣 TWD'],['USD','美元 USD'],['JPY','日圓 JPY'],['EUR','歐元 EUR'],['CNY','人民幣 CNY'],['HKD','港幣 HKD'],['GBP','英鎊 GBP'],['AUD','澳幣 AUD'],['SGD','新加坡幣 SGD'],['KRW','韓元 KRW'],['CAD','加拿大幣 CAD'],['CHF','瑞士法郎 CHF']].map(([code,label])=><option key={code} value={code}>{i18n(label)}</option>)}</SmartSelect></Field>
    </>}
    <Field label={i18n('累計取得成本（已投入的總金額）')}><button type="button" className="money-trigger" onClick={()=>setCalculator({field:'investmentCost',value:form.investmentCost||''})}><span>{String(form.investmentCost??'')||i18n('點擊輸入取得成本')}</span><span className="calc-mini">⌗</span></button></Field>
-   {form.type==='trust'?<p className="hint">{i18n('信託現值＝持有張數 × 1,000 × 最近收盤價。後續追加投入請在投資頁登記，不會重複建立一般股票交易。')}</p>:<>
+   {form.type==='trust'?<p className="hint">{i18n('信託現值＝持有股數 × 最近收盤價。後續追加投入請在投資頁登記，不會重複建立一般股票交易。')}</p>:<>
     <Field label={i18n('目前保單現值（保險公司提供）')}><button type="button" className="money-trigger" onClick={()=>setCalculator({field:'policyValue',value:form.policyValue??''})}><span>{form.policyValue!==''&&form.policyValue!==undefined?form.policyValue:i18n('點擊輸入現值')}</span><span className="calc-mini">⌗</span></button></Field>
     <Field label={i18n('現值日期')}><NativeDatePicker value={form.policyValueDate||today()} onChange={e=>patch('policyValueDate',e.target.value)}/></Field>
     <p className="hint">{i18n('未實現損益＝目前保單現值－累計投入成本；未來可在投資頁更新現值或追加投入。')}</p>

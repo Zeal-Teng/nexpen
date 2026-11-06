@@ -4329,3 +4329,116 @@ html .app-shell .investment-third-level .stock-history-entry .stock-history-head
   justify-self:end;
   text-align:right;
 }
+
+/* v215 — Trust and policy use the same single expandable Currently Held ListView as stocks. */
+html .app-shell .investment-asset-group-stack .investment-holdings-list{
+  width:100%; min-width:0; padding:8px 12px!important; margin:0!important;
+  background:transparent!important; box-shadow:none!important;
+}
+html .app-shell .investment-asset-group-stack .investment-holdings-list .investment-asset-substack{
+  width:100%; min-width:0; gap:0!important;
+}
+html .app-shell .investment-asset-group-stack .investment-stock-list-row{
+  width:100%; min-width:0; border-bottom:1px solid var(--theme-line);
+}
+html .app-shell .investment-asset-group-stack .investment-stock-list-row:last-child{border-bottom:0;}
+html .app-shell .investment-asset-group-stack .investment-stock-row-results b{
+  font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;
+}
+@media(max-width:440px){
+ html .app-shell .investment-asset-group-stack .investment-holdings-list{padding:4px 5px!important;}
+ html .app-shell .investment-asset-group-stack .investment-stock-list-row{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) 16px!important;
+  column-gap:7px!important;
+ }
+ html .app-shell .investment-asset-group-stack .investment-stock-list-row .investment-stock-close{
+  max-width:42vw;overflow-wrap:anywhere;
+ }
+}
+
+/* v218: second-level investment performance: amount and rate as one badge row. */
+html .app-shell .investment-unified-summary .stock-pnl-result.investment-second-pnl-badges {
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  justify-content:flex-end!important;gap:7px!important;flex-wrap:nowrap!important;
+  min-width:0!important;width:100%;text-align:right!important;
+}
+html .app-shell .investment-unified-summary .investment-second-pnl-badges > :is(strong,span) {
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 1 auto;min-width:0;max-width:100%;padding:5px 8px!important;
+  border:1px solid currentColor!important;border-radius:999px!important;
+  font-size:clamp(10px,2.65vw,13px)!important;font-weight:750!important;
+  line-height:1.25!important;white-space:nowrap!important;overflow-wrap:normal!important;
+  font-variant-numeric:tabular-nums;
+  background:color-mix(in srgb,currentColor 9%,transparent)!important;
+}
+html .app-shell .investment-unified-summary .investment-second-pnl-badges > .income {
+  color:var(--user-income,var(--theme-income))!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html .app-shell .investment-unified-summary .investment-second-pnl-badges > .expense {
+  color:var(--user-expense,var(--theme-expense))!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+@media(max-width:380px){
+  html .app-shell .investment-unified-summary .investment-second-pnl-badges{gap:4px!important}
+  html .app-shell .investment-unified-summary .investment-second-pnl-badges > :is(strong,span){
+    padding:4px 5px!important;font-size:10px!important;
+  }
+}
+
+/* v219 — identical P/L amount and percentage chips throughout the investment hierarchy.
+   An unbreakable badge pair avoids the accidental line break shown on small phones. */
+html .app-shell .investment-performance-badges {
+  display:inline-flex!important;flex-flow:row nowrap!important;align-items:center!important;
+  justify-content:flex-end!important;gap:5px!important;max-width:100%;min-width:0;
+  white-space:nowrap!important;vertical-align:middle;
+}
+html .app-shell .investment-performance-badges > :is(.investment-performance-badge,.investment-tier-pnl) {
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;width:auto!important;max-width:none!important;
+  margin:0!important;padding:4px 7px!important;border:1px solid currentColor!important;
+  border-radius:999px!important;background:color-mix(in srgb,currentColor 9%,transparent)!important;
+  font-size:clamp(10px,2.65vw,12px)!important;line-height:1.25!important;
+  font-weight:750!important;letter-spacing:0!important;white-space:nowrap!important;
+  overflow:visible!important;text-overflow:clip!important;overflow-wrap:normal!important;
+  font-variant-numeric:tabular-nums;
+}
+html .app-shell :is(.investment-performance-badge,.investment-performance-badges > .investment-tier-pnl).income {color:var(--user-income,var(--theme-income,#168c70))!important;-webkit-text-fill-color:currentColor!important;}
+html .app-shell :is(.investment-performance-badge,.investment-performance-badges > .investment-tier-pnl).expense {color:var(--user-expense,var(--theme-expense,#d54e65))!important;-webkit-text-fill-color:currentColor!important;}
+html .app-shell .investment-reference-amount > .investment-reference-badges {align-self:flex-end!important;}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount {
+  width:100%!important;min-width:0!important;
+}
+html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-amount > .investment-reference-badges {
+  display:inline-flex!important;flex-direction:row!important;align-items:center!important;
+  overflow:visible!important;white-space:nowrap!important;text-overflow:clip!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-row-results > .investment-listview-badges,
+html .app-shell .investment-account-list-values > .investment-listview-badges {
+  align-self:flex-end!important;flex-direction:row!important;flex-wrap:nowrap!important;
+  overflow:visible!important;
+}
+/* Keep the stock's quantity/average on the left and valuation + both P/L chips on the right.
+   Content rows must shrink before they can force a second line inside a badge. */
+html .app-shell .investment-stock-list-row .investment-stock-row-results {
+  width:max-content!important;max-width:100%!important;min-width:0!important;
+}
+html .app-shell .investment-stock-list-row .investment-stock-row-results .investment-tier-pnl {
+  white-space:nowrap!important;overflow-wrap:normal!important;
+}
+html .app-shell .investment-asset-substack .investment-stock-list-row {
+  grid-template-columns:minmax(0,1fr) minmax(0,max-content) 18px!important;
+}
+@media(max-width:440px){
+ html .app-shell .investment-performance-badges{gap:3px!important}
+ html .app-shell .investment-performance-badges > :is(.investment-performance-badge,.investment-tier-pnl){font-size:10px!important;padding:3px 5px!important}
+ html .app-shell .investment-stock-list-row .investment-stock-row-results b{font-size:clamp(14px,3.7vw,18px)!important}
+ html .app-shell .investment-dashboard .investment-first-level-stack .investment-reference-net {
+   white-space:nowrap!important;overflow-wrap:normal!important;font-size:clamp(16px,4vw,20px)!important;
+ }
+}
+/* Prevent the adjacent stock price/date from splitting a heading into multiple pieces. */
+html .app-shell .investment-stock-list-row .investment-stock-row-heading .investment-stock-close {
+ white-space:nowrap!important;overflow-wrap:normal!important;max-width:none!important;
+}

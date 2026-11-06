@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const view=readFileSync(new URL('../src/StockPerformanceView.jsx',import.meta.url),'utf8');
+const section=view.split('title={tr("已實現交易","Realized trades")}')[1]?.split("title={tr('其他股票紀錄'")[0];
+assert.ok(section,'Realized trades section should be present');
+assert.match(section,/topRight=\{latestSell&&Number\.isFinite\(Number\(latestSell\.price\)\)\?fmtUnit\(latestSell\.price\):'—'\}/);
+assert.doesNotMatch(section,/averageLine=/,'Realized trades should not duplicate the selling price in details');
+assert.match(section,/sharesLine=/);
+assert.match(section,/profit=\{result\(g\.realized\)\}/);
+assert.match(section,/rate=\{rate\(g\)\}/);
+console.log('v217 realized trades header selling price checks passed');

@@ -1,6 +1,18 @@
 // NEXPEN UI localization. Keys use the original Traditional Chinese source labels.
 // Account names, custom categories and transaction notes are never translated automatically.
 const catalog={
+  "初始持有股數": {"en":"Initial shares","ja":"初期保有株数","zh-CN":"初始持有股数"},
+  "點擊輸入股數": {"en":"Tap to enter shares","ja":"タップして株数を入力","zh-CN":"点击输入股数"},
+  "本次新增股數（可為 0）": {"en":"Additional shares (0 allowed)","ja":"追加株数（0も可）","zh-CN":"本次新增股数（可为0）"},
+  "輸入本次新增股數": {"en":"Enter additional shares","ja":"追加株数を入力","zh-CN":"输入本次新增股数"},
+  "請輸入有效的新增股數（可為 0）": {"en":"Enter a valid additional share count (0 allowed)","ja":"有効な追加株数を入力してください（0も可）","zh-CN":"请输入有效的新增股数（可为0）"},
+  "請輸入有效的股票代號及初始持有股數（可為 0）": {"en":"Enter a valid symbol and initial share count (0 allowed)","ja":"有効な銘柄コードと初期保有株数を入力してください（0も可）","zh-CN":"请输入有效的股票代码及初始持有股数（可为0）"},
+  "此投資帳戶已有追加投入紀錄，初始成本、股票代號及初始股數不可直接修改；請從投資頁記錄新增投入": {"en":"This investment has contributions; initial cost, symbol, and shares cannot be edited directly. Record changes in Investments.","ja":"追加拠出があるため、初期費用・銘柄コード・初期株数は直接変更できません。投資画面から追加してください。","zh-CN":"此投资账户已有追加投入记录，初始成本、股票代码及初始股数不可直接修改；请从投资页记录新增投入"},
+  "信託現值＝持有股數 × 最近收盤價。後續追加投入請在投資頁登記，不會重複建立一般股票交易。": {"en":"Trust value = shares held × latest closing price. Record contributions in Investments without duplicating stock trades.","ja":"信託時価＝保有株数×直近終値。追加拠出は投資画面に登録してください。株式取引は重複登録しません。","zh-CN":"信托现值＝持有股数 × 最近收盘价。后续追加投入请在投资页登记，不重复建立一般股票交易。"},
+  "請填入建立此信託時已持有的股數及累計取得成本；現值會依股票收盤價自動估算，不需要填期初餘額。": {"en":"Enter the initial shares held and total acquisition cost. Value is estimated from the stock close; no opening balance is required.","ja":"信託設定時点の保有株数と取得総額を入力してください。時価は終値から自動計算され、開始残高は不要です。","zh-CN":"请输入设立信托时已持有的股数及累计取得成本；现值会依股票收盘价自动估算，无需填写期初余额。"},
+  "投資頁使用官方最近收盤價 × 股數估算市值。不會另外建立股票交易。": {"en":"Investment value = official latest close × shares held. No duplicate stock trade is created.","ja":"投資画面では直近の公式終値×保有株数で評価し、株式取引は重複登録しません。","zh-CN":"投资页按官方最近收盘价 × 股数估算市值，不会重复建立股票交易。"},
+  "點選紀錄可編輯金額、日期、股數或資金來源；也可刪除錯誤紀錄。": {"en":"Tap an entry to edit amount, date, shares, or source account, or to delete an incorrect entry.","ja":"履歴をタップすると金額・日付・株数・資金元を編集、または誤った履歴を削除できます。","zh-CN":"点击记录可编辑金额、日期、股数或资金来源，也可删除错误记录。"},
+
   "先體驗 NEXPEN 完整功能":{"en": "Explore all NEXPEN features", "ja": "NEXPEN の全機能を体験", "zh-CN": "先体验 NEXPEN 全部功能"},
   "不用輸入真實財務資料，也可以使用虛構交易探索所有頁面。":{"en": "Explore every page with fictional transactions. No personal financial information needed.", "ja": "個人の財務データを入力せずに、架空の取引で全ページを体験できます。", "zh-CN": "无需输入真实财务数据，即可通过虚构交易探索全部页面。"},
   "試用演示資料":{"en": "Try sample data", "ja": "サンプルデータで試す", "zh-CN": "试用演示数据"},
