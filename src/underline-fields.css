@@ -137,3 +137,41 @@ html body .app-shell .account-setup-section input:not([type="checkbox"]):not(.na
     min-width:0!important;
   }
 }
+
+/* v204: Stock trading mode tabs use the same readable type scale as the
+   transaction tabs; keep the existing tab dimensions and active state. */
+html body .app-shell .stock-trade-tabs > button {
+  font-size: calc(15px * var(--app-font-scale, 1)) !important;
+  font-weight: 750 !important;
+  line-height: 1.35;
+}
+
+/* v204: Search should have ONLY an underline when focused. The global
+   input:focus-visible outline was drawing a four-sided blue rectangle around
+   the input inside the otherwise borderless search surface. */
+html body .app-shell .searchbox,
+html body .app-shell .diary-search-filter > .searchbox {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+html body .app-shell .searchbox:focus-within,
+html body .app-shell .diary-search-filter > .searchbox:focus-within {
+  border: 0 !important;
+  border-bottom: 2px solid var(--nexpen-field-focus) !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+html body .app-shell .searchbox input,
+html body .app-shell .searchbox input:focus,
+html body .app-shell .searchbox input:focus-visible,
+html body .app-shell .searchbox .marquee-input-wrap,
+html body .app-shell .searchbox .marquee-input-wrap:focus-within {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
