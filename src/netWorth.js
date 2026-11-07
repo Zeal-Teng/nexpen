@@ -1,3 +1,4 @@
+import {investmentProductPosition,investmentProductValue} from './investmentProducts.js';
 import {investmentCashMovement} from './investmentCashFlow.js';
 import {investmentPosition} from './investmentLedger.js';
 import {totalTrustShares} from './trustShares.js';
@@ -7,6 +8,10 @@ export const ASSET_GROUPS = [
   {id:'securities', label:'證券'},
   {id:'trust', label:'持股信託'},
   {id:'insurance', label:'保險'},
+  {id:'fund', label:'基金'},
+  {id:'bond', label:'債券'},
+  {id:'savings', label:'儲蓄險'},
+  {id:'termDeposit', label:'定期存款'},
   {id:'other', label:'其他資產'}
 ];
 
@@ -25,7 +30,7 @@ export const assetGroupForType=(type,accountTypes=[])=>{
 };
 
 /** All monetary amounts returned here are in TWD, consistent with the app's base ledger. */
-export function computeNetWorth({accounts=[],records=[],stocks=[],investmentFlows=[],quotes={},includedHoldings=[],accountTypes=[]}) {
+export function computeNetWorth({accounts=[],records=[],stocks=[],investmentFlows=[],quotes={},includedHoldings=[],accountTypes=[],investmentProducts=[]}) {
   const groups = Object.fromEntries(ASSET_GROUPS.map(g=>[g.id,0]));
   const liabilities=[];
   const missingQuotes=[];
@@ -46,6 +51,14 @@ export function computeNetWorth({accounts=[],records=[],stocks=[],investmentFlow
     }
     if(value>=0) groups[assetGroupForType(account.type,accountTypes)]+=value;
     else liabilities.push({id:account.id,name:account.name||'未命名帳戶',type:account.type,amount:-value});
+  }
+  for(const product of investmentProducts){
+    if(product.includeInAssets===false)continue;
+    const position=investmentProductPosition(product,investmentFlows);
+    const twdRate=product.currency==='TWD'?1:finite(product.fxRate)||1;
+    if(position.units>0&&product.type!=='termDeposit'&&!(Number(product.price)>0)){missingQuotes.push(product.name||'投資資產');continue;}
+    const group=({fund:'fund',bond:'bond',savings:'savings',termDeposit:'termDeposit'})[product.type]||'other';
+    groups[group]+=investmentProductValue(product,position)*twdRate;
   }
   for(const holding of includedHoldings){
     const price=Number(quotes[holding.symbol]?.price);

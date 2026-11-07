@@ -1,0 +1,178 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
+import {ChevronLeft,ChevronRight,Plus,Trash2,Edit3,X} from 'lucide-react';
+import {db,uid,today} from './db.js';
+import {investmentProductPosition,investmentProductValue,productCashRate,validateProductTrade} from './investmentProducts.js';
+import {InvestmentStack,InvestmentStackCard,InvestmentStackAsset} from './InvestmentStack.jsx';
+import SummaryHero from './SummaryHero.jsx';
+import {normalizeSavingsProjection,savingsProjectionComparison,savingsCashFlows,calculateXirr,parseSavingsProjectionText} from './savingsPolicy.js';
+
+const numeric=v=>Number(v)||0;
+const figure=(n,code='TWD')=>`${code} ${numeric(n).toLocaleString('zh-TW',{maximumFractionDigits:4})}`;
+const typeLabels={fund:'基金',bond:'債券',savings:'儲蓄險',termDeposit:'定存'};
+const kindLabels={
+ fund:{contribution:'申購',redemption:'贖回',yield:'基金配息'},
+ bond:{contribution:'買入',redemption:'賣出／到期償還',yield:'債券票息'},
+ savings:{contribution:'繳納保費',redemption:'解約／滿期領回',yield:'保單給付'},
+ termDeposit:{contribution:'存入本金',redemption:'本金領回／到期',yield:'定存利息'}
+};
+const kinds={contribution:'投入',redemption:'領回',yield:'收益'};
+const freshProduct=(type)=>({name:'',symbol:'',type,currency:'TWD',fxRate:'1',price:type==='termDeposit'?'1':'',priceDate:today(),maturityDate:'',startDate:today(),institution:'',policyNo:'',couponRate:'',couponFrequency:'6',policySubtype:'rateAdjustableWholeLife',premiumYears:'6',declaredRate:'',bonusMethod:'increaseCoverage',projectionRows:[],note:''});
+const freshFlow=()=>({kind:'contribution',date:today(),amount:'',shares:'',sourceAccount:'',exchangeRate:'',fee:'0',historical:false,note:''});
+
+/** Funds, bonds, savings insurance and term deposits are standalone investment assets. */
+export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=[],primaryCurrency='TWD',primaryTwdRate=1,onChanged,onDetailChange=()=>{},onBackOverview=()=>{},initialCreate=false,onCreateHandled=()=>{},backToListSignal=0}){
+ const lastBackSignal=useRef(backToListSignal);
+ const [projectionYear,setProjectionYear]=useState('');
+ const [projectionPaste,setProjectionPaste]=useState('');
+ const [selected,setSelected]=useState(null),[dialog,setDialog]=useState(''),[editing,setEditing]=useState(null),[productForm,setProductForm]=useState(freshProduct(type)),[flowForm,setFlowForm]=useState(freshFlow()),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const asset=items.find(p=>p.id===selected);
+ const isBond=type==='bond',isSavings=type==='savings',isDeposit=type==='termDeposit',isPrincipal=isSavings||isDeposit;const typeName=typeLabels[type]||'投資';const actions=kindLabels[type]||kindLabels.fund;
+ const position=asset?investmentProductPosition(asset,flows):null;
+ const history=asset?flows.filter(f=>f.assetId===asset.id).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))):[];
+ const openProduct=(p=null)=>{setProjectionPaste('');setEditing(p);setProductForm(p?{...p,price:String(p.price??''),fxRate:String(p.fxRate??1),premiumYears:String(p.premiumYears??6),declaredRate:String(p.declaredRate??''),projectionRows:Array.isArray(p.projectionRows)?p.projectionRows.map(r=>({...r})):[]}:freshProduct(type));setError('');setDialog('product')};
+ const openFlow=(kind='contribution',item=null)=>{setEditing(item);setFlowForm(item?{kind:item.kind,date:item.date,amount:String(item.amount),shares:String(item.shares??''),sourceAccount:item.sourceAccount||'',exchangeRate:String(item.redemptionExchangeRate??1),fee:String(item.redemptionFee??0),historical:!!item.historical,note:item.note||''}:{...freshFlow(),kind,sourceAccount:cashAccounts.find(a=>a.currency===asset?.currency)?.id||''});setError('');setDialog('flow')};
+ const close=()=>{setDialog('');setEditing(null);setError('')};
+ useEffect(()=>{if(initialCreate){openProduct();onCreateHandled()}},[initialCreate]);
+ useEffect(()=>{if(lastBackSignal.current!==backToListSignal){lastBackSignal.current=backToListSignal;setSelected(null);onDetailChange(false);close()}},[backToListSignal]);
+ const cash=cashAccounts.find(a=>a.id===flowForm.sourceAccount);
+ const recommended=cash&&asset?productCashRate(asset,cash):NaN;
+ const liveRate=flowForm.exchangeRate!==''?Number(flowForm.exchangeRate):recommended;
+ const currencyLabel=asset?.currency||'TWD';
+ const savingsContributionRows=asset&&isSavings?flows.filter(f=>f.assetId===asset.id&&f.kind==='contribution'):[];
+ const savingsContributionTotal=savingsContributionRows.reduce((n,f)=>n+numeric(f.amount),0);
+ const savingsCurrentValue=asset&&position?investmentProductValue(asset,position):0;
+ const savingsValueDelta=asset&&position?savingsCurrentValue-position.cost:0;
+ const savingsXirr=asset&&isSavings?calculateXirr(savingsCashFlows(flows,asset.id,asset.priceDate,savingsCurrentValue)):null;
+ const savingsProjectionRows=asset&&isSavings?Array.isArray(asset.projectionRows)?asset.projectionRows:[]:[];
+ const selectedProjection=savingsProjectionRows.find(r=>String(r.year)===projectionYear)||null;
+ const savingsSubtypeLabel=asset?.policySubtype==='rateAdjustableWholeLife'?'利率變動型終身壽險':asset?.policySubtype==='endowment'?'養老／滿期儲蓄險':'其他儲蓄險';
+ const savingsProjectionDelta=selectedProjection?savingsProjectionComparison(selectedProjection):null;
+ const saveProduct=async e=>{
+  e.preventDefault();setBusy(true);setError('');
+  try{
+   const name=String(productForm.name||'').trim();if(!name)throw Error('請填寫投資名稱');
+   const price=isDeposit?1:Number(productForm.price),fxRate=productForm.currency==='TWD'?1:Number(productForm.fxRate);
+   if(!Number.isFinite(price)||price<0||!(fxRate>0))throw Error('請填入有效價格與匯率');
+   if(isSavings){const yrs=Number(productForm.premiumYears);if(productForm.premiumYears!==''&&(!Number.isSafeInteger(yrs)||yrs<1||yrs>100))throw Error('繳費年期須為 1 至 100 年');const declared=Number(productForm.declaredRate);if(productForm.declaredRate!==''&&(!Number.isFinite(declared)||declared<0||declared>100))throw Error('請輸入有效宣告利率');}
+   const payload={...productForm,...(isSavings?{projectionRows:normalizeSavingsProjection(productForm.projectionRows||[])}:{}),name,type,price,fxRate,updatedAt:new Date().toISOString(),id:editing?.id||uid(),createdAt:editing?.createdAt||new Date().toISOString()};
+   if(editing){const existing=flows.some(f=>f.assetId===editing.id);if(existing&&(payload.currency!==editing.currency||payload.type!==editing.type))throw Error('已有交易的投資商品不可變更原始幣別');}
+   await db.investmentProducts.put(payload);await onChanged();setSelected(payload.id);onDetailChange(true);close();
+  }catch(e){setError(e.message)}finally{setBusy(false)}
+ };
+ const saveFlow=async e=>{
+  e.preventDefault();if(!asset)return;setBusy(true);setError('');
+  try{
+   const account=cashAccounts.find(a=>a.id===flowForm.sourceAccount);
+   const kind=flowForm.kind,shares=kind==='yield'?0:kind==='contribution'&&isPrincipal?Number(flowForm.amount):Number(flowForm.shares),amount=Number(flowForm.amount),fee=Number(flowForm.fee||0);
+   const rate=kind==='contribution'?1:cash?.currency===asset.currency?1:Number(liveRate);
+   const flow={id:editing?.id||uid(),assetId:asset.id,kind,date:flowForm.date,amount,shares,sourceAccount:flowForm.historical?'':flowForm.sourceAccount,historical:isSavings&&kind==='contribution'&&!!flowForm.historical,redemptionExchangeRate:rate,redemptionFee:fee,note:String(flowForm.note||'').trim(),createdAt:editing?.createdAt||new Date().toISOString()};
+   const other=flows.filter(f=>f.assetId===asset.id&&f.id!==editing?.id);
+   validateProductTrade(asset,other,flow,flow.historical&&isSavings&&kind==='contribution'?null:account);
+   if(!investmentProductPosition(asset,[...other,flow]).valid)throw Error('修改後會導致後續領回超過本金或持有數量');
+   if(flow.historical&&(!isSavings||kind!=='contribution'))throw Error('只有儲蓄險歷史保費可選擇不連動資金帳戶');
+   if(kind==='contribution'&&fee>0)throw Error('目前手續費只適用於贖回及配息');
+   // Apply cash movement exactly once via investmentFlows; no duplicate records entry.
+   await db.investmentFlows.put(flow);await onChanged();close();
+  }catch(e){setError(e.message)}finally{setBusy(false)}
+ };
+ const deleteFlow=async f=>{
+  if(!window.confirm(`刪除 ${f.date} ${actions[f.kind]} 紀錄？`))return;
+  setBusy(true);setError('');
+  try{
+   const other=flows.filter(x=>x.assetId===asset.id&&x.id!==f.id);
+   if(!investmentProductPosition(asset,other).valid)throw Error('刪除此筆會使後續贖回數量超過持有數量');
+   await db.investmentFlows.delete(f.id);await onChanged();close();
+  }catch(e){setError(e.message)}finally{setBusy(false)}
+ };
+ const deleteProduct=async()=>{
+  if(!asset||!window.confirm(`刪除「${asset.name}」及其所有資金異動？此操作不可復原。`))return;
+  setBusy(true);setError('');
+  try{await db.transaction('rw',db.investmentProducts,db.investmentFlows,async()=>{await db.investmentFlows.where('assetId').equals(asset.id).delete();await db.investmentProducts.delete(asset.id)});await onChanged();setSelected(null);onDetailChange(false);close()}catch(e){setError(e.message)}finally{setBusy(false)}
+ };
+ const holdingRows=items.map(p=>({product:p,position:investmentProductPosition(p,flows)})).filter(x=>x.position.units>0);
+ const realizedRows=items.map(p=>({product:p,position:investmentProductPosition(p,flows),redemptions:flows.filter(f=>f.assetId===p.id&&f.kind==='redemption')})).filter(x=>x.redemptions.length>0);
+ const realizedAmount=realizedRows.reduce((sum,x)=>sum+x.redemptions.reduce((n,f)=>n+numeric(f.amount),0)*(x.product.currency==='TWD'?1:numeric(x.product.fxRate)),0);
+ const realizedGain=realizedRows.reduce((sum,x)=>sum+x.position.realized*(x.product.currency==='TWD'?1:numeric(x.product.fxRate)),0);
+ const heldValue=holdingRows.reduce((sum,x)=>sum+investmentProductValue(x.product,x.position)*(x.product.currency==='TWD'?1:numeric(x.product.fxRate)),0);
+ const heldCost=holdingRows.reduce((sum,x)=>sum+x.position.cost*(x.product.currency==='TWD'?1:numeric(x.product.fxRate)),0);
+ const openDetail=p=>{setSelected(p.id);onDetailChange(true)};
+ const signed=(v,currency)=>`${v>=0?'+':'−'}${figure(Math.abs(v),currency)}`;
+ const percent=(delta,cost)=>cost>0?`${delta>=0?'+':''}${(delta/cost*100).toFixed(2)}%`:'—';
+ const summaryPriceMissing=items.some(p=>investmentProductPosition(p,flows).units>0&&!isDeposit&&!(Number(p.price)>0));
+ const baseRate=primaryCurrency==='TWD'?1:Number(primaryTwdRate);
+ const inPrimary=v=>baseRate>0?figure(v/baseRate,primaryCurrency):'匯率尚未取得';
+ const totals=items.reduce((s,p)=>{const pos=investmentProductPosition(p,flows);const rate=p.currency==='TWD'?1:numeric(p.fxRate);s.cost+=pos.cost*rate;s.value+=investmentProductValue(p,pos)*rate;return s},{cost:0,value:0});
+ return <section className="investment-product-page" data-investment-type={type}>
+  <div className="investment-product-header"><button type="button" className="stock-back investment-upper-back investment-nav-back" onClick={()=>{if(selected){setSelected(null);onDetailChange(false)}else onBackOverview()}}><ChevronLeft size={18}/>{selected?'返回'+typeName+'清單':'返回投資總覽'}</button><button className="soft-btn small" onClick={()=>openProduct()}><Plus size={17}/>新增{typeName}</button></div>
+  {!asset?<>
+   <SummaryHero eyebrow={`NEXPEN · ${{fund:'FUNDS',bond:'BONDS',savings:'SAVINGS',termDeposit:'DEPOSITS'}[type]}`} title={typeName} label={`${isDeposit?'未到期本金':'估算現值'}（${primaryCurrency}）`} value={summaryPriceMissing?'尚無完整估值':inPrimary(totals.value)} detailId={`investment-${type}-details`}><div className="summary-hero-metrics"><div><small>持有成本</small><strong>{inPrimary(totals.cost)}</strong></div><div><small>{isDeposit?'尚未領回本金差額':isSavings?'現值與保費差額':'未實現損益'}</small><strong className={totals.value>=totals.cost?'income':'expense'}>{summaryPriceMissing?'—':inPrimary(totals.value-totals.cost)}</strong></div></div></SummaryHero>
+   <InvestmentStack className="investment-second-level investment-asset-group-stack investment-product-stage-stack">
+    <InvestmentStackCard title="目前持有" accent={isBond||isDeposit?'mint':'coral'} amount={holdingRows.length?inPrimary(heldValue):null} profit={holdingRows.length?inPrimary(heldValue-heldCost):null} rate={holdingRows.length?percent(heldValue-heldCost,heldCost):null} profitTone={heldValue>=heldCost?'income':'expense'}>
+     <section className="glass panel investment-stage-list investment-holdings-list" aria-label={`${typeName} · 目前持有`}>
+      {holdingRows.length?<div className="investment-tier-stack investment-asset-substack">{holdingRows.map(({product:p,position:pos})=>{
+       const value=investmentProductValue(p,pos),gain=value-pos.cost;
+       return <InvestmentStackAsset key={p.id} stockLayout accent={isBond||isDeposit?'mint':'coral'} title={p.name} topRight={p.priceDate||'—'} sharesLine={isSavings?`保費成本 ${figure(pos.cost,p.currency)}`:isDeposit?`尚未領回本金 ${figure(pos.units,p.currency)}`:isBond?`持有面額 ${pos.units.toLocaleString('zh-TW',{maximumFractionDigits:6})}`:`持有單位 ${pos.units.toLocaleString('zh-TW',{maximumFractionDigits:6})}`} averageLine={p.symbol||p.currency} valueLine={figure(value,p.currency)} profit={signed(gain,p.currency)} rate={percent(gain,pos.cost)} profitTone={gain>=0?'income':'expense'} onOpen={()=>openDetail(p)}/>})}</div>:<p className="hint">目前沒有持有的{typeName}。</p>}
+     </section>
+    </InvestmentStackCard>
+    <InvestmentStackCard title="已實現交易" accent="coral" amount={realizedRows.length?inPrimary(realizedAmount):null} profit={realizedRows.length?`${realizedGain>=0?'+':''}${inPrimary(realizedGain)}`:null} rate={null} profitTone={realizedGain>=0?'income':'expense'}>
+     <section className="glass panel investment-stage-list investment-holdings-list" aria-label={`${typeName} · 已實現交易`}>
+      {realizedRows.length?<div className="investment-tier-stack investment-asset-substack">{realizedRows.map(({product:p,position:pos,redemptions})=>{
+       const proceeds=redemptions.reduce((sum,f)=>sum+numeric(f.amount),0),basis=proceeds-pos.realized;
+       return <InvestmentStackAsset key={p.id} stockLayout accent="coral" title={p.name} topRight={`${redemptions.length} 筆`} sharesLine={`領回總額 ${figure(proceeds,p.currency)}`} averageLine={p.symbol||p.currency} valueLine={figure(proceeds,p.currency)} profit={signed(pos.realized,p.currency)} rate={percent(pos.realized,basis)} profitTone={pos.realized>=0?'income':'expense'} onOpen={()=>openDetail(p)}/>})}</div>:<p className="hint">尚無已實現交易，領回後會顯示於此。</p>}
+     </section>
+    </InvestmentStackCard>
+   </InvestmentStack>
+   </>:<>
+    <SummaryHero eyebrow={`NEXPEN · ${{fund:'FUNDS',bond:'BONDS',savings:'SAVINGS',termDeposit:'DEPOSITS'}[type]}`} title={asset.name} label={isDeposit?'目前定存本金':isSavings?'目前解約金':isBond?'債券估算市值':'基金估算現值'} value={figure(investmentProductValue(asset,position),asset.currency)} detailId={`investment-product-${asset.id}`}><div className="summary-hero-metrics"><div><small>持有成本</small><strong>{figure(position.cost,asset.currency)}</strong></div><div><small>{isDeposit?'尚未領回本金差額':isSavings?'現值與保費差額':'未實現損益'}</small><strong className={investmentProductValue(asset,position)>=position.cost?'income':'expense'}>{figure(investmentProductValue(asset,position)-position.cost,asset.currency)}</strong><em className={position.realized>=0?'income':'expense'}>已實現 {figure(position.realized,asset.currency)}</em></div></div></SummaryHero>
+    {!isSavings&&<>{isDeposit&&<p className="hint">未到期本金不預先計入利息；收到利息或到期領回時請登記交易。</p>}<div className="investment-product-metadata">{asset.institution&&<span>{asset.institution}</span>}<span>{asset.symbol||typeName}</span><span>{isPrincipal?'剩餘本金／累計保費':isBond?'持有面額':'持有單位'}：{position.units.toLocaleString('zh-TW',{maximumFractionDigits:6})}</span>{!isDeposit&&<span>{isSavings?'目前解約金':isBond?'每百元價格':'每單位淨值'}：{numeric(asset.price).toLocaleString('zh-TW',{maximumFractionDigits:6})}</span>}{(isBond||isPrincipal)&&asset.maturityDate&&<span>到期日：{asset.maturityDate}</span>}{(isBond||isDeposit)&&asset.couponRate&&<span>{isDeposit?'年利率':'票面利率'}：{asset.couponRate}%</span>}</div><section className="investment-third-level investment-third-listview"><div className="investment-third-listview-heading"><h2>資金異動／估值歷史</h2><small>{asset.name} · {history.length} 筆紀錄</small></div><div className="investment-product-actions"><button className="soft-btn small" onClick={()=>openProduct(asset)}><Edit3 size={16}/>{isDeposit?'編輯定存資料':'編輯商品／估值'}</button><button className="soft-btn small" onClick={()=>openFlow('contribution')}><Plus size={16}/>{actions.contribution}</button><button className="soft-btn small" onClick={()=>openFlow('redemption')}>{actions.redemption}</button><button className="soft-btn small" onClick={()=>openFlow('yield')}>{actions.yield}</button></div><div className="stock-trade-detail-list investment-valuation-history investment-stage-history investment-third-list-content">{!isDeposit&&asset.priceDate&&<button type="button" className="stock-detail-trade investment-history-button" onClick={()=>openProduct(asset)}><span className="row-main"><b>最新估值</b><small>{asset.priceDate} · {isBond?'每百元面額':'每單位淨值'}</small></span><span className="transaction-right"><strong>{figure(asset.price,asset.currency)}</strong></span><ChevronRight size={17}/></button>}{history.flatMap(f=>Number(f.redemptionFee)>0&&f.kind!=='contribution'?[f,{...f,feeRow:true}]:[f]).map(f=><div key={`${f.id}-${f.feeRow?'fee':'main'}`} className="investment-product-third-row"><button type="button" className="stock-detail-trade investment-history-button" onClick={()=>openFlow(f.kind,f)}><span className="row-main"><b>{f.feeRow?'手續費':`${actions[f.kind]}`}</b><small>{f.date}{f.kind!=='yield'&&!f.feeRow?` · ${isPrincipal?'本金':'數量'} ${numeric(f.shares).toLocaleString('zh-TW',{maximumFractionDigits:6})}`:''}</small>{f.note&&!f.feeRow&&<small>{f.note}</small>}</span><span className="transaction-right"><strong className={f.feeRow?'expense':f.kind==='redemption'||f.kind==='yield'?'income':''}>{f.feeRow?'−':f.kind==='redemption'||f.kind==='yield'?'+':'−'}{figure(f.feeRow?f.redemptionFee:f.amount,f.feeRow?cashAccounts.find(a=>a.id===f.sourceAccount)?.currency||asset.currency:asset.currency)}</strong></span><ChevronRight size={17}/></button>{!f.feeRow&&<button type="button" className="investment-product-delete" aria-label="刪除異動" onClick={()=>deleteFlow(f)}><Trash2 size={16}/></button>}</div>)}{!history.length&&<p className="hint">尚無交易紀錄</p>}</div></section><button className="soft-btn small investment-product-remove" onClick={deleteProduct}><Trash2 size={16}/>刪除{typeName}</button></>}
+    {isSavings&&<section className="savings-detail-layout"><div className="savings-detail-note"><strong>保單現值提醒</strong><p>目前解約金請依保險公司當期可領回金額輸入；不要直接把試算表年度預估值，當成當日現值。</p></div><div className="savings-detail-chips">{asset.institution&&<span>{asset.institution}</span>}<span>{savingsSubtypeLabel}</span>{asset.premiumYears&&<span>繳費 {asset.premiumYears} 年</span>}{asset.declaredRate!==''&&asset.declaredRate!=null&&<span>參考宣告利率 {asset.declaredRate}%</span>}{asset.maturityDate&&<span>{asset.policySubtype==='rateAdjustableWholeLife'?'預計解約日':'滿期日'}：{asset.maturityDate}</span>}</div><div className="savings-detail-grid"><article className="savings-detail-card"><small>累計實繳保費</small><strong>{figure(savingsContributionTotal,asset.currency)}</strong><span>依實際保費紀錄累計</span></article><article className="savings-detail-card"><small>現值與保費差額</small><strong className={savingsValueDelta>=0?'income':'expense'}>{`${savingsValueDelta>=0?'+':'−'}${figure(Math.abs(savingsValueDelta),asset.currency)}`}</strong><span>目前解約金 − 累計成本</span></article><article className="savings-detail-card"><small>年化報酬率 XIRR</small><strong className={savingsXirr==null?'':savingsXirr>=0?'income':'expense'}>{savingsXirr==null?'資料不足／無法計算':`${savingsXirr>=0?'+':''}${savingsXirr.toFixed(2)}%`}</strong><span>依實際日期與領回現金流</span></article><article className="savings-detail-card"><small>保單概況</small><strong>{asset.startDate||'未填生效日'}</strong><span>{asset.symbol?`保單識別 ${asset.symbol}`:asset.name}</span></article></div><section className="investment-third-level investment-third-listview savings-detail-history"><div className="investment-third-listview-heading"><h2>實際紀錄</h2><small>{asset.name} · {history.length} 筆紀錄</small></div><div className="savings-action-grid"><button className="soft-btn small" onClick={()=>openProduct(asset)}><Edit3 size={16}/>編輯保單／現值</button><button className="soft-btn small" onClick={()=>openFlow('contribution')}><Plus size={16}/>{actions.contribution}</button><button className="soft-btn small" onClick={()=>openFlow('redemption')}>{actions.redemption}</button><button className="soft-btn small" onClick={()=>openFlow('yield')}>{actions.yield}</button></div><div className="stock-trade-detail-list investment-valuation-history investment-stage-history investment-third-list-content">{asset.priceDate&&<button type="button" className="stock-detail-trade investment-history-button" onClick={()=>openProduct(asset)}><span className="row-main"><b>目前解約金／現值</b><small>{asset.priceDate} · 依保單實際資料</small></span><span className="transaction-right"><strong>{figure(asset.price,asset.currency)}</strong></span><ChevronRight size={17}/></button>}{history.flatMap(f=>Number(f.redemptionFee)>0&&f.kind!=='contribution'?[f,{...f,feeRow:true}]:[f]).map(f=><div key={`${f.id}-${f.feeRow?'fee':'main'}`} className="investment-product-third-row savings-premium-list-row"><button type="button" className="stock-detail-trade investment-history-button savings-ledger-button" onClick={()=>openFlow(f.kind,f)}><span className="row-main"><b>{f.feeRow?'手續費':`${actions[f.kind]}${f.historical?' · 歷史保費':''}`}</b><small>{f.date}{f.kind==='redemption'&&!f.feeRow?` · 領回本金 ${numeric(f.shares).toLocaleString('zh-TW',{maximumFractionDigits:6})}`:''}</small>{f.note&&!f.feeRow&&<small>{f.note}</small>}</span><span className="transaction-right"><strong className={f.feeRow?'expense':f.kind==='redemption'||f.kind==='yield'?'income':''}>{f.feeRow?'−':f.kind==='redemption'||f.kind==='yield'?'+':'−'}{figure(f.feeRow?f.redemptionFee:f.amount,f.feeRow?cashAccounts.find(a=>a.id===f.sourceAccount)?.currency||asset.currency:asset.currency)}</strong></span></button>{!f.feeRow&&<button type="button" className="investment-product-delete" aria-label="刪除異動" onClick={()=>deleteFlow(f)}><Trash2 size={16}/></button>}</div>)}{!history.length&&<p className="hint">尚無實際紀錄，可先新增保費、給付或解約紀錄。</p>}</div></section><section className="savings-projection-panel"><div className="savings-policy-heading"><h3>年度解約金試算</h3><small>預估資訊，不納入淨資產</small></div><p className="savings-projection-intro">試算表只作為保單規劃參考；實際可領回金額仍以保險公司當期文件與匯率結算為準。</p>{savingsProjectionRows.length>0?<><div className="savings-projection-focus"><label className="savings-policy-projection-select">查看特定年度<select value={projectionYear} onChange={e=>setProjectionYear(e.target.value)}><option value="">選擇保單年度</option>{savingsProjectionRows.map(r=><option key={r.year} value={String(r.year)}>第 {r.year} 年</option>)}</select></label>{selectedProjection&&<div className="savings-policy-stats"><div><small>該年度末預估領回</small><strong>{figure(selectedProjection.endValue,asset.currency)}</strong></div><div><small>相對累計保費增減</small><strong className={savingsProjectionDelta==null?'':savingsProjectionDelta>=0?'income':'expense'}>{savingsProjectionDelta==null?'—':`${savingsProjectionDelta>=0?'+':''}${savingsProjectionDelta.toFixed(2)}%`}</strong></div></div>}</div><div className="savings-policy-scroll"><table><thead><tr><th>保單年度</th><th>累計保費</th><th>年末解約金</th><th>次年初解約金</th><th>對累計保費</th></tr></thead><tbody>{savingsProjectionRows.map(r=><tr key={r.year}><td>第 {r.year} 年</td><td>{r.cumulativePremium==null?'—':figure(r.cumulativePremium,asset.currency)}</td><td>{figure(r.endValue,asset.currency)}</td><td>{r.nextValue==null?'—':figure(r.nextValue,asset.currency)}</td><td>{savingsProjectionComparison(r)==null?'—':`${savingsProjectionComparison(r)>=0?'+':''}${savingsProjectionComparison(r).toFixed(2)}%`}</td></tr>)}</tbody></table></div></>:<div className="savings-empty-state"><strong>尚未輸入年度試算</strong><p>請至「編輯保單／現值」新增各年度資料，之後可在這裡比較不同年度的解約結果。</p></div>}</section><button className="soft-btn small investment-product-remove" onClick={deleteProduct}><Trash2 size={16}/>刪除{typeName}</button></section>}
+   </>}
+  {dialog&&createPortal(<div className="investment-product-backdrop" onClick={close}><section className="investment-product-sheet" role="dialog" aria-modal="true" aria-label={dialog==='product'?'編輯投資商品':'投資交易'} onClick={e=>e.stopPropagation()}><header><h3>{dialog==='product'?`${editing?'編輯':'新增'}${typeName}`:`${actions[flowForm.kind]} · ${asset?.name}`}</h3><button type="button" onClick={close} aria-label="關閉"><X size={20}/></button></header>
+    {dialog==='product'?<form onSubmit={saveProduct}>
+     {(isPrincipal)&&<label>{isSavings?'保險公司':'存款銀行'}<input value={productForm.institution||''} onChange={e=>setProductForm(f=>({...f,institution:e.target.value}))}/></label>}
+     <label>名稱<input required value={productForm.name} onChange={e=>setProductForm(f=>({...f,name:e.target.value}))}/></label>
+     <label>{isSavings?'保單名稱／識別碼':isDeposit?'定存編號': '代號／識別碼'}<input value={productForm.symbol||''} onChange={e=>setProductForm(f=>({...f,symbol:e.target.value}))}/></label>
+     <label>幣別<select disabled={!!editing&&flows.some(f=>f.assetId===editing.id)} value={productForm.currency} onChange={e=>setProductForm(f=>({...f,currency:e.target.value,fxRate:e.target.value==='TWD'?'1':''}))}>{['TWD','USD','JPY','EUR','GBP','AUD','HKD','CNY','CHF'].map(x=><option key={x} value={x}>{x}</option>)}</select></label>
+     {productForm.currency!=='TWD'&&<label>每 1 {productForm.currency} 折合 TWD<input required type="number" min="0.000001" step="any" value={productForm.fxRate} onChange={e=>setProductForm(f=>({...f,fxRate:e.target.value}))}/></label>}
+     {!isDeposit&&<label>{isSavings?'目前可領回解約金／現值':isBond?'每百元面額市價':'每單位基金淨值'}<input required type="number" min="0" step="any" value={productForm.price} onChange={e=>setProductForm(f=>({...f,price:e.target.value}))}/></label>}
+     {(isDeposit||isSavings)&&<label>{isDeposit?'起存日':'保單生效日'}<input type="date" value={productForm.startDate||''} onChange={e=>setProductForm(f=>({...f,startDate:e.target.value}))}/></label>}
+     <label>{isDeposit?'資料更新日期':'估值日期'}<input type="date" value={productForm.priceDate||''} onChange={e=>setProductForm(f=>({...f,priceDate:e.target.value}))}/></label>
+     {isSavings&&<label>{productForm.policySubtype==='rateAdjustableWholeLife'?'預計解約日（可不填）':'滿期日（可不填）'}<input type="date" value={productForm.maturityDate||''} onChange={e=>setProductForm(f=>({...f,maturityDate:e.target.value}))}/></label>}
+     {isSavings&&<section className="savings-policy-fields">
+       <h4>保單型態與增值條件</h4>
+       <label>保單類型<select value={productForm.policySubtype||'rateAdjustableWholeLife'} onChange={e=>setProductForm(f=>({...f,policySubtype:e.target.value}))}><option value="rateAdjustableWholeLife">利率變動型終身壽險</option><option value="endowment">養老／滿期儲蓄險</option><option value="other">其他儲蓄險</option></select></label>
+       <label>繳費年期<input type="number" min="1" max="100" step="1" value={productForm.premiumYears??''} onChange={e=>setProductForm(f=>({...f,premiumYears:e.target.value}))}/></label>
+       <label>參考宣告利率（%）<input type="number" min="0" max="100" step="any" value={productForm.declaredRate??''} onChange={e=>setProductForm(f=>({...f,declaredRate:e.target.value}))}/></label>
+       <label>增值回饋方式<select value={productForm.bonusMethod||'increaseCoverage'} onChange={e=>setProductForm(f=>({...f,bonusMethod:e.target.value}))}><option value="increaseCoverage">增額繳清保險</option><option value="cash">現金給付</option><option value="accumulate">儲存生息</option><option value="other">其他／未指定</option></select></label>
+       <h4>保單年度試算</h4><p className="hint">以下僅供預估；不會覆寫實際解約金或納入淨資產。</p>
+       <label>批次貼上年度試算（年度, 累計保費, 年末解約金, 次年初解約金）<textarea rows="3" value={projectionPaste} onChange={e=>setProjectionPaste(e.target.value)}/></label>
+       <button type="button" className="soft-btn small" onClick={()=>{try{const parsed=parseSavingsProjectionText(projectionPaste);setProductForm(f=>({...f,projectionRows:normalizeSavingsProjection([...(f.projectionRows||[]).filter(r=>!parsed.some(n=>Number(n.year)===Number(r.year))),...parsed])}));setProjectionPaste('');setError('')}catch(e){setError(e.message)}}}>加入年度試算資料</button>
+       {(productForm.projectionRows||[]).map((r,i)=><div className="savings-projection-edit-row" key={i}>
+        <label>保單年度<input type="number" min="1" step="1" value={r.year??''} onChange={e=>setProductForm(f=>({...f,projectionRows:f.projectionRows.map((v,j)=>j===i?{...v,year:e.target.value}:v)}))}/></label>
+        <label>累計已繳保費<input type="number" min="0" step="any" value={r.cumulativePremium??''} onChange={e=>setProductForm(f=>({...f,projectionRows:f.projectionRows.map((v,j)=>j===i?{...v,cumulativePremium:e.target.value}:v)}))}/></label>
+        <label>年末解約總領金額<input required type="number" min="0" step="any" value={r.endValue??''} onChange={e=>setProductForm(f=>({...f,projectionRows:f.projectionRows.map((v,j)=>j===i?{...v,endValue:e.target.value}:v)}))}/></label>
+        <label>次年度初解約金<input type="number" min="0" step="any" value={r.nextValue??''} onChange={e=>setProductForm(f=>({...f,projectionRows:f.projectionRows.map((v,j)=>j===i?{...v,nextValue:e.target.value}:v)}))}/></label>
+        <button type="button" className="soft-btn small" onClick={()=>setProductForm(f=>({...f,projectionRows:f.projectionRows.filter((_,j)=>j!==i)}))}>刪除年度</button>
+       </div>)}
+       <button type="button" className="soft-btn small" onClick={()=>setProductForm(f=>({...f,projectionRows:[...(f.projectionRows||[]),{year:String((f.projectionRows||[]).reduce((max,r)=>Math.max(max,Number(r.year)||0),0)+1),cumulativePremium:'',endValue:'',nextValue:''}]}))}><Plus size={15}/>新增年度試算</button>
+      </section>}
+
+     {(isBond||isDeposit)&&<><label>{isDeposit?'定存年利率（%）':'票面年利率（%）'}<input type="number" min="0" step="any" value={productForm.couponRate||''} onChange={e=>setProductForm(f=>({...f,couponRate:e.target.value}))}/></label><label>到期日<input type="date" value={productForm.maturityDate||''} onChange={e=>setProductForm(f=>({...f,maturityDate:e.target.value}))}/></label>{!isDeposit&&<label>每隔幾個月付息<select value={productForm.couponFrequency||'6'} onChange={e=>setProductForm(f=>({...f,couponFrequency:e.target.value}))}><option value="1">每月</option><option value="3">每季</option><option value="6">每半年</option><option value="12">每年</option></select></label>}</>}
+     {isSavings&&<p className="hint">現值請依保險公司提供的解約金或保單帳戶價值輸入，不能直接以已繳保費代替。</p>}{isDeposit&&<p className="hint">本金投入及到期領回需另登錄資金異動；利率僅供參考，不會自動產生利息。</p>}{error&&<p role="alert" className="investment-product-error">{error}</p>}<footer><button type="button" onClick={close}>取消</button><button type="submit" disabled={busy}>儲存</button></footer></form>:
+     <form onSubmit={saveFlow}>
+      <label>交易類型<select value={flowForm.kind} onChange={e=>setFlowForm(f=>({...f,kind:e.target.value}))}>{Object.entries(actions).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
+      <label>日期<input required type="date" value={flowForm.date} onChange={e=>setFlowForm(f=>({...f,date:e.target.value}))}/></label>
+      {flowForm.kind!=='yield'&&!(isPrincipal&&flowForm.kind==='contribution')&&<label>{isPrincipal?'要減少的本金':isBond?'交易面額':'基金單位數'}<input required type="number" min="0.00000001" step="any" value={flowForm.shares} onChange={e=>setFlowForm(f=>({...f,shares:e.target.value}))}/></label>}
+      <label>{flowForm.kind==='yield'?(isDeposit?'實收利息':isSavings?'實收給付':'票息／配息'):flowForm.kind==='redemption'?'實際領回總額':isSavings?'實繳保費':isDeposit?'存入本金':'申購總成本'}（{currencyLabel}）<input required type="number" min="0.000001" step="any" value={flowForm.amount} onChange={e=>setFlowForm(f=>({...f,amount:e.target.value}))}/></label>
+      {isSavings&&flowForm.kind==='contribution'&&<label className="investment-product-historical-toggle"><input type="checkbox" checked={!!flowForm.historical} onChange={e=>setFlowForm(f=>({...f,historical:e.target.checked,sourceAccount:e.target.checked?'':f.sourceAccount}))}/>歷史已繳保費（只記錄成本，不再次扣款）</label>}
+      {!(isSavings&&flowForm.kind==='contribution'&&flowForm.historical)&&<label>{flowForm.kind==='contribution'?'扣款帳戶':'入帳帳戶'}<select required value={flowForm.sourceAccount} onChange={e=>setFlowForm(f=>({...f,sourceAccount:e.target.value,exchangeRate:''}))}><option value="">請選擇帳戶</option>{cashAccounts.filter(a=>flowForm.kind!=='contribution'||a.currency===currencyLabel).map(a=><option key={a.id} value={a.id}>{a.name} · {a.currency}</option>)}</select></label>}
+      {flowForm.kind!=='contribution'&&cash&&cash.currency!==currencyLabel&&<label>匯率（1 {currencyLabel} = ? {cash.currency}）<input required type="number" min="0.00000001" step="any" value={flowForm.exchangeRate} placeholder={Number.isFinite(recommended)?String(Number(recommended.toPrecision(9))):''} onChange={e=>setFlowForm(f=>({...f,exchangeRate:e.target.value}))}/></label>}
+      {flowForm.kind!=='contribution'&&<label>手續費（{cash?.currency||'入帳幣別'}）<input type="number" min="0" step="any" value={flowForm.fee} onChange={e=>setFlowForm(f=>({...f,fee:e.target.value}))}/></label>}
+      {isSavings&&flowForm.kind==='contribution'&&flowForm.historical&&<p className="hint">此筆會列入保單累計成本與 XIRR 計算，但不會再扣款，也不會新增日記帳收支。請逐筆填寫歷史繳費日期，勿把多年累計保費當成單次繳費。</p>}
+      <label>備註<input value={flowForm.note} onChange={e=>setFlowForm(f=>({...f,note:e.target.value}))}/></label>
+      {error&&<p role="alert" className="investment-product-error">{error}</p>}
+      <footer><button type="button" onClick={close}>取消</button><button type="submit" disabled={busy}>儲存</button></footer></form>}
+   </section></div>, document.body)}
+ </section>;
+}

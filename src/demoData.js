@@ -11,7 +11,7 @@ export async function seedDemoIfEmpty({reset=false}={}) {
  // Never overwrite existing demo edits except by an explicit reset action.
  if(!reset&&await db.accounts.count()>0)return false;
  const data=createDemoDataset();
- const tables=[db.records,db.accounts,db.stocks,db.recurring,db.investmentValuations,db.investmentFlows,db.netWorthHistory,db.marketCache];
+ const tables=[db.records,db.accounts,db.stocks,db.recurring,db.investmentValuations,db.investmentFlows,db.netWorthHistory,db.marketCache,db.investmentProducts];
  await db.transaction('rw',...tables,db.settings,async()=>{
   if(reset){for(const t of tables)await t.clear();await db.settings.clear();}
   for(const [name,rows] of Object.entries(data)){

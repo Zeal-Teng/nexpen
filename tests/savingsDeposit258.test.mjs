@@ -1,0 +1,48 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {investmentProductPosition,investmentProductValue,validateProductTrade} from '../src/investmentProducts.js';
+import {computeNetWorth} from '../src/netWorth.js';
+import {investmentCashMovement} from '../src/investmentCashFlow.js';
+import {investmentDiaryRows} from '../src/investmentDiary.js';
+const flow=(assetId,kind,amount,shares,date='2026-01-01',extra={})=>({id:`${assetId}:${kind}:${date}`,assetId,kind,amount,shares,date,sourceAccount:'cash',redemptionExchangeRate:1,redemptionFee:0,...extra});
+const account={id:'cash',name:'活存',currency:'TWD'};
+test('term deposit principal transfers once, interest only upon receipt, and maturity payout',()=>{
+ const asset={id:'d1',type:'termDeposit',name:'一年期定存',currency:'TWD',price:1,fxRate:1};
+ const contribution=flow('d1','contribution',100000,100000);
+ const interest=flow('d1','yield',1600,0,'2026-12-01');
+ const before=investmentProductPosition(asset,[contribution,interest]);
+ assert.equal(before.units,100000);assert.equal(investmentProductValue(asset,before),100000);
+ assert.equal(investmentCashMovement(contribution),-100000);
+ assert.equal(investmentCashMovement(interest),1600);
+ const payout=flow('d1','redemption',100000,100000,'2026-12-02');
+ validateProductTrade(asset,[contribution,interest],payout,account);
+ const after=investmentProductPosition(asset,[contribution,interest,payout]);
+ assert.equal(after.units,0);assert.equal(investmentProductValue(asset,after),0);
+ const worth=computeNetWorth({accounts:[{...account,openingBalance:100000}],investmentProducts:[asset],investmentFlows:[contribution,interest,payout]});
+ assert.equal(worth.netWorth,101600);
+ assert.equal(worth.assets.find(a=>a.id==='termDeposit'),undefined);
+});
+test('savings insurance uses surrender value instead of premium totals',()=>{
+ const asset={id:'s1',type:'savings',name:'儲蓄險',currency:'USD',fxRate:30,price:1850};
+ const premiums=[flow('s1','contribution',1000,1000),flow('s1','contribution',1000,1000,'2026-02-01')];
+ const position=investmentProductPosition(asset,premiums);
+ assert.equal(position.cost,2000);assert.equal(investmentProductValue(asset,position),1850);
+ const net=computeNetWorth({investmentProducts:[asset],investmentFlows:premiums});
+ assert.equal(net.assets.find(a=>a.id==='savings').amount,55500);
+ const surrender=flow('s1','redemption',1800,2000,'2026-12-01',{sourceAccount:'cash',redemptionExchangeRate:30,redemptionFee:15});
+ assert.equal(investmentCashMovement(surrender),53985);
+ assert.equal(investmentDiaryRows([surrender],[account],[asset]).length,2);
+ const after=investmentProductPosition(asset,[...premiums,surrender]);
+ assert.equal(after.realized,-200);assert.equal(investmentProductValue(asset,after),0);
+});
+test('new products are in standalone investment UI, backup table and allocation labels',()=>{
+ const app=readFileSync(new URL('../src/App.jsx',import.meta.url),'utf8');
+ const component=readFileSync(new URL('../src/InvestmentProducts.jsx',import.meta.url),'utf8');
+ const db=readFileSync(new URL('../src/db.js',import.meta.url),'utf8');
+ assert.match(app,/\['fund','bond','savings','termDeposit'\]\.includes\(investSection\)/);
+ assert.match(app,/\['savings','儲蓄險'\]/);
+ assert.match(app,/\['termDeposit','定存'\]/);
+ assert.match(component,/type==='termDeposit'/);
+ assert.match(db,/investmentProducts\.bulkPut/);
+});

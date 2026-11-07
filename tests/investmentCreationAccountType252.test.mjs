@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../src/App.jsx',import.meta.url),'utf8');
 const db=readFileSync(new URL('../src/db.js',import.meta.url),'utf8');
 test('investment creation stays exclusively in the investment module',()=>{
- assert.match(source,/else\{open\('account',null,type\);\}/);
+ assert.match(source,/else if\(type==='trust'\|\|type==='policy'\)\{open\('account',null,type\);\}/);
  assert.match(source,/setInvestmentCreate\(kind==='account'/);
  assert.match(source,/持股信託與投資保單請由投資頁新增/);
 });

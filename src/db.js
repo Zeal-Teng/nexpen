@@ -21,10 +21,12 @@ db.version(6).stores({netWorthHistory:'date'});
 db.version(7).stores({investmentValuations:'++id,assetId,date',investmentFlows:'id,assetId,date,sourceAccount',netWorthHistory:'date'});
 db.version(8).stores({investmentValuations:'++id,assetId,date',investmentFlows:'id,assetId,date,sourceAccount',netWorthHistory:'date'});
 db.version(9).stores({investmentValuations:'++id,assetId,date',investmentFlows:'id,assetId,date,sourceAccount',netWorthHistory:'date'});
+// v256: fund/bond assets are independently managed, never account types.
+db.version(10).stores({investmentProducts:'id,type,name,currency'});
 
 /**
  * Repair a legacy physical IndexedDB schema BEFORE opening it through Dexie.
- * Dexie maps schema version 9 to native IndexedDB version 90, not 9.
+ * Dexie maps schema version 10 to native IndexedDB version 100, not 10.
  * An IDB transaction fails with NotFoundError if one of its object stores does
  * not physically exist, even if Dexie declares that store in db.version().
  * This routine only creates missing stores/indexes, never deletes or clears rows.
@@ -44,7 +46,8 @@ export async function ensureInvestmentSchema(){
   marketCache:{keyPath:'key',indexes:[]},
   investmentValuations:{keyPath:'id',autoIncrement:true,indexes:['assetId','date']},
   investmentFlows:{keyPath:'id',indexes:['assetId','date','sourceAccount']},
-  netWorthHistory:{keyPath:'date',indexes:[]}
+  netWorthHistory:{keyPath:'date',indexes:[]},
+  investmentProducts:{keyPath:'id',indexes:['type','name','currency']}
  };
  const missing=Object.keys(specs).filter(name=>!physical.objectStoreNames.contains(name));
  const nativeVersion=physical.version;
@@ -52,9 +55,9 @@ export async function ensureInvestmentSchema(){
  if(missing.length){
   // v9 is native v90. Do not open a DB above our known schema, because
   // upgrading an unknown future version could make recovery impossible.
-  if(nativeVersion>=90)throw new Error('資料庫版本較新且缺少資料表，請先備份並更新 APP，勿清除網站資料');
+  if(nativeVersion>=100)throw new Error('資料庫版本較新且缺少資料表，請先備份並更新 APP，勿清除網站資料');
   await new Promise((resolve,reject)=>{
-   const request=indexedDB.open(db.name,90);
+   const request=indexedDB.open(db.name,100);
    request.onblocked=()=>reject(new Error('資料庫正在其他分頁使用，請關閉其他 NEXPEN 分頁後重新開啟'));
    request.onerror=()=>reject(request.error||new Error('資料庫升級失敗，原有資料未刪除'));
    request.onupgradeneeded=()=>{
@@ -148,14 +151,15 @@ export function uid(){
   const h = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
   return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
 }
-export async function snapshot(){const [records,accounts,stocks,recurring,settings,investmentValuations,investmentFlows,netWorthHistory]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.toArray(),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.netWorthHistory.toArray()]);return {app:'cyberpulse-liquid',version:2,exportedAt:new Date().toISOString(),records,accounts,stocks,recurring,settings,investmentValuations,investmentFlows,netWorthHistory};}
+export async function snapshot(){const [records,accounts,stocks,recurring,settings,investmentValuations,investmentFlows,netWorthHistory,investmentProducts]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.toArray(),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.netWorthHistory.toArray(),db.investmentProducts.toArray()]);return {app:'cyberpulse-liquid',version:3,exportedAt:new Date().toISOString(),records,accounts,stocks,recurring,settings,investmentValuations,investmentFlows,netWorthHistory,investmentProducts};}
 export async function restore(data){
- if(data?.app!=='cyberpulse-liquid'||![1,2].includes(data.version)||!['records','accounts','stocks','recurring','settings'].every(k=>Array.isArray(data[k])))throw Error('備份格式或版本不正確');
- if(data.version===2&&(!Array.isArray(data.investmentValuations)||!Array.isArray(data.investmentFlows)))throw Error('備份缺少投資資金異動紀錄');
- const tables=[db.records,db.accounts,db.stocks,db.recurring,db.settings,db.investmentValuations,db.investmentFlows,db.netWorthHistory];
+ if(data?.app!=='cyberpulse-liquid'||![1,2,3].includes(data.version)||!['records','accounts','stocks','recurring','settings'].every(k=>Array.isArray(data[k])))throw Error('備份格式或版本不正確');
+ if(data.version>=2&&(!Array.isArray(data.investmentValuations)||!Array.isArray(data.investmentFlows)))throw Error('備份缺少投資資金異動紀錄');
+ if(data.version>=3&&!Array.isArray(data.investmentProducts))throw Error('備份缺少基金與債券資料');
+ const tables=[db.records,db.accounts,db.stocks,db.recurring,db.settings,db.investmentValuations,db.investmentFlows,db.netWorthHistory,db.investmentProducts];
  await db.transaction('rw',...tables,async()=>{
   for(const t of tables)await t.clear();
-  await Promise.all([db.records.bulkPut(data.records),db.accounts.bulkPut(data.accounts),db.stocks.bulkPut(data.stocks),db.recurring.bulkPut(data.recurring),db.settings.bulkPut(data.settings),db.investmentValuations.bulkPut(data.investmentValuations||[]),db.investmentFlows.bulkPut(data.investmentFlows||[]),db.netWorthHistory.bulkPut(Array.isArray(data.netWorthHistory)?data.netWorthHistory:[])]);
+  await Promise.all([db.records.bulkPut(data.records),db.accounts.bulkPut(data.accounts),db.stocks.bulkPut(data.stocks),db.recurring.bulkPut(data.recurring),db.settings.bulkPut(data.settings),db.investmentValuations.bulkPut(data.investmentValuations||[]),db.investmentFlows.bulkPut(data.investmentFlows||[]),db.netWorthHistory.bulkPut(Array.isArray(data.netWorthHistory)?data.netWorthHistory:[]),db.investmentProducts.bulkPut(Array.isArray(data.investmentProducts)?data.investmentProducts:[])]);
  });
 }
 // 帳戶餘額從期初餘額與交易推導，避免刪改資料造成累積誤差。

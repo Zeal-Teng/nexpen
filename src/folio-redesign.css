@@ -6489,3 +6489,455 @@ html .app-shell .currency-rate-select .currency-rate-arrow,
  html .app-shell .currency-rate-select .currency-rate-option-value,
  .currency-rate-sheet .currency-rate-option-value {font-size:12px!important;}
 }
+
+/* v256: independent fund and bond investment modules */
+html .app-shell .investment-product-page{display:flex;flex-direction:column;gap:14px;min-width:0}
+html .app-shell .investment-product-header,html .app-shell .investment-product-actions{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+html .app-shell .investment-product-header .soft-btn,html .app-shell .investment-product-actions .soft-btn{display:inline-flex;gap:5px;align-items:center}
+html .app-shell .investment-product-metadata{display:flex;gap:9px;flex-wrap:wrap;font-size:12px;color:var(--muted,#79766f)}
+html .app-shell .investment-product-metadata>span{border:1px solid rgba(130,120,99,.18);border-radius:10px;padding:5px 9px}
+html .app-shell .investment-product-history{display:flex;flex-direction:column;gap:8px}
+html .app-shell .investment-product-history-row{display:flex;align-items:stretch;background:var(--card,#fffcf6);border-radius:12px;border:1px solid rgba(125,115,95,.18);min-width:0}
+html .app-shell .investment-product-history-row>button:first-child{display:flex;justify-content:space-between;align-items:center;flex:1;padding:11px;min-width:0;text-align:left;background:transparent;border:0;gap:8px;color:inherit}
+html .app-shell .investment-product-history-row strong,html .app-shell .investment-product-history-row small{display:block}
+html .app-shell .investment-product-history-row small{font-size:12px;opacity:.7}
+html .app-shell .investment-product-history-row b{font-size:13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+html .app-shell .investment-product-delete{background:transparent;border:0;color:var(--user-expense,#d75863);padding:0 11px}
+html .app-shell .investment-product-remove{align-self:flex-start;color:var(--user-expense,#d75863)}
+html .app-shell .investment-product-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:1200;display:flex;align-items:flex-end;justify-content:center}
+html .app-shell .investment-product-sheet{box-sizing:border-box;background:var(--panel,#fffcf6);color:var(--ink,#292822);width:min(100%,540px);max-height:90dvh;overflow-y:auto;border-radius:24px 24px 0 0;padding:18px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -8px 32px rgba(0,0,0,.18)}
+html .app-shell .investment-product-sheet header{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+html .app-shell .investment-product-sheet header h3{margin:0}
+html .app-shell .investment-product-sheet header button{border:0;background:transparent;color:inherit}
+html .app-shell .investment-product-sheet form{display:flex;flex-direction:column;gap:12px}
+html .app-shell .investment-product-sheet label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
+html .app-shell .investment-product-sheet label input,html .app-shell .investment-product-sheet label select{box-sizing:border-box;width:100%;border:1px solid rgba(133,121,100,.24);border-radius:10px;background:var(--card,#f4eee4);padding:12px;color:inherit;font:inherit;min-height:44px}
+html .app-shell .investment-product-sheet footer{display:flex;justify-content:flex-end;gap:10px;margin-top:9px}
+html .app-shell .investment-product-sheet footer button{border:1px solid rgba(133,121,100,.24);border-radius:10px;padding:10px 21px;background:var(--card,#ede6d9);color:inherit}
+html .app-shell .investment-product-sheet footer button[type="submit"]{background:#154d40;color:white}
+html .app-shell .investment-product-error{color:#d94b5b;font-size:13px;font-weight:600;overflow-wrap:anywhere}
+html .app-shell .investment-first-level-stack>.invest-stack-fund .investment-reference-card{--stack-accent:#799bc5}
+html .app-shell .investment-first-level-stack>.invest-stack-bond .investment-reference-card{--stack-accent:#68a99c}
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(4){z-index:4!important}
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(5){z-index:5!important}
+
+
+/* v257: Fund and bond forms render in a body-level portal, outside any
+   transformed/scroll-clipped investment card and page containers. */
+html .investment-product-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 10050 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+  background: rgba(0, 0, 0, .56) !important;
+}
+html .investment-product-backdrop .investment-product-sheet {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 0 1 540px !important;
+  min-width: 0 !important;
+  width: min(100%, 540px) !important;
+  max-height: calc(100dvh - 40px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  border-radius: 22px !important;
+  background: var(--panel, #fffcf6) !important;
+  color: var(--ink, #292822) !important;
+  box-shadow: 0 20px 55px rgba(0,0,0,.22) !important;
+}
+html .investment-product-sheet > header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-shrink: 0 !important;
+  padding: 18px 20px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid rgba(133,121,100,.2) !important;
+}
+html .investment-product-sheet > header h3 { margin: 0 !important; }
+html .investment-product-sheet > header button { border: 0; background: transparent; color: inherit; cursor: pointer; }
+html .investment-product-sheet > form {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  padding: 16px 20px 0 !important;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+html .investment-product-sheet > form > label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+html .investment-product-sheet > form > label input,
+html .investment-product-sheet > form > label select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(133,121,100,.24);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--card,#f4eee4);
+  color: inherit;
+  font: inherit;
+}
+html .investment-product-sheet > form > footer {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 2 !important;
+  display: flex !important;
+  flex-shrink: 0 !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin: 4px -20px 0 !important;
+  padding: 12px 20px max(12px, env(safe-area-inset-bottom)) !important;
+  border-top: 1px solid rgba(133,121,100,.18) !important;
+  background: var(--panel,#fffcf6) !important;
+}
+html .investment-product-sheet > form > footer button {
+  border: 1px solid rgba(133,121,100,.24);
+  border-radius: 10px;
+  padding: 10px 21px;
+  background: var(--card,#ede6d9);
+  color: inherit;
+}
+html .investment-product-sheet > form > footer button[type="submit"] {
+  background: #154d40;
+  color: white;
+}
+html .investment-product-sheet .investment-product-error {
+  flex-shrink: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  html .investment-product-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  html .investment-product-backdrop .investment-product-sheet {
+    flex: 0 1 100% !important;
+    width: 100% !important;
+    max-height: 92dvh !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+}
+
+/* v259: savings policy detail, projections and IRR */
+html .app-shell .savings-policy-review{margin:16px 0;padding:15px;border:1px solid rgba(128,115,93,.2);border-radius:17px;display:grid;gap:12px;min-width:0}
+html .app-shell .savings-policy-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:7px}
+html .app-shell .savings-policy-heading h3{margin:0;font-size:16px}
+html .app-shell .savings-policy-heading small{opacity:.65;font-size:11px}
+html .app-shell .savings-policy-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html .app-shell .savings-policy-stats>div{padding:12px;background:rgba(133,121,100,.07);border-radius:12px;min-width:0;display:grid;gap:5px}
+html .app-shell .savings-policy-stats small{font-size:11px;opacity:.75}
+html .app-shell .savings-policy-stats strong{font-size:15px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+html .app-shell .savings-policy-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+html .app-shell .savings-policy-scroll table{width:100%;min-width:530px;border-collapse:collapse;font-variant-numeric:tabular-nums}
+html .app-shell .savings-policy-scroll th,html .app-shell .savings-policy-scroll td{padding:9px 7px;border-bottom:1px solid rgba(128,115,93,.16);text-align:right;white-space:nowrap;font-size:12px}
+html .app-shell .savings-policy-scroll th:first-child,html .app-shell .savings-policy-scroll td:first-child{text-align:left}
+html .app-shell .savings-policy-projection-select{display:grid;gap:6px;font-weight:600;font-size:12px}
+html .app-shell .savings-policy-projection-select select{min-height:40px;padding:8px;border-radius:10px;max-width:100%;background:var(--card,#f4eee4);color:inherit}
+html .investment-product-sheet .savings-policy-fields{display:grid;gap:12px;padding:12px 0;border-top:1px solid rgba(128,115,93,.25)}
+html .investment-product-sheet .savings-policy-fields h4{margin:5px 0 0;font-size:14px}
+html .investment-product-sheet .savings-policy-fields label{display:grid;gap:6px;font-size:13px;font-weight:600}
+html .investment-product-sheet .savings-policy-fields label input,html .investment-product-sheet .savings-policy-fields label select{width:100%;min-height:43px;box-sizing:border-box;border:1px solid rgba(133,121,100,.24);border-radius:10px;padding:10px;background:var(--card,#f4eee4);color:inherit}
+html .investment-product-sheet .savings-projection-edit-row{padding:12px;border:1px solid rgba(133,121,100,.2);border-radius:12px;display:grid;gap:9px}
+@media(max-width:520px){html .app-shell .savings-policy-stats{grid-template-columns:1fr}}
+
+/* v260: new investment products share trust/policy stage-2 Card Stack and stage-3 ListView. */
+html .app-shell .investment-product-page .investment-product-stage-stack {
+  --investment-overlap:35px;
+}
+html .app-shell .investment-product-page .investment-product-stage-stack > .investment-tier-card + .investment-tier-card {
+  margin-top:-35px!important;
+}
+html .app-shell .investment-product-page .investment-product-stage-stack .investment-holdings-list {
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  padding:0;
+}
+html .app-shell .investment-product-page .investment-product-third-row {
+  display:flex;
+  align-items:stretch;
+  width:100%;
+  min-width:0;
+}
+html .app-shell .investment-product-page .investment-product-third-row > .investment-history-button {
+  flex:1;
+  min-width:0;
+  width:auto;
+}
+html .app-shell .investment-product-page .investment-product-third-row > .investment-product-delete {
+  flex:0 0 auto;
+  background:transparent;
+  border:0;
+  padding:0 9px;
+}
+html .app-shell .investment-product-page .investment-third-level .investment-product-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:10px 0 14px;
+}
+html .app-shell .investment-product-sheet .investment-product-historical-toggle {
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:9px;
+  font-weight:600;
+}
+html .app-shell .investment-product-sheet .investment-product-historical-toggle input {
+  width:18px;
+  height:18px;
+  margin:0;
+  flex:none;
+}
+html .app-shell .investment-product-sheet .savings-policy-fields textarea {
+  width:100%;
+  border:1px solid var(--line,#ddd2c0);
+  border-radius:10px;
+  padding:10px;
+  resize:vertical;
+  background:var(--surface,#f8f4ec);
+  color:inherit;
+}
+
+/* v261: savings insurance third-level redesign */
+html .app-shell .savings-detail-layout{display:grid;gap:16px;margin-top:14px}
+html .app-shell .savings-detail-note{display:grid;gap:6px;padding:14px 16px;border-radius:16px;border:1px solid rgba(128,115,93,.16);background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(245,239,229,.7));color:var(--theme-text)}
+html .app-shell .savings-detail-note strong{font-size:15px}
+html .app-shell .savings-detail-note p{margin:0;font-size:13px;line-height:1.6;color:var(--theme-muted)}
+html .app-shell .savings-detail-chips{display:flex;flex-wrap:wrap;gap:8px}
+html .app-shell .savings-detail-chips span{display:inline-flex;align-items:center;min-height:32px;padding:6px 12px;border-radius:999px;border:1px solid rgba(128,115,93,.18);background:rgba(255,252,246,.9);font-size:12px;color:var(--theme-muted)}
+html .app-shell .savings-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+html .app-shell .savings-detail-card{display:grid;gap:6px;padding:15px 16px;border-radius:18px;background:var(--card,#f4eee4);border:1px solid rgba(128,115,93,.12);min-width:0;align-content:start}
+html .app-shell .savings-detail-card small{font-size:12px;color:var(--theme-muted)}
+html .app-shell .savings-detail-card strong{font-size:clamp(18px,4.8vw,24px);line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:var(--theme-text)}
+html .app-shell .savings-detail-card span{font-size:12px;line-height:1.55;color:var(--theme-muted)}
+html .app-shell .savings-detail-card .income{color:var(--user-income)!important;-webkit-text-fill-color:var(--user-income)!important}
+html .app-shell .savings-detail-card .expense{color:var(--user-expense)!important;-webkit-text-fill-color:var(--user-expense)!important}
+html .app-shell .savings-detail-history{margin:0!important}
+html .app-shell .savings-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 4px}
+html .app-shell .savings-action-grid .soft-btn{justify-content:center;width:100%}
+html .app-shell .savings-projection-panel{display:grid;gap:12px;padding:16px;border-radius:18px;border:1px solid rgba(128,115,93,.16);background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(245,239,229,.62))}
+html .app-shell .savings-projection-intro{margin:0;font-size:13px;line-height:1.65;color:var(--theme-muted)}
+html .app-shell .savings-projection-focus{display:grid;gap:10px}
+html .app-shell .savings-empty-state{display:grid;gap:8px;padding:14px 16px;border-radius:16px;background:rgba(133,121,100,.06)}
+html .app-shell .savings-empty-state strong{font-size:14px}
+html .app-shell .savings-empty-state p{margin:0;font-size:13px;line-height:1.6;color:var(--theme-muted)}
+html .app-shell .savings-projection-panel .savings-policy-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width: 720px){
+  html .app-shell .savings-detail-grid{grid-template-columns:minmax(0,1fr)}
+  html .app-shell .savings-action-grid{grid-template-columns:minmax(0,1fr)}
+  html .app-shell .savings-projection-panel .savings-policy-stats{grid-template-columns:minmax(0,1fr)}
+}
+
+/* v262: fix savings action button alignment + first-level investment stack accents/layering */
+html .app-shell .savings-action-grid{
+  align-items:stretch!important;
+}
+html .app-shell .savings-action-grid .soft-btn,
+html .app-shell .investment-product-actions .soft-btn,
+html .app-shell .investment-product-remove{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  min-height:46px!important;
+  line-height:1.2!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+}
+html .app-shell .savings-action-grid .soft-btn svg,
+html .app-shell .investment-product-actions .soft-btn svg,
+html .app-shell .investment-product-remove svg{
+  flex:0 0 auto!important;
+  display:block!important;
+  width:16px!important;
+  height:16px!important;
+}
+html .app-shell .investment-product-remove{
+  align-self:flex-start!important;
+  padding-inline:14px!important;
+}
+
+/* complete color system for all investment first-level cards */
+html .app-shell .investment-reference-stack .investment-reference-layer.invest-stack-stocks{--peek:#caa8dc}
+html .app-shell .investment-reference-stack .investment-reference-layer.invest-stack-trust{--peek:#ff9579}
+html .app-shell .investment-reference-stack .investment-reference-layer.invest-stack-policy{--peek:#23c5bf}
+html .app-shell .investment-reference-stack .investment-reference-layer.invest-stack-fund{--peek:#7fa7d6}
+html .app-shell .investment-reference-stack .investment-reference-layer.invest-stack-bond{--peek:#7bc1b0}
+html .app-shell .investment-reference-stack .investment-reference-layer.invest-stack-savings{--peek:#bda0e7}
+html .app-shell .investment-reference-stack .investment-reference-layer.invest-stack-termDeposit{--peek:#e3ba69}
+
+/* accent ring on front face follows the category color too */
+html .app-shell .investment-first-level-stack>.invest-stack-stocks .investment-reference-card{--stack-accent:#caa8dc}
+html .app-shell .investment-first-level-stack>.invest-stack-trust .investment-reference-card{--stack-accent:#ff9579}
+html .app-shell .investment-first-level-stack>.invest-stack-policy .investment-reference-card{--stack-accent:#23c5bf}
+html .app-shell .investment-first-level-stack>.invest-stack-fund .investment-reference-card{--stack-accent:#7fa7d6}
+html .app-shell .investment-first-level-stack>.invest-stack-bond .investment-reference-card{--stack-accent:#7bc1b0}
+html .app-shell .investment-first-level-stack>.invest-stack-savings .investment-reference-card{--stack-accent:#bda0e7}
+html .app-shell .investment-first-level-stack>.invest-stack-termDeposit .investment-reference-card{--stack-accent:#e3ba69}
+
+/* ensure later cards always sit above earlier cards, preventing bond/savings protrusion */
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(1){z-index:1!important}
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(2){z-index:2!important}
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(3){z-index:3!important}
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(4){z-index:4!important}
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(5){z-index:5!important}
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(6){z-index:6!important}
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(7){z-index:7!important}
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer:nth-child(8){z-index:8!important}
+
+/* keep overlap moderate and consistent, only covering prior rounded corner */
+html .app-shell .investment-dashboard .investment-first-level-stack>.investment-reference-layer,
+html .app-shell .networth-stack-dashboard .networth-reference-stack>.networth-reference-layer{
+  --account-like-overlap:35px!important;
+}
+
+@media (max-width:540px){
+  html .app-shell .savings-action-grid .soft-btn,
+  html .app-shell .investment-product-actions .soft-btn,
+  html .app-shell .investment-product-remove{
+    min-height:44px!important;
+    font-size:14px!important;
+    gap:7px!important;
+  }
+}
+
+
+/* v263: Prevent global .soft-btn.small margin-left:61px from overflowing
+   the savings insurance action grid on narrow/mobile viewports. */
+html .app-shell .investment-product-page .savings-detail-history .savings-action-grid {
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  padding:0!important;
+  margin:10px 0 14px!important;
+  column-gap:10px!important;
+  row-gap:10px!important;
+}
+html .app-shell .investment-product-page .savings-detail-history .savings-action-grid > button.soft-btn.small {
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:10px 8px!important;
+  gap:6px!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.35!important;
+  text-align:center!important;
+}
+html .app-shell .investment-product-page .savings-detail-history .savings-action-grid > button.soft-btn.small svg {
+  flex:0 0 16px!important;
+  width:16px!important;
+  height:16px!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout > button.investment-product-remove.soft-btn.small {
+  box-sizing:border-box!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:10px 14px!important;
+  white-space:normal!important;
+}
+@media(max-width:540px){
+  html .app-shell .investment-product-page .savings-detail-history .savings-action-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  html .app-shell .investment-product-page .savings-detail-history .savings-action-grid > button.soft-btn.small {
+    font-size:12px!important;
+    min-height:46px!important;
+    padding:9px 5px!important;
+  }
+}
+
+/* v264 — Category-specific second-stage "目前持有" stripe inherits the first-level palette. */
+html .app-shell .investment-product-page[data-investment-type="fund"] .investment-product-stage-stack > .investment-tier-card:first-child {--tier-color:#7fa7d6!important;}
+html .app-shell .investment-product-page[data-investment-type="bond"] .investment-product-stage-stack > .investment-tier-card:first-child {--tier-color:#7bc1b0!important;}
+html .app-shell .investment-product-page[data-investment-type="savings"] .investment-product-stage-stack > .investment-tier-card:first-child {--tier-color:#bda0e7!important;}
+html .app-shell .investment-product-page[data-investment-type="termDeposit"] .investment-product-stage-stack > .investment-tier-card:first-child {--tier-color:#e3ba69!important;}
+
+/* v264 — Actual iPhone savings history rows: name and value at top, date directly below.
+   The button is the click target; no orphaned chevron on a third line. */
+html .app-shell .investment-product-page .savings-detail-history .savings-premium-list-row {
+  display:flex!important;align-items:center!important;min-width:0!important;width:100%!important;
+  border-bottom:1px solid var(--theme-line)!important;
+}
+html .app-shell .investment-product-page .savings-detail-history .savings-premium-list-row > .savings-ledger-button {
+  flex:1 1 0!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:start!important;gap:6px 10px!important;min-width:0!important;width:0!important;
+  padding:14px 0!important;margin:0!important;border:0!important;
+  background:transparent!important;text-align:left!important;
+}
+html .app-shell .investment-product-page .savings-detail-history .savings-ledger-button > .row-main {
+  grid-column:1!important;grid-row:1!important;min-width:0!important;
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+  gap:6px!important;margin:0!important;padding:0!important;
+}
+html .app-shell .investment-product-page .savings-detail-history .savings-ledger-button > .row-main b {
+  display:block!important;line-height:1.25!important;
+}
+html .app-shell .investment-product-page .savings-detail-history .savings-ledger-button > .row-main small {
+  display:block!important;margin:0!important;font-size:12px!important;
+  line-height:1.4!important;white-space:normal!important;
+}
+html .app-shell .investment-product-page .savings-detail-history .savings-ledger-button > .transaction-right {
+  grid-column:2!important;grid-row:1!important;display:flex!important;
+  align-items:flex-end!important;justify-content:flex-start!important;
+  margin:0!important;padding:0!important;min-width:0!important;
+  text-align:right!important;
+}
+html .app-shell .investment-product-page .savings-detail-history .savings-ledger-button > .transaction-right strong {
+  display:block!important;font-size:clamp(13px,3.6vw,17px)!important;
+  font-variant-numeric:tabular-nums!important;white-space:nowrap!important;
+}
+html .app-shell .investment-product-page .savings-detail-history .savings-premium-list-row > .investment-product-delete {
+  flex:0 0 32px!important;align-self:center!important;display:grid!important;place-items:center!important;
+  min-width:32px!important;width:32px!important;margin:0!important;padding:9px 4px!important;
+}
+/* v264 final: right-hand transaction amount stays next to (and before) delete action. */
+html .app-shell .investment-product-page[data-investment-type="savings"] .savings-ledger-button > .transaction-right {
+  justify-self:end!important;
+  align-self:start!important;
+  margin-left:auto!important;
+  max-width:100%!important;
+  text-align:right!important;
+}
+html .app-shell .investment-product-page[data-investment-type="savings"] .savings-ledger-button > .transaction-right strong {
+  text-align:right!important;
+  white-space:nowrap!important;
+}

@@ -1,18 +1,18 @@
 import React,{useState} from 'react';
-import {Wallet,Landmark,ChartNoAxesCombined,Shield,Layers3,Coins,AlertCircle,ChevronRight} from 'lucide-react';
+import {Wallet,Landmark,ChartNoAxesCombined,Shield,Layers3,Coins,ChartLine,HandCoins,AlertCircle,ChevronRight} from 'lucide-react';
 import {ASSET_GROUPS} from './netWorth.js';
 import SummaryHero from './SummaryHero.jsx';
 import NetWorthTrend from './NetWorthTrend.jsx';
 import NetWorthGoal from './NetWorthGoal.jsx';
 
 const translations={
- 'zh-TW':{title:'資產配置',gross:'總資產',debt:'總負債',net:'淨資產',ratio:'資產比例',liabilities:'負債明細',none:'目前沒有負債',empty:'尚未有可計算的資產',unknown:'部分投資缺少有效報價，以下為已知估值；淨資產可能低估。',cash:'現金',deposit:'存款',securities:'證券',trust:'持股信託',insurance:'保險',other:'其他資產',assetCount:'項資產',liabilityCount:'筆負債',credit:'信用卡欠款',overdraft:'帳戶透支'},
- 'zh-CN':{title:'资产配置',gross:'总资产',debt:'总负债',net:'净资产',ratio:'资产比例',liabilities:'负债明细',none:'目前没有负债',empty:'尚未有可计算的资产',unknown:'部分投资缺少有效报价，以下为已知估值；净资产可能低估。',cash:'现金',deposit:'存款',securities:'证券',trust:'持股信托',insurance:'保险',other:'其他资产',assetCount:'类资产',liabilityCount:'笔负债',credit:'信用卡欠款',overdraft:'账户透支'},
- en:{title:'Asset allocation',gross:'Total assets',debt:'Total liabilities',net:'Net worth',ratio:'Share of assets',liabilities:'Liabilities',none:'No liabilities recorded',empty:'No assets to display',unknown:'Some investments have no valid quote. Totals show known values and may understate net worth.',cash:'Cash',deposit:'Deposits',securities:'Securities',trust:'Stock trusts',insurance:'Insurance',other:'Other assets',assetCount:'asset categories',liabilityCount:'liabilities',credit:'Credit card debt',overdraft:'Account overdraft'},
- ja:{title:'資産構成',gross:'総資産',debt:'負債合計',net:'純資産',ratio:'資産比率',liabilities:'負債明細',none:'負債はありません',empty:'表示する資産がありません',unknown:'一部の投資の時価が未取得です。合計は既知の金額のみで計算しています。',cash:'現金',deposit:'預金',securities:'証券',trust:'株式信託',insurance:'保険',other:'その他資産',assetCount:'資産区分',liabilityCount:'件の負債',credit:'カード債務',overdraft:'口座のマイナス残高'}
+ 'zh-TW':{title:'資產配置',gross:'總資產',debt:'總負債',net:'淨資產',ratio:'資產比例',liabilities:'負債明細',none:'目前沒有負債',empty:'尚未有可計算的資產',unknown:'部分投資缺少有效報價，以下為已知估值；淨資產可能低估。',cash:'現金',deposit:'存款',securities:'證券',trust:'持股信託',insurance:'保險',fund:'基金',bond:'債券',savings:'儲蓄險',termDeposit:'定期存款',other:'其他資產',assetCount:'項資產',liabilityCount:'筆負債',credit:'信用卡欠款',overdraft:'帳戶透支'},
+ 'zh-CN':{title:'资产配置',gross:'总资产',debt:'总负债',net:'净资产',ratio:'资产比例',liabilities:'负债明细',none:'目前没有负债',empty:'尚未有可计算的资产',unknown:'部分投资缺少有效报价，以下为已知估值；净资产可能低估。',cash:'现金',deposit:'存款',securities:'证券',trust:'持股信托',insurance:'保险',fund:'基金',bond:'债券',savings:'储蓄险',termDeposit:'定期存款',other:'其他资产',assetCount:'类资产',liabilityCount:'笔负债',credit:'信用卡欠款',overdraft:'账户透支'},
+ en:{title:'Asset allocation',gross:'Total assets',debt:'Total liabilities',net:'Net worth',ratio:'Share of assets',liabilities:'Liabilities',none:'No liabilities recorded',empty:'No assets to display',unknown:'Some investments have no valid quote. Totals show known values and may understate net worth.',cash:'Cash',deposit:'Deposits',securities:'Securities',trust:'Stock trusts',insurance:'Insurance',fund:'Funds',bond:'Bonds',savings:'Savings insurance',termDeposit:'Time deposits',other:'Other assets',assetCount:'asset categories',liabilityCount:'liabilities',credit:'Credit card debt',overdraft:'Account overdraft'},
+ ja:{title:'資産構成',gross:'総資産',debt:'負債合計',net:'純資産',ratio:'資産比率',liabilities:'負債明細',none:'負債はありません',empty:'表示する資産がありません',unknown:'一部の投資の時価が未取得です。合計は既知の金額のみで計算しています。',cash:'現金',deposit:'預金',securities:'証券',trust:'株式信託',insurance:'保険',fund:'ファンド',bond:'債券',savings:'貯蓄保険',termDeposit:'定期預金',other:'その他資産',assetCount:'資産区分',liabilityCount:'件の負債',credit:'カード債務',overdraft:'口座のマイナス残高'}
 };
-const icons={cash:Wallet,deposit:Landmark,securities:ChartNoAxesCombined,trust:Layers3,insurance:Shield,other:Coins};
-const colors={cash:'#35b9ab',deposit:'#638bd9',securities:'#a88be5',trust:'#ff9b82',insurance:'#e7b75f',other:'#8fa6b0'};
+const icons={cash:Wallet,deposit:Landmark,securities:ChartNoAxesCombined,trust:Layers3,insurance:Shield,fund:ChartLine,bond:HandCoins,savings:Shield,termDeposit:Landmark,other:Coins};
+const colors={cash:'#35b9ab',deposit:'#638bd9',securities:'#a88be5',trust:'#ff9b82',insurance:'#e7b75f',fund:'#799bc5',bond:'#68a99c',savings:'#dbac72',termDeposit:'#87b49a',other:'#8fa6b0'};
 
 export default function NetWorthBreakdown({data,format,language='zh-TW',currency='TWD',history=[],goalTwd=null,mainRate=1,onSaveGoal=()=>{}}){
  const t=translations[language]||translations['zh-TW'];
