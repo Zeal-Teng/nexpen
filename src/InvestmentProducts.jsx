@@ -5,6 +5,7 @@ import {db,uid,today} from './db.js';
 import {investmentProductPosition,investmentProductValue,productCashRate,validateProductTrade} from './investmentProducts.js';
 import {InvestmentStack,InvestmentStackCard,InvestmentStackAsset} from './InvestmentStack.jsx';
 import SummaryHero from './SummaryHero.jsx';
+import NativeDatePicker from './NativeDatePicker.jsx';
 import {normalizeSavingsProjection,savingsProjectionComparison,savingsCashFlows,calculateXirr,parseSavingsProjectionText} from './savingsPolicy.js';
 
 const numeric=v=>Number(v)||0;
@@ -136,9 +137,9 @@ export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=
      <label>幣別<select disabled={!!editing&&flows.some(f=>f.assetId===editing.id)} value={productForm.currency} onChange={e=>setProductForm(f=>({...f,currency:e.target.value,fxRate:e.target.value==='TWD'?'1':''}))}>{['TWD','USD','JPY','EUR','GBP','AUD','HKD','CNY','CHF'].map(x=><option key={x} value={x}>{x}</option>)}</select></label>
      {productForm.currency!=='TWD'&&<label>每 1 {productForm.currency} 折合 TWD<input required type="number" min="0.000001" step="any" value={productForm.fxRate} onChange={e=>setProductForm(f=>({...f,fxRate:e.target.value}))}/></label>}
      {!isDeposit&&<label>{isSavings?'目前可領回解約金／現值':isBond?'每百元面額市價':'每單位基金淨值'}<input required type="number" min="0" step="any" value={productForm.price} onChange={e=>setProductForm(f=>({...f,price:e.target.value}))}/></label>}
-     {(isDeposit||isSavings)&&<label>{isDeposit?'起存日':'保單生效日'}<input type="date" value={productForm.startDate||''} onChange={e=>setProductForm(f=>({...f,startDate:e.target.value}))}/></label>}
-     <label>{isDeposit?'資料更新日期':'估值日期'}<input type="date" value={productForm.priceDate||''} onChange={e=>setProductForm(f=>({...f,priceDate:e.target.value}))}/></label>
-     {isSavings&&<label>{productForm.policySubtype==='rateAdjustableWholeLife'?'預計解約日（可不填）':'滿期日（可不填）'}<input type="date" value={productForm.maturityDate||''} onChange={e=>setProductForm(f=>({...f,maturityDate:e.target.value}))}/></label>}
+     {(isDeposit||isSavings)&&<label>{isDeposit?'起存日':'保單生效日'}<NativeDatePicker value={productForm.startDate||''} onChange={e=>setProductForm(f=>({...f,startDate:e.target.value}))}/></label>}
+     <label>{isDeposit?'資料更新日期':'估值日期'}<NativeDatePicker value={productForm.priceDate||''} onChange={e=>setProductForm(f=>({...f,priceDate:e.target.value}))}/></label>
+     {isSavings&&<label>{productForm.policySubtype==='rateAdjustableWholeLife'?'預計解約日（可不填）':'滿期日（可不填）'}<NativeDatePicker value={productForm.maturityDate||''} onChange={e=>setProductForm(f=>({...f,maturityDate:e.target.value}))}/></label>}
      {isSavings&&<section className="savings-policy-fields">
        <h4>保單型態與增值條件</h4>
        <label>保單類型<select value={productForm.policySubtype||'rateAdjustableWholeLife'} onChange={e=>setProductForm(f=>({...f,policySubtype:e.target.value}))}><option value="rateAdjustableWholeLife">利率變動型終身壽險</option><option value="endowment">養老／滿期儲蓄險</option><option value="other">其他儲蓄險</option></select></label>
@@ -158,11 +159,11 @@ export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=
        <button type="button" className="soft-btn small" onClick={()=>setProductForm(f=>({...f,projectionRows:[...(f.projectionRows||[]),{year:String((f.projectionRows||[]).reduce((max,r)=>Math.max(max,Number(r.year)||0),0)+1),cumulativePremium:'',endValue:'',nextValue:''}]}))}><Plus size={15}/>新增年度試算</button>
       </section>}
 
-     {(isBond||isDeposit)&&<><label>{isDeposit?'定存年利率（%）':'票面年利率（%）'}<input type="number" min="0" step="any" value={productForm.couponRate||''} onChange={e=>setProductForm(f=>({...f,couponRate:e.target.value}))}/></label><label>到期日<input type="date" value={productForm.maturityDate||''} onChange={e=>setProductForm(f=>({...f,maturityDate:e.target.value}))}/></label>{!isDeposit&&<label>每隔幾個月付息<select value={productForm.couponFrequency||'6'} onChange={e=>setProductForm(f=>({...f,couponFrequency:e.target.value}))}><option value="1">每月</option><option value="3">每季</option><option value="6">每半年</option><option value="12">每年</option></select></label>}</>}
+     {(isBond||isDeposit)&&<><label>{isDeposit?'定存年利率（%）':'票面年利率（%）'}<input type="number" min="0" step="any" value={productForm.couponRate||''} onChange={e=>setProductForm(f=>({...f,couponRate:e.target.value}))}/></label><label>到期日<NativeDatePicker value={productForm.maturityDate||''} onChange={e=>setProductForm(f=>({...f,maturityDate:e.target.value}))}/></label>{!isDeposit&&<label>每隔幾個月付息<select value={productForm.couponFrequency||'6'} onChange={e=>setProductForm(f=>({...f,couponFrequency:e.target.value}))}><option value="1">每月</option><option value="3">每季</option><option value="6">每半年</option><option value="12">每年</option></select></label>}</>}
      {isSavings&&<p className="hint">現值請依保險公司提供的解約金或保單帳戶價值輸入，不能直接以已繳保費代替。</p>}{isDeposit&&<p className="hint">本金投入及到期領回需另登錄資金異動；利率僅供參考，不會自動產生利息。</p>}{error&&<p role="alert" className="investment-product-error">{error}</p>}<footer><button type="button" onClick={close}>取消</button><button type="submit" disabled={busy}>儲存</button></footer></form>:
      <form onSubmit={saveFlow}>
       <label>交易類型<select value={flowForm.kind} onChange={e=>setFlowForm(f=>({...f,kind:e.target.value}))}>{Object.entries(actions).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
-      <label>日期<input required type="date" value={flowForm.date} onChange={e=>setFlowForm(f=>({...f,date:e.target.value}))}/></label>
+      <label>日期<NativeDatePicker required value={flowForm.date} onChange={e=>setFlowForm(f=>({...f,date:e.target.value}))}/></label>
       {flowForm.kind!=='yield'&&!(isPrincipal&&flowForm.kind==='contribution')&&<label>{isPrincipal?'要減少的本金':isBond?'交易面額':'基金單位數'}<input required type="number" min="0.00000001" step="any" value={flowForm.shares} onChange={e=>setFlowForm(f=>({...f,shares:e.target.value}))}/></label>}
       <label>{flowForm.kind==='yield'?(isDeposit?'實收利息':isSavings?'實收給付':'票息／配息'):flowForm.kind==='redemption'?'實際領回總額':isSavings?'實繳保費':isDeposit?'存入本金':'申購總成本'}（{currencyLabel}）<input required type="number" min="0.000001" step="any" value={flowForm.amount} onChange={e=>setFlowForm(f=>({...f,amount:e.target.value}))}/></label>
       {isSavings&&flowForm.kind==='contribution'&&<label className="investment-product-historical-toggle"><input type="checkbox" checked={!!flowForm.historical} onChange={e=>setFlowForm(f=>({...f,historical:e.target.checked,sourceAccount:e.target.checked?'':f.sourceAccount}))}/><span>歷史已繳保費（只記錄成本，不再次扣款）</span></label>}
