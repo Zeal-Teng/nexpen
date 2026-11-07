@@ -1,3 +1,4 @@
+import {investmentCashMovement} from './investmentCashFlow.js';
 import {investmentPosition} from './investmentLedger.js';
 import {totalTrustShares} from './trustShares.js';
 export const ASSET_GROUPS = [
@@ -12,7 +13,7 @@ export const ASSET_GROUPS = [
 const accountBalance=(a,records,stocks,flows)=> finite(a.openingBalance)
  + records.reduce((s,t)=>s+(t.type==='income'&&t.account===a.id?finite(t.amount):t.type==='expense'&&t.account===a.id?-finite(t.amount):t.type==='transfer'&&t.toAccount===a.id?finite(t.amount):t.type==='transfer'&&t.fromAccount===a.id?-finite(t.amount):0),0)
  + stocks.reduce((s,t)=>s+(t.account!==a.id?0:t.action==='buy'?-finite(t.totalAmount):t.action==='sell'?finite(t.totalAmount):t.action==='dividend'?finite(t.amount):0),0)
- + flows.reduce((sum,f)=>sum+(f.sourceAccount===a.id?(f.kind==='redemption'?finite(f.amount):f.kind==='contribution'?-finite(f.amount):0):0),0);
+ + flows.reduce((sum,f)=>sum+(f.sourceAccount===a.id?investmentCashMovement(f):0),0);
 
 const finite = value => Number.isFinite(Number(value)) ? Number(value) : 0;
 export const DEFAULT_ASSET_GROUP_BY_TYPE = Object.freeze({cash:'cash',bank:'deposit',ewallet:'deposit',brokerage:'deposit',trust:'trust',policy:'insurance'});

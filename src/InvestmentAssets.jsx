@@ -1,8 +1,10 @@
+import {suggestedRedemptionRate} from './investmentCashFlow.js';
 import {contributionTrustShares} from './trustShares.js';
 import {investmentPosition,redemptionCostAt} from './investmentLedger.js';
 import {policyRedemptionProjection} from './policyRedemption.js';
 import {t as i18n} from './i18n.js';
 import React,{useEffect,useMemo,useState} from 'react';
+import SummaryHero from './SummaryHero.jsx';
 import {createPortal} from 'react-dom';
 import {InvestmentStack,InvestmentStackCard,InvestmentStackAsset,ClosingPrice} from './InvestmentStack.jsx';
 import {ArrowLeft,Check,ChevronRight,Plus,RefreshCcw,Trash2,X,Landmark,ShieldCheck} from 'lucide-react';
@@ -17,17 +19,30 @@ const summaryMoney=(v,c)=>`${c==='TWD'?'':c+' '}${Number(v||0).toLocaleString('z
 const displayMoney=(v,c)=>`${c==='TWD'?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
 const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
-const initialForm=()=>({kind:'contribution',date:today(),amount:'',shares:'',costBasis:'',sourceAccount:'',note:'',currentValue:'',valueDate:today()});
+const initialForm=()=>({kind:'contribution',date:today(),amount:'',shares:'',costBasis:'',sourceAccount:'',exchangeRate:'',redemptionFee:'',note:'',currentValue:'',valueDate:today()});
 
 export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],onChanged,onEditAccount,onBackOverview,onDetailChange,backToListSignal=0,askConfirm}){
  const [selected,setSelected]=useState(''),[dialog,setDialog]=useState(''),[editingEntry,setEditingEntry]=useState(null),[form,setForm]=useState(initialForm()),[error,setError]=useState(''),[busy,setBusy]=useState(false),[numberField,setNumberField]=useState(null);
  useEffect(()=>{onDetailChange?.(Boolean(selected));},[selected,onDetailChange]);
  useEffect(()=>{if(backToListSignal>0){setSelected('');setDialog('');setNumberField(null);}},[backToListSignal]);
- const patch=(k,v)=>setForm(f=>({...f,[k]:v}));
- const change=(action,asset)=>{setSelected(asset.id);setEditingEntry(null);setError('');setForm({...initialForm(),sourceAccount:action==='redemption'?(cashAccounts.find(a=>a.isDefault&&a.currency===asset.currency)||cashAccounts.find(a=>a.currency===asset.currency))?.id||'':''});setNumberField(null);setDialog(action)};
+ const patch=(k,v)=>setForm(f=>{
+  if(k==='sourceAccount'&&dialog==='redemption'){
+   const account=cashAccounts.find(a=>a.id===v);
+   const asset=items.find(a=>a.id===selected);
+   const suggested=suggestedRedemptionRate(asset,account);
+   return {...f,sourceAccount:v,exchangeRate:suggested===null?'':String(Number(suggested.toPrecision(10)))};
+  }
+  return {...f,[k]:v};
+ });
+ const change=(action,asset)=>{
+  const defaultAccount=action==='redemption'?(cashAccounts.find(a=>a.isDefault&&a.currency===asset.currency)||cashAccounts.find(a=>a.currency===asset.currency)):null;
+  setSelected(asset.id);setEditingEntry(null);setError('');
+  setForm({...initialForm(),sourceAccount:defaultAccount?.id||'',exchangeRate:defaultAccount?'1':''});
+  setNumberField(null);setDialog(action);
+ };
  const editEntry=(entry)=>{
   setEditingEntry(entry);setError('');
-  setForm({...initialForm(),date:entry.date||today(),valueDate:entry.date||today(),amount:String(entry.kind==='redemption'&&type==='trust'&&contributionTrustShares(entry)>0?Number(entry.amount)/contributionTrustShares(entry):entry.amount??''),shares:String(contributionTrustShares(entry)),costBasis:String(entry.costBasis??''),sourceAccount:entry.sourceAccount||'',note:entry.note||'',currentValue:String(entry.kind==='redemption'?(valuations.find(v=>v.redemptionId===entry.id)?.value??''):entry.value??'')});
+  setForm({...initialForm(),date:entry.date||today(),valueDate:entry.date||today(),amount:String(entry.kind==='redemption'&&type==='trust'&&contributionTrustShares(entry)>0?Number(entry.amount)/contributionTrustShares(entry):entry.amount??''),shares:String(contributionTrustShares(entry)),costBasis:String(entry.costBasis??''),sourceAccount:entry.sourceAccount||'',exchangeRate:String(entry.kind==='redemption'?(entry.redemptionExchangeRate??1):''),redemptionFee:String(entry.redemptionFee??''),note:entry.note||'',currentValue:String(entry.kind==='redemption'?(valuations.find(v=>v.redemptionId===entry.id)?.value??''):entry.value??'')});
   setNumberField(null);setDialog(entry.entry==='valuation'?'value':entry.kind==='redemption'?'redemption':'contribution');
  };
  const latestValuation=(assetId,exceptId)=>valuations.filter(v=>v.assetId===assetId && v.id!==exceptId).slice().sort((a,b)=>b.date.localeCompare(a.date)||String(b.createdAt||'').localeCompare(String(a.createdAt||''))||Number(b.id)-Number(a.id))[0];
@@ -107,6 +122,11 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
   return [...flows.filter(f=>f.assetId===selected).map(f=>({...f,entry:'flow'})),...valuations.filter(v=>v.assetId===selected&&!v.redemptionId).map(v=>({...v,entry:'valuation'}))].sort((a,b)=>b.date.localeCompare(a.date)||String(b.createdAt||'').localeCompare(String(a.createdAt||''))||String(b.id).localeCompare(String(a.id)));
  },[flows,valuations,selected]);
  const active=items.find(x=>x.id===selected);
+ const selectedCashAccount=cashAccounts.find(a=>a.id===form.sourceAccount);
+ const payoutIsCrossCurrency=dialog==='redemption'&&Boolean(selectedCashAccount)&&selectedCashAccount.currency!==active?.currency;
+ const redemptionGross=dialog==='redemption'?(type==='trust'?number(form.amount)*number(form.shares):number(form.amount)):0;
+ const payoutConverted=selectedCashAccount?(payoutIsCrossCurrency?redemptionGross*number(form.exchangeRate):redemptionGross):0;
+
  const realizedItems=items.map(asset=>({
   asset,
   position:investmentPosition(asset,flows),
@@ -129,17 +149,25 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
     if(!form.date)throw Error(i18n('請選擇日期'));
     if(!Number.isFinite(amount)||amount<=0||String(form.amount).trim()==='')throw Error(redemption&&type==='trust'?'贖回價格及股數必須大於零':redemption?'贖回金額必須大於零':'追加投入金額必須大於零');
     if(type==='trust'&&(!Number.isFinite(shares)||(redemption?shares<=0:shares<0)))throw Error(redemption?'贖回股數必須大於零':'請輸入有效的新增股數（可為 0）');
-    // The payout account is optional; when selected, the journal/ledger credits it.
+    // Every redemption must have a payout account so journal and account balance stay in sync.
+    if(redemption&&!form.sourceAccount)throw Error('請選擇贖回入帳帳戶');
     if(form.sourceAccount){
       const source=cashAccounts.find(a=>a.id===form.sourceAccount);
       if(!source)throw Error(i18n('資金帳戶不存在'));
-      if(source.currency!==active.currency)throw Error(i18n('僅可選擇與投資帳戶同幣別的資金帳戶'));
+      if(!redemption&&source.currency!==active.currency)throw Error(i18n('追加投入仍須選擇同幣別資金帳戶'));
+      if(redemption){
+       const rate=source.currency===active.currency?1:number(form.exchangeRate);
+       if(!Number.isFinite(rate)||rate<=0)throw Error('請輸入有效匯率（1 投資幣別可兌換多少入帳幣別）');
+      }
     }
+    const redemptionFee=redemption?number(form.redemptionFee):0;
+    if(redemption&&(!Number.isFinite(redemptionFee)||redemptionFee<0))throw Error('手續費不得為負數');
+    if(redemptionFee>0&&!form.sourceAccount)throw Error('填寫手續費時，請選擇支付手續費的入帳帳戶');
     const old=editingEntry?.entry==='flow'?await db.investmentFlows.get(editingEntry.id):null;
     if(editingEntry&&!old)throw Error(i18n('原始紀錄不存在，請重新開啟'));
     const candidate={id:old?.id||uid(),assetId:active.id,kind:redemption?'redemption':'contribution',date:form.date,amount,
      shares:type==='trust'?shares:0,costBasis:redemption&&type==='policy'?(old?.costBasis||0):0,
-     sourceAccount:form.sourceAccount||'',note:form.note.trim(),createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+     sourceAccount:form.sourceAccount||'',redemptionExchangeRate:redemption&&form.sourceAccount&&payoutIsCrossCurrency?number(form.exchangeRate):1,redemptionFee, note:form.note.trim(),createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
     const others=flows.filter(f=>f.assetId===active.id&&f.id!==old?.id);
     if(redemption&&type==='trust'){
       const check=redemptionCostAt(active,others,candidate);
@@ -175,31 +203,22 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
  };
  return <div className="investment-assets-page">
   {!active&&<button type="button" className="stock-back investment-upper-back investment-nav-back" onClick={onBackOverview}><ArrowLeft size={18}/>{i18n("返回投資總覽")}</button>}
-  {!active&&<section className={`investment-stage-hero investment-category-hero investment-unified-summary investment-${type}-category-hero`} aria-label={`${i18n(label[type])}投資績效`}>
-   <div className="investment-stage-heading"><div><span className="investment-stage-kicker">NEXPEN · {type==='trust'?'TRUST':'POLICY'}</span><h2>{i18n(label[type])}</h2></div><span className="investment-stage-count">{items.length} {i18n("筆")}</span></div>
-   <div className="stock-summary-v48 investment-performance-summary investment-stage-summary">
-   <div className="stock-summary-pair">
-    <div className="stock-summary-item"><small>{i18n("持有成本")}</small><strong>{summary?summaryMoney(summary.cost,items[0].currency):'—'}</strong></div>
-    <div className="stock-summary-item"><small>{i18n("估算現值")}</small><strong>{summary&&summary.value!==null?summaryMoney(summary.value,items[0].currency):'—'}</strong></div>
-   </div>
-   <div className="stock-summary-profit"><small>{i18n("未實現損益")}</small>
-    <div className="stock-pnl-result investment-second-pnl-badges">
-     <strong className={summary&&summary.value!==null?(summary.value-summary.cost>=0?'income':'expense'):''}>{summary&&summary.value!==null?summaryMoney(summary.value-summary.cost,items[0].currency):'—'}</strong>
-     <span className={summary&&summary.value!==null?(summary.value-summary.cost>=0?'income':'expense'):''}>{summary&&summary.value!==null?percentage(summary.value,summary.cost):'—'}</span>
+  {!active&&<SummaryHero className="investment-dashboard-hero investment-performance-summary-hero" eyebrow={`NEXPEN · ${type==='trust'?'TRUST':'POLICY'}`} title={i18n(label[type])} label={i18n('估算現值')} value={summary&&summary.value!==null?summaryMoney(summary.value,items[0].currency):'—'} detailId={`investment-${type}-summary-details`}>
+    <div className="summary-hero-metrics">
+      <div><small>{i18n('持有成本')}</small><strong>{summary?summaryMoney(summary.cost,items[0].currency):'—'}</strong></div>
+      <div><small>{i18n('未實現損益')}</small><strong className={summary&&summary.value!==null?(summary.value-summary.cost>=0?'income':'expense'):''}>{summary&&summary.value!==null?`${summary.value-summary.cost>=0?'+':'−'}${summaryMoney(Math.abs(summary.value-summary.cost),items[0].currency)}`:'—'}</strong><em className={summary&&summary.value!==null?(summary.value-summary.cost>=0?'income':'expense'):''}>{summary&&summary.value!==null?percentage(summary.value,summary.cost):'—'}</em></div>
     </div>
-   </div>
-   </div>
-  </section>}
+  </SummaryHero>}
   {active?<>
    <button type="button" className="stock-back investment-nav-back" onClick={()=>setSelected('')}><ArrowLeft size={17}/> {i18n("返回")}{i18n(label[type])}{i18n("列表")}</button>
    <section className="investment-third-level investment-third-listview">
     <div className="investment-third-listview-heading"><h2>{i18n('資金異動／估值歷史')}</h2><small>{active.name} · {history.length} {i18n('筆紀錄')} · 已實現損益 {displayMoney(metrics(active).realized,active.currency)}</small></div>
     <div className="stock-trade-detail-list investment-valuation-history investment-stage-history investment-third-list-content">
     <div className="investment-history-heading"><div className="investment-action-row"><button type="button" className="soft-btn small" onClick={()=>change('contribution',active)}><Plus size={16}/> {i18n("追加投入")}</button><button type="button" className="soft-btn small" onClick={()=>change('redemption',active)}>− 贖回</button>{type==='policy'&&<button type="button" className="soft-btn small" onClick={()=>change('value',active)}><RefreshCcw size={16}/> {i18n("更新現值")}</button>}<button type="button" className="soft-btn small" onClick={()=>onEditAccount(active)}>{i18n("編輯帳戶")}</button></div></div>
-    {history.length?history.map(h=><button type="button" className="stock-detail-trade investment-history-button" key={`${h.entry}-${h.id}`} onClick={()=>editEntry(h)}>
+    {history.length?history.flatMap(h=>h.entry==='flow'&&h.kind==='redemption'&&Number(h.redemptionFee)>0?[h,{...h,viewKind:'fee'}]:[h]).map(h=><button type="button" className="stock-detail-trade investment-history-button" key={`${h.viewKind||h.entry}-${h.id}`} onClick={()=>editEntry(h)}>
       
-      <div className="row-main"><b>{h.entry==='valuation'?i18n("現值更新"):h.kind==='redemption'?'贖回':i18n("追加投入")}</b><small>{h.date}{h.entry==='flow'&&type==='trust'?` · ${h.kind==='redemption'?'-':'+'}${fmt(contributionTrustShares(h))} ${i18n("股")}`:''}</small>{h.entry==='flow'&&h.note&&<small>{h.note}</small>}</div>
-      <div className="transaction-right"><strong className={h.kind==='redemption'?'income':''}>{h.kind==='redemption'?'+':''}{money(h.entry==='valuation'?h.value:h.amount,active.currency)}</strong></div><ChevronRight size={17} className="faint"/>
+      <div className="row-main"><b>{h.viewKind==='fee'?'贖回手續費':h.entry==='valuation'?i18n("現值更新"):h.kind==='redemption'?'贖回':i18n("追加投入")}</b><small>{h.date}{h.entry==='flow'&&h.viewKind!=='fee'&&type==='trust'?` · ${h.kind==='redemption'?'-':'+'}${fmt(contributionTrustShares(h))} ${i18n("股")}`:''}</small>{h.entry==='flow'&&h.viewKind!=='fee'&&h.note&&<small>{h.note}</small>}</div>
+      <div className="transaction-right"><strong className={h.viewKind==='fee'?'expense':h.kind==='redemption'?'income':''}>{h.viewKind==='fee'?'-':h.kind==='redemption'?'+':''}{money(h.viewKind==='fee'?h.redemptionFee:h.entry==='valuation'?h.value:h.amount,h.viewKind==='fee'?cashAccounts.find(a=>a.id===h.sourceAccount)?.currency||active.currency:active.currency)}</strong></div><ChevronRight size={17} className="faint"/>
      </button>):<p className="hint">{i18n("尚無異動紀錄")}</p>}
    </div></section>
   </>:<InvestmentStack className="investment-second-level investment-trust-policy-stack investment-asset-group-stack">
@@ -259,7 +278,12 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
 
   {dialog&&active&&createPortal(<div className="modal-backdrop investment-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setDialog('')}}><div className="sheet glass investment-modal"><div className="grabber"/><div className="sheet-head"><h2>{editingEntry?i18n("編輯"):dialog==='contribution'?i18n("追加投入"):dialog==='redemption'?'贖回':i18n("更新保單現值")} · {active.name}</h2><button type="button" className="circle-button" onClick={()=>setDialog('')}><X size={19}/></button></div><form className="sheet-body" onSubmit={submit}>
    <label className="investment-field">{i18n("日期")}<NativeDatePicker required value={dialog==='value'?form.valueDate:form.date} onChange={e=>patch(dialog==='value'?'valueDate':'date',e.target.value)}/></label>
-   {(dialog==='contribution'||dialog==='redemption')?<><label className="investment-field">{dialog==='redemption'&&type==='trust'?'本次贖回價格（':dialog==='redemption'?'本次贖回金額（':i18n("本次投入金額（")}{active.currency}）<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('amount')} aria-label={i18n("輸入本次投入金額")}>{form.amount!==''&&form.amount!==undefined?String(form.amount):i18n("點擊輸入數字")}</button></label>{type==='trust'&&<label className="investment-field">{dialog==='redemption'?'本次贖回股數':i18n("本次新增股數（可為 0）")}<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('shares')} aria-label={i18n("輸入本次新增股數")}>{form.shares!==''&&form.shares!==undefined?String(form.shares):i18n("點擊輸入數字")}</button></label>}{dialog==='redemption'&&type==='trust'&&<div className="investment-redemption-total">本次贖回總金額：<strong>{money(number(form.amount)*number(form.shares),active.currency)}</strong></div>}<label className="investment-field">{dialog==='redemption'?'贖回入帳帳戶（選填）':i18n("資金來源（選填）")}<select value={form.sourceAccount} onChange={e=>patch('sourceAccount',e.target.value)}><option value="">{dialog==='redemption'?'請選擇入帳帳戶':i18n("外部資金／不連動銀行")}</option>{cashAccounts.filter(a=>a.currency===active.currency).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label><label className="investment-field">{i18n("備註")}<input value={form.note} onChange={e=>patch('note',e.target.value)}/></label></>:<label className="investment-field">{i18n("保單最新現值（")}{active.currency}）<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('currentValue')} aria-label={i18n("輸入保單最新現值")}>{form.currentValue!==''&&form.currentValue!==undefined?String(form.currentValue):i18n("點擊輸入數字")}</button></label>}
+   {(dialog==='contribution'||dialog==='redemption')?<><label className="investment-field">{dialog==='redemption'&&type==='trust'?'本次贖回價格（':dialog==='redemption'?'本次贖回金額（':i18n("本次投入金額（")}{active.currency}）<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('amount')} aria-label={i18n("輸入本次投入金額")}>{form.amount!==''&&form.amount!==undefined?String(form.amount):'—'}</button></label>{type==='trust'&&<label className="investment-field">{dialog==='redemption'?'本次贖回股數':i18n("本次新增股數（可為 0）")}<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('shares')} aria-label={i18n("輸入本次新增股數")}>{form.shares!==''&&form.shares!==undefined?String(form.shares):'—'}</button></label>}{dialog==='redemption'&&type==='trust'&&<div className="investment-redemption-total">本次贖回總金額：<strong>{money(number(form.amount)*number(form.shares),active.currency)}</strong></div>}<label className="investment-field">{dialog==='redemption'?'贖回入帳帳戶':i18n("資金來源（選填）")}<select required={dialog==='redemption'} value={form.sourceAccount} onChange={e=>patch('sourceAccount',e.target.value)}><option value="">{dialog==='redemption'?'請選擇入帳帳戶':i18n("外部資金／不連動銀行")}</option>{cashAccounts.filter(a=>dialog==='redemption'||a.currency===active.currency).map(a=><option key={a.id} value={a.id}>{a.name}（{a.currency||'TWD'}）</option>)}</select></label>{dialog==='redemption'&&<>
+    {payoutIsCrossCurrency&&<label className="investment-field">匯率（1 {active.currency} = ? {selectedCashAccount?.currency||''}）<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('exchangeRate')}>{form.exchangeRate||'—'}</button></label>}
+    <label className="investment-field">贖回手續費（{selectedCashAccount?.currency||active.currency}）<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('redemptionFee')}>{form.redemptionFee!==''?form.redemptionFee:'0'}</button></label>
+    {form.sourceAccount&&(!payoutIsCrossCurrency||number(form.exchangeRate)>0)&&<div className="investment-redemption-total">贖回入帳試算：<strong>{money(payoutConverted,selectedCashAccount?.currency||active.currency)}</strong>{Number(form.redemptionFee)>0&&<><span>－ 手續費 {money(number(form.redemptionFee),selectedCashAccount?.currency||active.currency)}</span><strong>實際增加 {money(payoutConverted-number(form.redemptionFee),selectedCashAccount?.currency||active.currency)}</strong></>}</div>}
+    {payoutIsCrossCurrency&&<p className="hint">跨幣別匯率可修改，儲存後依本次匯率入帳；日後匯率變動不會影響這筆交易。</p>}
+   </>}<label className="investment-field">{i18n("備註")}<input value={form.note} onChange={e=>patch('note',e.target.value)}/></label></>:<label className="investment-field">{i18n("保單最新現值（")}{active.currency}）<button type="button" className="money-trigger investment-number-trigger" onClick={()=>setNumberField('currentValue')} aria-label={i18n("輸入保單最新現值")}>{form.currentValue!==''&&form.currentValue!==undefined?String(form.currentValue):'—'}</button></label>}
    {error&&<p className="investment-error" role="alert">{error}</p>}
    <div className="sheet-actions">{editingEntry&&<button type="button" className="soft-btn investment-delete-btn" disabled={busy} onClick={()=>deleteEntry(editingEntry)}><Trash2 size={16}/>{i18n("刪除")}</button>}<button type="button" className="soft-btn" onClick={()=>setDialog('')}>{i18n("取消")}</button><button type="submit" className="primary-btn" disabled={busy}><Check size={17}/>{busy?i18n("儲存中"):i18n("儲存")}</button></div>
   </form></div></div>,document.querySelector('.app-shell')||document.body)}

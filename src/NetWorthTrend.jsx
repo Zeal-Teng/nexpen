@@ -1,6 +1,7 @@
 import React,{useMemo,useState} from 'react';
 import AnimatedNumber from './AnimatedNumber.jsx';
 import {TrendingUp,TrendingDown,Minus} from 'lucide-react';
+import {netWorthComparisons} from './netWorthComparisons.js';
 
 const i18n={
  'zh-TW':{title:'淨資產走勢',desc:'每日快照（以當天最後一次開啟或更新時的金額為準）',empty:'尚未有歷史紀錄；開啟 APP 後會開始逐日累積。',one:'目前只有一天的紀錄，累積第二天後會呈現趨勢。',incomplete:'當日部分投資缺少報價',all:'全部',days:'天',difference:'期间变化',noBaseline:'缺少期初记录，无法计算期间变化',difference:'期間變化',noBaseline:'缺少期初快照，無法計算期間變化'},
@@ -13,17 +14,14 @@ export default function NetWorthTrend({history=[],format,language='zh-TW',curren
  const [range,setRange]=useState(30);
  const [selected,setSelected]=useState(null);
  const sorted=useMemo(()=>history.filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.date)&&Number.isFinite(p.netWorth)).slice().sort((a,b)=>a.date.localeCompare(b.date)),[history]);
- const data=useMemo(()=>range==='all'||!sorted.length?sorted:sorted.filter(p=>{const [y,m,d]=sorted.at(-1).date.split('-').map(Number);const cutoff=new Date(Date.UTC(y,m-1,d));cutoff.setUTCDate(cutoff.getUTCDate()-range);return p.date>=cutoff.toISOString().slice(0,10);}),[sorted,range]);
+ const comparisons=useMemo(()=>netWorthComparisons(sorted,range),[sorted,range]);
+ const data=comparisons.visible;
+ const comparison=comparisons.period;
+ const daily=comparisons.daily;
  const point=data.find(p=>p.date===selected)||data.at(-1);
- const comparison=useMemo(()=>{
-  if(data.length<2)return null;
-  const first=data[0];
-  const last=data.at(-1);
-  if(!first||!last||first.date===last.date)return null;
-  const change=last.netWorth-first.netWorth;
-  const pct=first.netWorth!==0?change/Math.abs(first.netWorth)*100:null;
-  return {first,last,change,pct};
- },[data]);
+ const signed=n=>`${n>0?'+':n<0?'−':''}${value(Math.abs(n))}`;
+ const pctText=n=>n===null?'—':`${n>0?'+':''}${n.toFixed(2)}%`;
+ const dailyLabel=daily?(daily.isPreviousDay?({'zh-TW':'較前一日','zh-CN':'较前一日',en:'vs. yesterday',ja:'前日比'}[language]||'較前一日'):({'zh-TW':'最近兩筆快照','zh-CN':'最近两笔快照',en:'Latest two records',ja:'直近2件'}[language]||'最近兩筆快照')):null;
  const W=600,H=215,L=12,R=12,T=20,B=30;
  const lo=Math.min(0,...data.map(p=>p.netWorth)),hi=Math.max(0,...data.map(p=>p.netWorth));
  const spread=Math.max(1,hi-lo);
@@ -38,13 +36,21 @@ export default function NetWorthTrend({history=[],format,language='zh-TW',curren
   <div className="networth-trend-ranges" role="group" aria-label={t.title}>{[7,30,90,'all'].map(r=><button key={r} type="button" aria-pressed={range===r} onClick={()=>{setRange(r);setSelected(null)}} className={range===r?'active':''}>{r==='all'?t.all:`${r}${t.days}`}</button>)}</div>
   {data.length? <>
    <div className="networth-trend-selected" aria-live="polite">
-    <div className="networth-trend-current">
-     <strong><AnimatedNumber value={value(point.netWorth)} /></strong>
+    <div className="networth-trend-current"><strong><AnimatedNumber value={value(point.netWorth)} /></strong></div>
+   </div>
+   <div className="networth-trend-compare-grid" aria-label={t.title}>
+    <div className="networth-trend-compare-item">
+     <small>{dailyLabel||({'zh-TW':'較前一日','zh-CN':'较前一日',en:'Daily change',ja:'前日比'}[language]||'較前一日')}</small>
+     {daily?<div className={'networth-trend-compare-values '+(daily.change>0?'income':daily.change<0?'expense':'neutral')} title={`${daily.first.date} → ${daily.last.date}`}>
+      <strong>{daily.change>0?<TrendingUp size={15} aria-hidden="true"/>:daily.change<0?<TrendingDown size={15} aria-hidden="true"/>:<Minus size={15} aria-hidden="true"/>}{signed(daily.change)}</strong><span>{pctText(daily.pct)}</span>
+     </div>:<span className="networth-trend-compare-empty">—</span>}
     </div>
-    {comparison&&<div className={'networth-trend-inline-return '+(comparison.change>0?'income':comparison.change<0?'expense':'neutral')} aria-label={`${t.difference} ${comparison.change>0?'+':''}${value(comparison.change)} ${comparison.pct===null?'':comparison.pct.toFixed(2)+'%'}`}>
-     <strong className="networth-trend-return-amount">{comparison.change>0?<TrendingUp aria-hidden="true" size={17} strokeWidth={2.5}/>:comparison.change<0?<TrendingDown aria-hidden="true" size={17} strokeWidth={2.5}/>:<Minus aria-hidden="true" size={17} strokeWidth={2.5}/>}<span>{comparison.change>0?'+':comparison.change<0?'−':''}{value(Math.abs(comparison.change))}</span></strong>
-     <span>{comparison.pct===null?'—':`${comparison.pct>0?'+':''}${comparison.pct.toFixed(2)}%`}</span>
-    </div>}
+    <div className="networth-trend-compare-item">
+     <small>{({'zh-TW':'所選期間','zh-CN':'所选期间',en:'Selected range',ja:'選択期間'}[language]||'所選期間')}</small>
+     {comparison?<div className={'networth-trend-compare-values '+(comparison.change>0?'income':comparison.change<0?'expense':'neutral')}>
+      <strong>{comparison.change>0?<TrendingUp size={15} aria-hidden="true"/>:comparison.change<0?<TrendingDown size={15} aria-hidden="true"/>:<Minus size={15} aria-hidden="true"/>}{signed(comparison.change)}</strong><span>{pctText(comparison.pct)}</span>
+     </div>:<span className="networth-trend-compare-empty">—</span>}
+    </div>
    </div>
    <div className="networth-trend-plot">
     <svg key={String(range)} className="networth-trend-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${t.title}：${data.map(p=>`${p.date} ${value(p.netWorth)}`).join('；')}`}>

@@ -18,7 +18,7 @@ export function InvestmentStackCard({title,summary,amount,profit=null,rate=null,
   <button type="button" className="investment-tier-peek" aria-expanded={expanded} onClick={onToggle}>
    <span className="investment-tier-top"><span className="investment-tier-marker"/><strong>{title}</strong><ChevronRight size={20} className="tier-chevron"/></span>
    {summary&&<span className="investment-tier-subtitle">{summary}</span>}
-   {(amount!=null||profit!=null||rate!=null)&&<span className="investment-tier-bottom investment-compact-summary"><span className="investment-tier-financial"><small>{tr('金額')}</small><b>{amount??'—'}</b></span>{(profit!=null||rate!=null)&&<span className="investment-performance-badges"><small className="investment-tier-pnl-caption">{tr('損益')}</small>{profit!=null&&<strong className={'investment-tier-pnl '+profitTone}>{profit}</strong>}{rate!=null&&<small className={'investment-tier-pnl-rate '+profitTone}>{rate}</small>}</span>}</span>}
+   {(amount!=null||profit!=null||rate!=null)&&<span className="investment-tier-bottom investment-compact-summary"><span className="investment-tier-financial"><small>{tr('金額')}</small><b>{amount??'—'}</b></span>{(profit!=null||rate!=null)&&<span className="investment-performance-badges">{profit!=null&&<strong className={'investment-tier-pnl '+profitTone}>{profit}</strong>}{rate!=null&&<small className={'investment-tier-pnl-rate '+profitTone}>{rate}</small>}</span>}</span>}
   </button>
   <div className={"investment-tier-collapse"+(expanded?" is-open":"")} aria-hidden={!expanded} inert={!expanded}><div className="investment-tier-body">{children}</div></div>
  </article>;

@@ -6138,3 +6138,313 @@ html .app-shell .category-section .category-card-stack > .category-stack-card .c
   html .app-shell .category-section .category-card-stack > .category-stack-card + .category-stack-card {margin-top:-30px!important;}
   html .app-shell .category-section .category-card-stack > .category-stack-card .category-stack-details.is-open .category-stack-details-inner {padding-bottom:50px!important;}
 }
+
+/* v242: unified 35px visual overlap, including phone widths. */
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack > .investment-reference-layer {--account-like-overlap:35px!important;}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack > .investment-reference-layer + .investment-reference-layer {margin-top:-35px!important;}
+html .app-shell .investment-dashboard:not(.networth-stack-dashboard) .investment-first-level-stack .investment-reference-card {padding-bottom:48px!important;}
+html .app-shell .investment-second-level > .investment-tier-card {--investment-overlap:35px!important;}
+html .app-shell .investment-second-level > .investment-tier-card + .investment-tier-card {margin-top:-35px!important;}
+html .app-shell .investment-second-level > .investment-tier-card.tier-expanded > .investment-tier-collapse.is-open > .investment-tier-body {padding-bottom:56px!important;}
+html .app-shell .networth-stack-dashboard .networth-reference-stack {--account-like-overlap:35px!important;}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer + .networth-reference-layer {margin-top:-35px!important;}
+html .app-shell .networth-stack-dashboard .networth-reference-stack > .networth-reference-layer .networth-card-expanded-body.is-open .networth-card-expanded-inner {padding-bottom:57px!important;}
+html .app-shell .category-section .category-card-stack > .category-stack-card {--stack-overlap:35px!important;}
+html .app-shell .category-section .category-card-stack > .category-stack-card + .category-stack-card {margin-top:-35px!important;}
+html .app-shell .category-section .category-card-stack > .category-stack-card .category-stack-details.is-open .category-stack-details-inner {padding-bottom:57px!important;}
+
+/* v243 — small redemption summary and compact account balance reconciliation */
+html .app-shell .investment-redemption-total{font-size:12px!important;line-height:1.4!important;gap:4px!important;}
+html .app-shell .investment-redemption-total strong{font-size:13px!important;font-weight:720!important;white-space:normal!important;}
+html .app-shell .balance-audit-open{width:100%;justify-content:center;margin:4px 0 10px;}
+html .app-shell .balance-audit-panel{display:grid;gap:12px;min-width:0;padding:4px 0 12px;}
+html .app-shell .balance-audit-stats{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--theme-line);border-radius:12px;padding:12px;color:var(--theme-text);font-size:13px;}
+html .app-shell .balance-audit-stats strong{font-size:clamp(14px,3.5vw,18px);font-variant-numeric:tabular-nums;text-align:right;}
+
+/* v245: calmer investment-performance hero, consistent across stocks, trusts, policies. */
+html .app-shell .investment-unified-summary .investment-hero-finances {
+  display:flex;flex-direction:column;gap:16px;min-width:0;position:relative;z-index:1;
+}
+html .app-shell .investment-unified-summary .investment-hero-value {
+  display:flex;flex-direction:column;gap:5px;min-width:0;
+}
+html .app-shell .investment-unified-summary .investment-hero-finances small {
+  display:block;color:var(--theme-muted,#a3a8a3);font-size:clamp(11px,2.75vw,13px);
+  font-weight:650;letter-spacing:.015em;line-height:1.3;
+}
+html .app-shell .investment-unified-summary .investment-hero-value strong {
+  color:var(--theme-text,#fff);font-size:clamp(26px,6.9vw,37px);
+  line-height:1.14;font-weight:820;letter-spacing:-.038em;
+  font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+html .app-shell .investment-unified-summary .investment-hero-foot {
+  display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);
+  gap:14px;align-items:end;min-width:0;
+  border-top:1px solid color-mix(in srgb,var(--theme-text,currentColor) 17%,transparent);
+  padding-top:13px;
+}
+html .app-shell .investment-unified-summary .investment-hero-cost,
+html .app-shell .investment-unified-summary .investment-hero-return {
+  display:flex;flex-direction:column;gap:6px;min-width:0;
+}
+html .app-shell .investment-unified-summary .investment-hero-cost strong {
+  font-size:clamp(14px,3.6vw,19px);font-weight:760;line-height:1.18;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;
+}
+html .app-shell .investment-unified-summary .investment-hero-return {align-items:flex-end;text-align:right;}
+html .app-shell .investment-unified-summary .investment-hero-return-values {
+  display:flex;align-items:baseline;justify-content:flex-end;gap:5px 9px;
+  min-width:0;max-width:100%;flex-wrap:wrap;font-variant-numeric:tabular-nums;
+}
+html .app-shell .investment-unified-summary .investment-hero-return-values strong {
+  font-size:clamp(14px,3.7vw,19px);font-weight:800;line-height:1.18;white-space:nowrap;
+}
+html .app-shell .investment-unified-summary .investment-hero-return-values span {
+  font-size:clamp(11px,2.85vw,13px);font-weight:730;white-space:nowrap;
+}
+html .app-shell .investment-unified-summary .investment-hero-return-values.income {color:var(--user-income,var(--theme-income,#f26070))!important;}
+html .app-shell .investment-unified-summary .investment-hero-return-values.expense {color:var(--user-expense,var(--theme-expense,#57b7a2))!important;}
+html .app-shell .investment-unified-summary .investment-hero-return-values.income > *,
+html .app-shell .investment-unified-summary .investment-hero-return-values.expense > * {color:inherit!important;-webkit-text-fill-color:currentColor!important;}
+/* Net worth: period + last daily snapshot comparisons below the animated amount. */
+html .app-shell .networth-trend-compare-grid {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+  margin:2px 0 12px;min-width:0;
+}
+html .app-shell .networth-trend-compare-item {
+  display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+  padding:10px 11px;min-width:0;border:1px solid var(--theme-line);
+  border-radius:12px;background:color-mix(in srgb,var(--theme-surface2,var(--theme-surface)) 45%,transparent);
+}
+html .app-shell .networth-trend-compare-item > small {font-size:11px;color:var(--theme-muted);font-weight:650;}
+html .app-shell .networth-trend-compare-values {
+  display:flex;flex-wrap:wrap;gap:3px 8px;align-items:baseline;
+  font-variant-numeric:tabular-nums;min-width:0;
+}
+html .app-shell .networth-trend-compare-values strong {
+  display:inline-flex;gap:4px;align-items:center;font-size:clamp(12px,3.1vw,16px);
+  font-weight:790;white-space:nowrap;line-height:1.2;
+}
+html .app-shell .networth-trend-compare-values strong svg {flex-shrink:0;align-self:center;}
+html .app-shell .networth-trend-compare-values span {font-size:clamp(11px,2.8vw,13px);font-weight:700;white-space:nowrap;}
+html .app-shell .networth-trend-compare-values.income,
+html .app-shell .networth-trend-compare-values.income * {color:var(--user-income,var(--theme-income))!important;-webkit-text-fill-color:currentColor!important;}
+html .app-shell .networth-trend-compare-values.expense,
+html .app-shell .networth-trend-compare-values.expense * {color:var(--user-expense,var(--theme-expense))!important;-webkit-text-fill-color:currentColor!important;}
+html .app-shell .networth-trend-compare-values.neutral {color:var(--theme-muted)!important;}
+html .app-shell .networth-trend-compare-empty {color:var(--theme-muted);}
+@media(max-width:380px){
+ html .app-shell .networth-trend-compare-grid{gap:6px;}
+ html .app-shell .networth-trend-compare-item{padding:8px 7px;}
+ html .app-shell .networth-trend-compare-values strong{font-size:11px;}
+ html .app-shell .investment-unified-summary .investment-hero-foot{gap:8px;}
+}
+
+/* v246 — readable hero values and disclosure instead of always-visible dense metrics. */
+html .app-shell .investment-unified-summary .investment-hero-value strong {
+  color:#fffaf2!important;
+  -webkit-text-fill-color:#fffaf2!important;
+  opacity:1!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.12);
+}
+html .app-shell .investment-unified-summary .investment-hero-value small {
+  color:#b7c2b6!important;
+  -webkit-text-fill-color:#b7c2b6!important;
+}
+html .app-shell .investment-unified-summary .investment-hero-details {
+  width:100%;min-width:0;border:0;padding:0;margin:2px 0 0;color:#fffaf2;
+}
+html .app-shell .investment-unified-summary .investment-hero-details-trigger {
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:12px 0 4px;cursor:pointer;list-style:none;
+  color:#c9d0c4;font-size:clamp(12px,3vw,14px);font-weight:680;
+  border-top:1px solid rgba(220,230,215,.19);
+}
+html .app-shell .investment-unified-summary .investment-hero-details-trigger::-webkit-details-marker {display:none;}
+html .app-shell .investment-unified-summary .investment-hero-details-chevron {
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:20px;line-height:1;transition:transform .2s ease;
+}
+html .app-shell .investment-unified-summary .investment-hero-details[open] .investment-hero-details-chevron {transform:rotate(180deg);}
+html .app-shell .investment-unified-summary .investment-hero-foot {
+  margin-top:10px;padding:13px 0 4px!important;
+  border-top:1px solid rgba(220,230,215,.15)!important;
+}
+html .app-shell .investment-unified-summary .investment-hero-cost strong {color:#fffaf2!important;-webkit-text-fill-color:#fffaf2!important;}
+html .app-shell .investment-unified-summary .investment-hero-foot small {color:#b7c2b6!important;-webkit-text-fill-color:#b7c2b6!important;}
+/* Second-tier performance keeps the same figures without a redundant caption. */
+html .app-shell .investment-second-level .investment-tier-pnl-caption {display:none!important;}
+/* Net-worth comparison is part of the chart surface, not a pair of outlined cards. */
+html .app-shell .networth-trend-compare-grid {
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  gap:14px!important;margin:4px 0 12px!important;
+}
+html .app-shell .networth-trend-compare-item {
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  padding:4px 0!important;border-radius:0!important;
+}
+html .app-shell .networth-trend-compare-item + .networth-trend-compare-item {
+  padding-left:12px!important;
+}
+html .app-shell .networth-trend-heading-date {
+  font-size:clamp(14px,3.5vw,17px)!important;
+  font-weight:800!important;line-height:1.3!important;
+  letter-spacing:.005em!important;
+  color:var(--theme-text)!important;
+}
+@media(max-width:380px){
+  html .app-shell .networth-trend-compare-grid {gap:8px!important;}
+  html .app-shell .networth-trend-compare-item + .networth-trend-compare-item {padding-left:6px!important;}
+  html .app-shell .networth-trend-heading-date {font-size:13px!important;}
+}
+
+/* v247: Investment performance summaries use the same visual language as the
+   first-level investment stack. Keep the v246 disclosure functional, but make
+   the amount the focus and let geometric forms act as quiet decoration. */
+html .app-shell .investment-stage-hero.investment-reference-inspired-hero {
+  --hero-stripe:#bea4d9;
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  background:var(--theme-surface,#fffdf7)!important;
+  color:var(--theme-text,#302d28)!important;
+  border:1px solid var(--hero-stripe)!important;
+  border-left:12px solid var(--hero-stripe)!important;
+  border-radius:26px!important;
+  box-shadow:0 12px 25px rgba(32,30,26,.09)!important;
+  padding:23px 22px 20px!important;
+  gap:0!important;
+}
+html .app-shell .investment-stage-hero.investment-hero-stocks {--hero-stripe:#bea4d9;}
+html .app-shell .investment-stage-hero.investment-hero-trust {--hero-stripe:#ff9a80;}
+html .app-shell .investment-stage-hero.investment-hero-policy {--hero-stripe:#27bfb3;}
+html .app-shell .investment-stage-hero.investment-reference-inspired-hero::before {
+  content:""!important;
+  position:absolute!important;z-index:0!important;
+  top:-34px!important;right:-24px!important;left:auto!important;
+  width:195px!important;height:210px!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:repeating-linear-gradient(128deg,transparent 0,transparent 25px,color-mix(in srgb,var(--hero-stripe) 15%,transparent) 26px,color-mix(in srgb,var(--hero-stripe) 15%,transparent) 29px,transparent 30px,transparent 53px)!important;
+  pointer-events:none!important;
+}
+html .app-shell .investment-stage-hero.investment-reference-inspired-hero::after {
+  content:"";position:absolute;pointer-events:none;z-index:0;
+  top:0;right:0;width:50%;height:100%;
+  background:linear-gradient(115deg,transparent,color-mix(in srgb,var(--hero-stripe) 4%,transparent));
+}
+html .app-shell .investment-reference-inspired-hero > * {position:relative!important;z-index:1!important;}
+html .app-shell .investment-reference-inspired-hero .investment-stage-heading {
+  display:flex!important;align-items:flex-start!important;justify-content:space-between!important;
+  gap:12px!important;margin:0 0 22px!important;padding:0!important;
+  border:0!important;min-height:0!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-stage-kicker {
+  color:var(--theme-muted,#857e74)!important;-webkit-text-fill-color:currentColor!important;
+  margin-bottom:7px!important;font-size:10px!important;letter-spacing:.1em!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-stage-heading h2 {
+  color:var(--theme-text,#302d28)!important;-webkit-text-fill-color:currentColor!important;
+  font-size:clamp(20px,4.6vw,26px)!important;font-weight:800!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-stage-count {
+  color:var(--theme-muted,#857e74)!important;
+  -webkit-text-fill-color:currentColor!important;
+  border:0!important;background:transparent!important;
+  font-size:clamp(11px,2.8vw,13px)!important;
+  padding:5px 0!important;border-radius:0!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-finances {
+  display:flex!important;flex-direction:column!important;gap:0!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-value {
+  display:flex!important;flex-direction:column!important;gap:8px!important;
+  padding:0 0 13px!important;min-width:0!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-value small {
+  color:var(--theme-muted,#857e74)!important;-webkit-text-fill-color:currentColor!important;
+  font-size:clamp(12px,3vw,14px)!important;font-weight:650!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-value strong {
+  display:block!important;color:var(--theme-text,#302d28)!important;
+  -webkit-text-fill-color:var(--theme-text,#302d28)!important;
+  font-size:clamp(28px,7.4vw,43px)!important;font-weight:820!important;
+  letter-spacing:-.045em!important;line-height:1.13!important;
+  opacity:1!important;text-shadow:none!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-details {
+  color:var(--theme-text,#302d28)!important;
+  padding:0!important;margin:0!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-details-trigger {
+  border-top:1px solid var(--theme-line,#e4ddd1)!important;
+  color:var(--theme-muted,#857e74)!important;
+  padding:12px 0 1px!important;font-size:clamp(12px,3vw,14px)!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-details-trigger:focus-visible {
+  outline:2px solid var(--theme-accent,#9674bf);outline-offset:3px;border-radius:4px;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-foot {
+  border-top:0!important;margin-top:10px!important;
+  padding:12px 0 0!important;gap:12px!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-foot small {
+  color:var(--theme-muted,#857e74)!important;-webkit-text-fill-color:currentColor!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-cost strong {
+  color:var(--theme-text,#302d28)!important;-webkit-text-fill-color:currentColor!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-return-values.income,
+html .app-shell .investment-reference-inspired-hero .investment-hero-return-values.income > * {
+  color:var(--user-income,var(--theme-income,#d64c62))!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html .app-shell .investment-reference-inspired-hero .investment-hero-return-values.expense,
+html .app-shell .investment-reference-inspired-hero .investment-hero-return-values.expense > * {
+  color:var(--user-expense,var(--theme-expense,#299b8a))!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+@media(max-width:440px){
+  html .app-shell .investment-stage-hero.investment-reference-inspired-hero {
+    border-left-width:10px!important;padding:19px 15px 17px!important;border-radius:22px!important;
+  }
+  html .app-shell .investment-reference-inspired-hero .investment-stage-heading {margin-bottom:17px!important;}
+  html .app-shell .investment-reference-inspired-hero .investment-hero-value strong {font-size:clamp(25px,7.5vw,36px)!important;}
+  html .app-shell .investment-reference-inspired-hero .investment-hero-foot {gap:8px!important;}
+  html .app-shell .investment-reference-inspired-hero .investment-hero-return-values {gap:3px 5px!important;}
+}
+
+/* v248: Stock / Trust / Policy summaries share the Portfolio Summary disclosure.
+   The ENTIRE header is the open/close target, with an arrow at top-right.
+   Financial metrics live inside the expandable body, not below a separate link. */
+html .app-shell .summary-hero.investment-performance-summary-hero {
+  margin:0 0 14px!important;
+  background:#202821!important;
+  color:#fff9ed!important;
+  border:1px solid #8f967a50!important;
+  border-radius:23px!important;
+  box-shadow:0 9px 22px rgba(0,0,0,.12)!important;
+}
+html .app-shell .summary-hero.investment-performance-summary-hero .summary-hero-trigger {
+  cursor:pointer!important;
+  min-height:154px!important;
+}
+html .app-shell .summary-hero.investment-performance-summary-hero .summary-hero-value > strong {
+  color:#fff9ed!important;
+  -webkit-text-fill-color:#fff9ed!important;
+}
+html .app-shell .summary-hero.investment-performance-summary-hero .summary-hero-metrics > div {
+  background:rgba(255,255,255,.055)!important;
+}
+html .app-shell .summary-hero.investment-performance-summary-hero .summary-hero-metrics strong {
+  color:#fff9ed!important;
+  -webkit-text-fill-color:#fff9ed!important;
+}
+html .app-shell .summary-hero.investment-performance-summary-hero .summary-hero-metrics .income {
+  color:var(--user-income,var(--theme-income,#ee526c))!important;
+  -webkit-text-fill-color:var(--user-income,var(--theme-income,#ee526c))!important;
+}
+html .app-shell .summary-hero.investment-performance-summary-hero .summary-hero-metrics .expense {
+  color:var(--user-expense,var(--theme-expense,#35aa94))!important;
+  -webkit-text-fill-color:var(--user-expense,var(--theme-expense,#35aa94))!important;
+}

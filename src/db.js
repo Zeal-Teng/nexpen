@@ -1,3 +1,4 @@
+import {investmentCashMovement} from './investmentCashFlow.js';
 import {calculateLots} from './stockLots.js';
 import Dexie from 'dexie';
 // Demo and personal finance use different IndexedDB databases. Never move or
@@ -91,7 +92,7 @@ export async function restore(data){
  });
 }
 // 帳戶餘額從期初餘額與交易推導，避免刪改資料造成累積誤差。
-export const accountBalance=(a,records,stocks,investmentFlows=[])=>Number(a.openingBalance||0)+records.reduce((s,t)=>s+(t.type==='income'&&t.account===a.id?t.amount:t.type==='expense'&&t.account===a.id?-t.amount:t.type==='transfer'&&t.toAccount===a.id?t.amount:t.type==='transfer'&&t.fromAccount===a.id?-t.amount:0),0)+stocks.reduce((s,t)=>s+(t.account!==a.id?0:t.action==='buy'?-t.totalAmount:t.action==='sell'?t.totalAmount:t.action==='dividend'?t.amount:0),0)+investmentFlows.reduce((sum,f)=>sum+(f.sourceAccount===a.id?(f.kind==='redemption'?Number(f.amount||0):f.kind==='contribution'?-Number(f.amount||0):0):0),0);
+export const accountBalance=(a,records,stocks,investmentFlows=[])=>Number(a.openingBalance||0)+records.reduce((s,t)=>s+(t.type==='adjustment'&&t.account===a.id?Number(t.amount)||0:0)+(t.type==='income'&&t.account===a.id?t.amount:t.type==='expense'&&t.account===a.id?-t.amount:t.type==='transfer'&&t.toAccount===a.id?t.amount:t.type==='transfer'&&t.fromAccount===a.id?-t.amount:0),0)+stocks.reduce((s,t)=>s+(t.account!==a.id?0:t.action==='buy'?-t.totalAmount:t.action==='sell'?t.totalAmount:t.action==='dividend'?t.amount:0),0)+investmentFlows.reduce((sum,f)=>sum+(f.sourceAccount===a.id?investmentCashMovement(f):0),0);
 export function holdings(stocks){
  return calculateLots(stocks).groups.filter(g=>g.shares>0).map(g=>({symbol:g.symbol,shares:g.shares,cost:g.cost,lastPrice:g.lots.at(-1)?.price||0}));
 }

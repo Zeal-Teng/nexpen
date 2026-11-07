@@ -1,5 +1,6 @@
 import {t as i18n} from './i18n.js';
 import React from 'react';
+import SummaryHero from './SummaryHero.jsx';
 import {InvestmentStack,InvestmentStackCard,InvestmentStackAsset,ClosingPrice} from './InvestmentStack.jsx';
 import {ArrowLeft, ChevronRight} from 'lucide-react';
 
@@ -73,13 +74,12 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtSumm
     </section>;
   }
   return <>
-    <section className="investment-stage-hero investment-category-hero investment-stock-category-hero investment-unified-summary" aria-label={tr('股票績效總覽','Stock performance summary')}>
-      <div className="investment-stage-heading"><div><span className="investment-stage-kicker">NEXPEN · STOCKS</span><h2>{tr('股票投資','Stock investments')}</h2></div><span className="investment-stage-count">{currentHoldings.length} {tr('檔持股','holdings')}</span></div>
-      <div className="stock-summary-v48 investment-stage-summary">
-      <div className="stock-summary-pair"><div className="stock-summary-item"><small>{tr('持有成本','Cost basis')}</small><strong>{summaryMoney(stockCost)}</strong></div><div className="stock-summary-item"><small>{tr('估算市值','Market value')}</small><strong>{allPriced?summaryMoney(stockVal):tr('部分未取得','Partially unavailable')}</strong></div></div>
-      <div className="stock-summary-profit"><small>{tr('未實現損益','Unrealized P/L')}</small><div className="stock-pnl-result investment-second-pnl-badges"><strong className={stockProfit>=0?'income':'expense'}>{allPriced?summaryResult(stockProfit):tr('待取得報價','Awaiting quotes')}</strong>{allPriced&&<span className={stockProfit>=0?'income':'expense'}>{percent(stockPct)}</span>}</div></div>
+    <SummaryHero className="investment-dashboard-hero investment-performance-summary-hero" eyebrow="NEXPEN · STOCKS" title={tr('股票投資','Stock investments')} label={tr('估算市值','Market value')} value={allPriced?summaryMoney(stockVal):tr('部分未取得','Partially unavailable')} detailId="stock-performance-summary-details">
+      <div className="summary-hero-metrics">
+        <div><small>{tr('持有成本','Cost basis')}</small><strong>{summaryMoney(stockCost)}</strong></div>
+        <div><small>{tr('未實現損益','Unrealized P/L')}</small><strong className={allPriced?(stockProfit>=0?'income':'expense'):''}>{allPriced?summaryResult(stockProfit):'—'}</strong><em className={allPriced?(stockProfit>=0?'income':'expense'):''}>{allPriced?percent(stockPct):'—'}</em></div>
       </div>
-    </section>
+    </SummaryHero>
     <p className="hint stock-price-explain">{tr('市值依最後成功收盤價估算，買進成本已含手續費；未實現損益不含未來賣出費稅。','Market value is based on the latest stored closing prices; unrealized P/L excludes future selling costs and tax.')}</p>
     <InvestmentStack className="investment-second-level"><InvestmentStackCard accent="lavender" title={tr("目前持有","Current holdings")} summary={null} amount={allPriced?money(stockVal):"—"} profit={allPriced?result(stockProfit):"—"} rate={allPriced?percent(stockPct):"—"} profitTone={toneClass(allPriced?stockProfit:null)}><section className="glass panel stock-performance-section investment-stage-list"><div className="stock-holdings-heading"><div className="stock-quote-inline"><small>{(()=>{const dates=currentHoldings.map(h=>quotes[h.symbol]?.date).filter(Boolean).sort();return dates.length?`${tr('最後更新','Last updated')} ${dates.at(-1)}`:tr('尚未更新','Not updated')})()}</small><button type="button" className="stock-refresh-inline" aria-label={tr('更新收盤價','Refresh prices')} disabled={quoteLoading} onClick={onRefresh}><RefreshIcon size={17} className={quoteLoading?'spinning':''}/></button></div></div>
       <div className="investment-tier-stack investment-asset-substack">{currentHoldings.length?currentHoldings.map(h=>{const q=Number(quotes[h.symbol]?.price)||0;const profit=q>0?h.shares*q-h.cost:null;return <InvestmentStackAsset key={h.symbol} accent="lavender" stockLayout title={`${h.symbol}${h.details?.securityName?` · ${h.details.securityName}`:''}`} topRight={q>0?<ClosingPrice value={fmtUnit(q)} change={quotes[h.symbol]?.change}/>: '—'} sharesLine={`${tr('股數','Shares')} ${h.shares.toLocaleString()}`} averageLine={`${tr('均價','Avg.')} ${h.shares>0?fmtUnit(h.cost/h.shares):'—'}`} valueLine={q>0?money(h.shares*q):'—'} profit={profit!==null?result(profit):'—'} rate={profit!==null?percent(h.cost>0?profit/h.cost*100:null):'—'} profitTone={toneClass(profit)} onOpen={()=>onSelect(h.symbol)}/>;}):<p className="hint">{tr('沒有持股記錄','No current holdings')}</p>}</div>
