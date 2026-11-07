@@ -7186,3 +7186,39 @@ html .investment-product-backdrop .investment-product-sheet .native-date-control
   background:var(--theme-accent)!important;color:var(--theme-accent-contrast)!important;
 }
 :root[data-theme] .investment-product-sheet > form > label .investment-fx-status {display:block;font-size:12px;line-height:1.4;font-weight:450;margin-top:2px}
+
+/* v270: investment valuation history is separate from cash movements. */
+html .app-shell .investment-valuation-list-panel{
+ display:grid;gap:11px;min-width:0;margin:16px 0;padding:15px;
+ border:1px solid var(--theme-line);border-radius:18px;
+ background:var(--theme-surface);color:var(--theme-text);
+}
+html .app-shell .investment-valuation-list-panel .investment-third-listview-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;margin:0;
+}
+html .app-shell .investment-valuation-list-panel .investment-third-listview-heading h2{margin:0;min-width:0;font-size:17px}
+html .app-shell .investment-valuation-list-panel .soft-btn.small{
+ margin:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ max-width:100%;min-width:0;gap:6px!important;padding:10px 12px!important;
+}
+html .app-shell .investment-valuation-caption{margin:0;font-size:12px;line-height:1.55;color:var(--theme-muted)}
+html .app-shell .investment-valuation-entry{
+ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;min-width:0;
+ border-bottom:1px solid var(--theme-line);
+}
+html .app-shell .investment-valuation-entry:last-of-type{border-bottom:0}
+html .app-shell .investment-valuation-entry>button{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;
+ padding:12px 4px;background:transparent;color:var(--theme-text);border:0;text-align:left;
+}
+html .app-shell .investment-valuation-entry>button:first-child{width:100%}
+html .app-shell .investment-valuation-entry>button>span{display:grid;gap:4px;min-width:0}
+html .app-shell .investment-valuation-entry strong{font-size:14px;font-variant-numeric:tabular-nums}
+html .app-shell .investment-valuation-entry small{font-size:12px;color:var(--theme-muted);line-height:1.5;overflow-wrap:anywhere}
+html .app-shell .investment-valuation-entry>button:last-child{padding:12px 8px;color:var(--user-expense)}
+html .investment-product-sheet .investment-valuation-readonly{
+ display:flex;min-height:44px;align-items:center;border:1px solid var(--theme-line);border-radius:10px;
+ background:var(--theme-surface2);padding:10px 12px;font-weight:700;
+}
+
+html .app-shell .investment-current-fx{display:block;margin-top:6px;font-weight:650;color:var(--theme-text);overflow-wrap:anywhere}

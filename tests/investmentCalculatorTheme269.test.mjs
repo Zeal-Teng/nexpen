@@ -5,13 +5,14 @@ const ui=readFileSync('src/InvestmentProducts.jsx','utf8');
 const css=readFileSync('src/folio-redesign.css','utf8');
 test('fund bond insurance term deposit numeric fields use shared amount calculator',()=>{
  assert.match(ui,/import AmountCalculator/);
- for(const key of ['price','premiumYears','declaredRate','couponRate','shares','amount','fee'])assert.ok(ui.includes(`'${key}'`),key);
+ for(const key of ['premiumYears','declaredRate','couponRate','shares','amount','fee'])assert.ok(ui.includes(`'${key}'`),key);
+ assert.match(ui,/valuationForm\.price/);
  for(const key of ['year','cumulativePremium','endValue','nextValue'])assert.match(ui,new RegExp(`projectionNumber\\(i,'${key}'`));
  assert.match(ui,/flowForm\.exchangeRate/);
  assert.equal((ui.match(/type="number"/g)||[]).length,0);
 });
 test('date-based history FX refresh and user manual override are supported',()=>{
- assert.match(ui,/fetchHistoricalInvestmentRate\(productForm\.currency,'TWD',productForm\.priceDate/);
+ assert.match(ui,/fetchHistoricalInvestmentRate\(asset\.currency,'TWD',valuationForm\.date/);
  assert.match(ui,/fetchHistoricalInvestmentRate\(asset\.currency,account\.currency,flowForm\.date/);
  assert.match(ui,/fxManual\.current=true/);
  assert.match(ui,/exchangeRateDate:/);

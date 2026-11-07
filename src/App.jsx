@@ -1,3 +1,4 @@
+import {productTwdRate} from './investmentValuationsProduct.js';
 import {balanceAuditDelta,isBalanceAudit} from './balanceAudit.js';
 import {investmentDiaryRows} from './investmentDiary.js';
 import {investmentPosition} from './investmentLedger.js';
@@ -633,7 +634,7 @@ export default function App(){
  useEffect(()=>{
   if(!ready||startupRatesRequested.current)return;
   startupRatesRequested.current=true;
-  const currencies=[...new Set([...accounts.map(a=>a.currency||'TWD'),primaryCurrency].filter(c=>c&&c!=='TWD'))];
+  const currencies=[...new Set([...accounts.map(a=>a.currency||'TWD'),...investmentProducts.map(p=>p.currency||'TWD'),primaryCurrency].filter(c=>c&&c!=='TWD'))];
   if(!currencies.length)return;
   let cancelled=false;
   const controller=new AbortController();
@@ -653,20 +654,22 @@ export default function App(){
    // Ignore older feeds: otherwise an older quote can replace a recent manual refresh.
    const updates=valid.filter(r=>{
     if(r.currency===primaryCurrency)return !previousPrimary?.date||r.date>=previousPrimary.date;
-    return accounts.some(a=>a.currency===r.currency&&(!a.fxDate||r.date>=a.fxDate));
+    return accounts.some(a=>a.currency===r.currency&&(!a.fxDate||r.date>=a.fxDate))||investmentProducts.some(p=>p.currency===r.currency&&(!p.currentFxDate||r.date>=p.currentFxDate));
    });
    if(cancelled||!updates.length)return;
    const accountRates=new Map(updates.map(x=>[x.currency,x]));
-   await db.transaction('rw',db.accounts,db.settings,async()=>{
+   await db.transaction('rw',db.accounts,db.settings,db.investmentProducts,async()=>{
     for(const a of accounts){
      const r=accountRates.get(a.currency);
      if(r&&(!a.fxDate||r.date>=a.fxDate))await db.accounts.update(a.id,{fxRate:r.rate,fxDate:r.date,fxSource:'Frankfurter'});
     }
+    for(const p of investmentProducts){const r=accountRates.get(p.currency);if(r&&(!p.currentFxDate||r.date>=p.currentFxDate))await db.investmentProducts.update(p.id,{currentFxRate:r.rate,currentFxDate:r.date});}
     const current=accountRates.get(primaryCurrency);
     if(current)await db.settings.put({key:'primaryTwdRate',value:{rate:current.rate,date:current.date,source:'Frankfurter'}});
    });
    if(cancelled)return;
    setAccounts(old=>old.map(a=>{const r=accountRates.get(a.currency);return r&&(!a.fxDate||r.date>=a.fxDate)?{...a,fxRate:r.rate,fxDate:r.date,fxSource:'Frankfurter'}:a}));
+   setInvestmentProducts(old=>old.map(p=>{const r=accountRates.get(p.currency);return r&&(!p.currentFxDate||r.date>=p.currentFxDate)?{...p,currentFxRate:r.rate,currentFxDate:r.date}:p}));
    const primary=accountRates.get(primaryCurrency);
    if(primary){setPrimaryTwdRate(primary.rate);setPrimaryRateDate(primary.date)}
    const failures=results.filter(r=>r.status==='rejected');
@@ -1214,7 +1217,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   })),
   ...(['fund','bond','savings','termDeposit'].map(type=>{
    const products=investmentProducts.filter(p=>p.type===type);
-   const amounts=products.map(p=>{const pos=investmentProductPosition(p,investmentFlows);const rate=p.currency==='TWD'?1:Number(p.fxRate);return {costTwd:pos.cost*rate,valueTwd:pos.units>0&&type!=='termDeposit'&&!(Number(p.price)>0)?null:investmentProductValue(p,pos)*rate};});
+   const amounts=products.map(p=>{const pos=investmentProductPosition(p,investmentFlows);const rate=productTwdRate(p);return {costTwd:rate>0?pos.cost*rate:0,valueTwd:pos.units>0&&(!(rate>0)||(type!=='termDeposit'&&!(Number(p.price)>0)))?null:investmentProductValue(p,pos)*(rate>0?rate:0)};});
    return {id:type,title:({fund:'基金',bond:'債券',savings:'儲蓄險',termDeposit:'定存'})[type],count:products.length,costTwd:amounts.reduce((v,p)=>v+p.costTwd,0),valueTwd:amounts.some(p=>!Number.isFinite(p.valueTwd))?null:amounts.reduce((v,p)=>v+p.valueTwd,0)};
   }))
  ];

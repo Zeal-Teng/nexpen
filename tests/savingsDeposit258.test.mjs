@@ -24,7 +24,7 @@ test('term deposit principal transfers once, interest only upon receipt, and mat
  assert.equal(worth.assets.find(a=>a.id==='termDeposit'),undefined);
 });
 test('savings insurance uses surrender value instead of premium totals',()=>{
- const asset={id:'s1',type:'savings',name:'儲蓄險',currency:'USD',fxRate:30,price:1850};
+ const asset={id:'s1',type:'savings',name:'儲蓄險',currency:'USD',fxRate:30,currentFxRate:30,price:1850};
  const premiums=[flow('s1','contribution',1000,1000),flow('s1','contribution',1000,1000,'2026-02-01')];
  const position=investmentProductPosition(asset,premiums);
  assert.equal(position.cost,2000);assert.equal(investmentProductValue(asset,position),1850);

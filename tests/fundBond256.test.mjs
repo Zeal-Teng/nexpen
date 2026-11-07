@@ -4,8 +4,8 @@ import {readFileSync} from 'node:fs';
 import {investmentProductPosition,investmentProductValue,productCashRate,validateProductTrade} from '../src/investmentProducts.js';
 import {investmentCashMovement} from '../src/investmentCashFlow.js';
 import {investmentDiaryRows} from '../src/investmentDiary.js';
-const fund={id:'fund-1',type:'fund',name:'美國股票基金',currency:'USD',price:13,fxRate:31.5};
-const bond={id:'bond-1',type:'bond',name:'公司債',currency:'USD',price:97.5,fxRate:31.5};
+const fund={id:'fund-1',type:'fund',name:'美國股票基金',currency:'USD',price:13,fxRate:31.5,currentFxRate:31.5};
+const bond={id:'bond-1',type:'bond',name:'公司債',currency:'USD',price:97.5,fxRate:31.5,currentFxRate:31.5};
 const buy={id:'a',assetId:fund.id,kind:'contribution',date:'2026-01-01',amount:1000,shares:100,sourceAccount:'cash-usd'};
 const sell={id:'b',assetId:fund.id,kind:'redemption',date:'2026-05-01',amount:650,shares:50,sourceAccount:'cash-twd',redemptionExchangeRate:32,redemptionFee:40};
 test('fund weighted-average cost and redemption realized gains',()=>{

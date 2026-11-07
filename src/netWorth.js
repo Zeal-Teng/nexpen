@@ -1,3 +1,4 @@
+import {productTwdRate} from './investmentValuationsProduct.js';
 import {investmentProductPosition,investmentProductValue} from './investmentProducts.js';
 import {investmentCashMovement} from './investmentCashFlow.js';
 import {investmentPosition} from './investmentLedger.js';
@@ -55,9 +56,10 @@ export function computeNetWorth({accounts=[],records=[],stocks=[],investmentFlow
   for(const product of investmentProducts){
     if(product.includeInAssets===false)continue;
     const position=investmentProductPosition(product,investmentFlows);
-    const twdRate=product.currency==='TWD'?1:finite(product.fxRate)||1;
+    const twdRate=productTwdRate(product);
     if(position.units>0&&product.type!=='termDeposit'&&!(Number(product.price)>0)){missingQuotes.push(product.name||'投資資產');continue;}
     const group=({fund:'fund',bond:'bond',savings:'savings',termDeposit:'termDeposit'})[product.type]||'other';
+    if(!(twdRate>0)){missingQuotes.push((product.name||'投資資產')+' 匯率');continue;}
     groups[group]+=investmentProductValue(product,position)*twdRate;
   }
   for(const holding of includedHoldings){

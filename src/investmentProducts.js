@@ -1,3 +1,4 @@
+import {productTwdRate} from './investmentValuationsProduct.js';
 // Independent fund and bond ledger. Flows live in investmentFlows so cash accounts
 // and diary remain single-source-of-truth. Bond units are face value; quoted price
 // is per 100 units of face. Fund units are fund shares, price is NAV per share.
@@ -21,7 +22,7 @@ export function investmentProductValue(asset,position){
 }
 export function productCashRate(product,account){
  if(product.currency===account.currency)return 1;
- const src=product.currency==='TWD'?1:Number(product.fxRate);const dest=account.currency==='TWD'?1:Number(account.fxRate);
+ const src=productTwdRate(product);const dest=account.currency==='TWD'?1:Number(account.fxRate);
  return src>0&&dest>0?src/dest:NaN;
 }
 export function validateProductTrade(product,flows,trade,account){
