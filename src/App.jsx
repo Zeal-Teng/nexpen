@@ -195,6 +195,34 @@ function SmartSelect({value,onChange,children,className='',...props}){
  const selected=options.find(o=>o.value===String(value));
  return <><button type="button" className={'smart-select '+className} onClick={()=>setShown(true)} disabled={props.disabled}><span>{selected?.label||i18n("請選擇")}</span><ChevronRight size={18}/></button>{shown&&createPortal(<div className="picker-backdrop" onClick={()=>setShown(false)}><div className="picker-sheet" onClick={e=>e.stopPropagation()}><div className="picker-handle"/><div className="picker-heading"><b>{i18n("請選擇")}</b><button type="button" className="sheet-close-button" aria-label={i18n("關閉選擇面板")} onClick={()=>setShown(false)}><X size={21}/></button></div><div className="picker-options">{options.map((o,i)=><button type="button" key={i} disabled={o.disabled} className={'picker-option '+(String(value)===o.value?'picked':'')} onClick={()=>{onChange?.({target:{value:o.value}});setShown(false)}}><span>{o.label}</span>{String(value)===o.value&&<Check size={19}/>}</button>)}</div></div></div>,document.body)}</>;
 }
+// Currency picker with a real two-column layout: names left, relative rates right.
+// Use separate elements instead of aligning a long string with whitespace.
+function CurrencyRateSelect({value,onChange,rates,mainRate,loading=false}){
+ const [shown,setShown]=useState(false);
+ const baseRate=value==='TWD'?1:(Number(mainRate)>0?Number(mainRate):Number(rates[value]?.rate));
+ const currencyLabel=(code,label)=>`${code} · ${i18n(label).replace(new RegExp(`\\s+${code}$`),'')}`;
+ const formattedRate=(code)=>{
+  if(code===value)return `1 ${value}`;
+  const twdRate=code==='TWD'?1:Number(rates[code]?.rate);
+  if(!Number.isFinite(baseRate)||baseRate<=0||!Number.isFinite(twdRate)||twdRate<=0)return loading?'更新中':'—';
+  const converted=twdRate/baseRate;
+  return `${new Intl.NumberFormat('zh-TW',{maximumFractionDigits:6}).format(converted)} ${value}`;
+ };
+ const selected=CURRENCIES.find(([code])=>code===value);
+ return <>
+  <button type="button" className="smart-select currency-rate-select" aria-haspopup="dialog" aria-expanded={shown} onClick={()=>setShown(true)}>
+   <span className="currency-rate-option-label">{selected?currencyLabel(...selected):value}</span>
+   <span className="currency-rate-option-value">{formattedRate(value)}</span>
+   <ChevronRight size={18} className="currency-rate-arrow" aria-hidden="true"/>
+  </button>
+  {shown&&createPortal(<div className="picker-backdrop" onClick={()=>setShown(false)}><div className="picker-sheet currency-rate-sheet" role="dialog" aria-modal="true" aria-label={i18n('主要貨幣')} onClick={e=>e.stopPropagation()}>
+   <div className="picker-handle"/><div className="picker-heading"><b>{i18n('主要貨幣')}</b><button type="button" className="sheet-close-button" aria-label={i18n('關閉選擇面板')} onClick={()=>setShown(false)}><X size={21}/></button></div>
+   <div className="picker-options currency-rate-options">{CURRENCIES.map(([code,label])=><button type="button" key={code} className={'picker-option currency-rate-option'+(value===code?' picked':'')} onClick={()=>{onChange(code);setShown(false)}}>
+    <span className="currency-rate-option-label">{currencyLabel(code,label)}</span><span className="currency-rate-option-value">{formattedRate(code)}</span>{value===code&&<Check size={19} className="currency-rate-check" aria-hidden="true"/>}
+   </button>)}</div>
+  </div></div>,document.body)}
+ </>;
+}
 // Compact diary filters: keep the search row single-line on mobile, open the existing selection sheet.
 function DiaryFilterIcon({Icon,label,value,defaultValue='all',options,onChange}){
  const [shown,setShown]=useState(false);
@@ -364,6 +392,10 @@ export default function App(){
  const {askConfirm,confirmationDialog}=useConfirmDialog();
  const[language,setLanguage]=useState('zh-TW'),[colorScheme,setColorScheme]=useState('normal'),[primaryCurrency,setPrimaryCurrency]=useState('TWD'),[primaryTwdRate,setPrimaryTwdRate]=useState(1),[primaryRateDate,setPrimaryRateDate]=useState(''),[primaryRateLoading,setPrimaryRateLoading]=useState(false);const tr=value=>trText(value,language);setLocale(language);
  const [netWorthGoalTwd,setNetWorthGoalTwd]=useState(null);
+ const [currencyMenuRates,setCurrencyMenuRates]=useState({TWD:{rate:1,date:''}});
+ const [currencyMenuLoading,setCurrencyMenuLoading]=useState(false);
+ const activePrimaryCurrencyRef=useRef('TWD');
+
  const autoRecurringBusy=useRef(false);
  const [passwordConfig,setPasswordConfig]=useState(null),[unlocked,setUnlocked]=useState(false);
  const lockInitialized=useRef(false);
@@ -560,6 +592,36 @@ export default function App(){
  // opening the Stock tab. Existing five-minute throttle prevents repeated downloads.
  // Launch refresh uses the existing official quotes pipeline; no history is fabricated.
  useEffect(()=>{if(ready&&(holdings(stocks).length||accounts.some(a=>a.type==='trust')))refreshQuotes();},[ready,tab,stocks,accounts]);
+ // Settings currency choices display the latest available Frankfurter close (not an intraday quote).
+ // Refresh once on entering settings. On failure retain the last successfully fetched values.
+ useEffect(()=>{
+  if(!ready||tab!=='settings')return;
+  const controller=new AbortController();
+  let active=true;
+  setCurrencyMenuLoading(true);
+  (async()=>{
+   const codes=CURRENCIES.map(([code])=>code).filter(code=>code!=='TWD');
+   const results=await Promise.allSettled(codes.map(async currency=>{
+    const res=await fetch(`https://api.frankfurter.dev/v2/rate/${encodeURIComponent(currency)}/TWD`,{cache:'no-store',signal:controller.signal});
+    if(!res.ok)throw Error(`HTTP ${res.status}`);
+    const value=await res.json();
+    const rate=Number(value.rate),date=String(value.date||'');
+    if(!(rate>0)||!Number.isFinite(rate)||!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('匯率資料無效');
+    return {currency,rate,date};
+   }));
+   if(!active)return;
+   setCurrencyMenuRates(previous=>{
+    const next={...previous};
+    results.forEach(result=>{if(result.status==='fulfilled'){
+     const {currency,rate,date}=result.value;
+     if(!next[currency]?.date||date>=next[currency].date)next[currency]={rate,date};
+    }});
+    return next;
+   });
+  })().catch(e=>{if(active)console.info('貨幣選單匯率暫不可用：',e.message)})
+   .finally(()=>{if(active)setCurrencyMenuLoading(false)});
+  return()=>{active=false;controller.abort()};
+ },[ready,tab,primaryCurrency]);
  // v153: update the exchange rates actually used by existing accounts and the
  // configured primary currency when the app opens. Keep last good values offline.
  useEffect(()=>{
@@ -1245,23 +1307,44 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  const chooseLanguage=async value=>{await db.settings.put({key:'language',value});setLanguage(value)};
  const saveNetWorthGoal=async amountTwd=>{const valid=amountTwd===null?null:Number(amountTwd);if(valid!==null&&(!Number.isFinite(valid)||valid<=0))throw Error('目標金額必須大於零');await db.settings.put({key:'netWorthGoalTwd',value:valid});setNetWorthGoalTwd(valid);};
  const chooseColors=async value=>{await db.settings.put({key:'amountColors',value});setColorScheme(value)};
+ // Prevent an earlier network request overwriting a newer currency selection.
+ activePrimaryCurrencyRef.current=primaryCurrency;
  const changePrimaryCurrency=async value=>{
-  await db.settings.put({key:'primaryCurrency',value});setPrimaryCurrency(value);
-  if(value==='TWD'){setPrimaryTwdRate(1);setPrimaryRateDate('');return;}
+  if(!CURRENCIES.some(([code])=>code===value))return;
+  activePrimaryCurrencyRef.current=value;
+  setPrimaryCurrency(value);
+  if(value==='TWD'){setPrimaryTwdRate(1);setPrimaryRateDate('');setPrimaryRateLoading(false);await db.settings.put({key:'primaryCurrency',value});return;}
+  // Show cached rate only when it belongs to the same selected currency.
   const saved=(await db.settings.get('primaryTwdRate'))?.value;
+  if(activePrimaryCurrencyRef.current!==value)return;
   if(saved?.currency===value&&Number(saved.rate)>0){setPrimaryTwdRate(Number(saved.rate));setPrimaryRateDate(saved.date||'')}
   else {setPrimaryTwdRate(0);setPrimaryRateDate('')}
-  await updatePrimaryRate(value);
+  await db.settings.put({key:'primaryCurrency',value});
+  if(activePrimaryCurrencyRef.current===value)await updatePrimaryRate(value);
  };
  const updatePrimaryRate=async currency=>{
   if(currency==='TWD')return;
   setPrimaryRateLoading(true);
-  try{const res=await fetch(`https://api.frankfurter.dev/v2/rate/${encodeURIComponent(currency)}/TWD`,{cache:'no-store'});
-   if(!res.ok)throw Error(`HTTP ${res.status}`);const data=await res.json();const rate=Number(data.rate);
-   if(!Number.isFinite(rate)||rate<=0)throw Error(i18n("無效匯率"));
-   await db.settings.put({key:'primaryTwdRate',value:{currency,rate,date:data.date||''}});
-   setPrimaryTwdRate(rate);setPrimaryRateDate(data.date||'');toast(`${i18n('主要貨幣匯率已更新')}：1 ${currency} = ${rate} TWD`);
-  }catch(e){toast(`${i18n('無法更新主要貨幣匯率')}：${e.message}，${i18n('請連線後重試')}`)}finally{setPrimaryRateLoading(false)}
+  try{
+   const res=await fetch(`https://api.frankfurter.dev/v2/rate/${encodeURIComponent(currency)}/TWD`,{cache:'no-store'});
+   if(!res.ok)throw Error(`HTTP ${res.status}`);
+   const data=await res.json();
+   const rate=Number(data.rate),date=String(data.date||'');
+   if(!Number.isFinite(rate)||rate<=0||!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error(i18n('無效匯率'));
+   setCurrencyMenuRates(old=>({...old,[currency]:!old[currency]?.date||date>=old[currency].date?{rate,date}:old[currency]}));
+   // Do not let a slow request from the previous selection replace the current currency.
+   if(activePrimaryCurrencyRef.current!==currency)return;
+   const stored=(await db.settings.get('primaryTwdRate'))?.value;
+   if(activePrimaryCurrencyRef.current!==currency)return;
+   if(stored?.currency===currency&&stored.date&&date<stored.date){
+    setPrimaryTwdRate(Number(stored.rate));setPrimaryRateDate(stored.date);return;
+   }
+   await db.settings.put({key:'primaryTwdRate',value:{currency,rate,date,source:'Frankfurter'}});
+   if(activePrimaryCurrencyRef.current!==currency)return;
+   setPrimaryTwdRate(rate);setPrimaryRateDate(date);
+   toast(`${i18n('主要貨幣匯率已更新')}：1 ${currency} = ${rate} TWD (${date})`);
+  }catch(e){if(activePrimaryCurrencyRef.current===currency)toast(`${i18n('無法更新主要貨幣匯率')}：${e.message}，${i18n('請連線後重試')}`)}
+  finally{if(activePrimaryCurrencyRef.current===currency)setPrimaryRateLoading(false)}
  };
  const chooseTheme=async value=>{if(isDemoMode)return;await db.settings.put({key:'theme',value});setTheme(value)};const toggleTheme=async()=>chooseTheme(theme==='dark'?'light':'dark');const updateFabPosition=async value=>{if(!['left','right'].includes(value))return;await db.settings.put({key:'fabPosition',value});setFabPosition(value)};const chooseWeekStart=async value=>{const next=value===1?1:0;await db.settings.put({key:'weekStartsOn',value:next});setWeekStartsOn(next)};const updateFontScale=async value=>{const n=Number(value)||1;await db.settings.put({key:'fontScale',value:n});setFontScale(n)};
  const verifyLock=async password=>verifyAppPassword(password,passwordConfig);
@@ -1395,8 +1478,8 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  {tab==='projects'&&<section className="glass panel project-management-page"><div className="section-header"><div><h2>{i18n("專案管理")}</h2><p className="hint">{i18n("交易可自由指定專案，不選擇也能正常記帳。重新命名不影響歷史交易。")}</p></div></div>{projects.length?<div className="project-management-list">{projects.map(project=><div className="project-management-row" key={project.id}><div className="row-main"><b>{project.name}</b><small>{records.filter(r=>r.projectId===project.id).length} {i18n("筆關聯交易")}</small></div><button type="button" className="type-action" title={`${i18n('修改')} ${project.name}`} aria-label={`${i18n('修改')} ${project.name}`} onClick={()=>open('project',project)}><Edit3 size={18}/></button><button type="button" className="type-action delete" title={`${i18n('刪除')} ${project.name}`} aria-label={`${i18n('刪除')} ${project.name}`} onClick={()=>deleteProject(project)}><Trash2 size={18}/></button></div>)}</div>:<Blank text={i18n("尚未建立專案")} sub={i18n("點擊右下角＋建立專案，之後在新增交易時可選擇")}/>}</section>}
  {tab==='categories'&&<section className="category-section"><div className="section-header category-section-head"><div><h2>{i18n("分類管理")}</h2><p className="hint">{i18n("按住左側拖曳把手調整主分類或子分類順序，放開後自動儲存；也可聚焦把手按方向鍵排序。")}</p></div><div className="segmented"><Pill active={categoryFlow==='expense'} onClick={()=>setCategoryFlow('expense')}>{i18n("支出")}</Pill><Pill active={categoryFlow==='income'} onClick={()=>setCategoryFlow('income')}>{i18n("收入")}</Pill></div></div><div className="category-list category-card-stack">{Object.entries(categories[categoryFlow]).map(([main,subs])=><div className={'category-group category-stack-card'+(expandedCategoryStack===`${categoryFlow}/${main}`?' category-stack-expanded':' category-stack-collapsed')+(categoryDrag?.kind==='main'&&categoryDrag.main===main?' category-dragging':'')+(categoryDrag?.kind==='main'&&categoryDrag.target===main?' category-drop-target':'')} key={main} data-category-sort-row="" data-category-kind="main" data-category-flow={categoryFlow} data-category-main={main}><div className="category-group-head category-stack-peek"><button type="button" className="category-drag-handle" title={i18n("拖曳排序主分類")} aria-label={`${i18n('拖曳排序主分類')} ${main}`} onPointerDown={e=>categoryHandleDown(e,'main',main,null)} onPointerMove={categoryHandleMove} onPointerUp={categoryHandleUp} onPointerCancel={endCategoryDrag} onKeyDown={e=>categoryHandleKey(e,'main',main,null)}><GripVertical size={19}/></button><button type="button" className="category-main-label category-stack-toggle" aria-expanded={expandedCategoryStack===`${categoryFlow}/${main}`} onClick={()=>setExpandedCategoryStack(prev=>prev===`${categoryFlow}/${main}`?null:`${categoryFlow}/${main}`)}>{(()=>{const Icon=CATEGORY_ICONS[categoryIcons[`${categoryFlow}/main/${main}`]||suggestedIcon(main)]||Tags;return <Icon size={20}/>})()}<strong>{i18n(main)}</strong><ChevronRight className={expandedCategoryStack===`${categoryFlow}/${main}`?'stack-open-chevron':''} size={16}/></button><div className="category-tools"><button type="button" className="category-action" title={i18n("修改主分類")} aria-label={`${i18n('修改')} ${main}`} onClick={()=>open('category',{name:main,mode:'main',categoryType:categoryFlow})}><Edit3 size={17}/></button><button type="button" className="category-action delete" title={i18n("刪除主分類")} aria-label={`${i18n('刪除')} ${main}`} onClick={()=>delCategory(main)}><Trash2 size={16}/></button></div></div><div className={"category-subs category-stack-details"+(expandedCategoryStack===`${categoryFlow}/${main}`?" is-open":"")} aria-hidden={expandedCategoryStack!==`${categoryFlow}/${main}`} inert={expandedCategoryStack!==`${categoryFlow}/${main}`}><div className="category-stack-details-inner">{subs.map(sub=><div className={'category-sub'+(categoryDrag?.kind==='sub'&&categoryDrag.main===main&&categoryDrag.sub===sub?' category-dragging':'')+(categoryDrag?.kind==='sub'&&categoryDrag.main===main&&categoryDrag.target===sub?' category-drop-target':'')} key={sub} data-category-sort-row="" data-category-kind="sub" data-category-flow={categoryFlow} data-category-main={main} data-category-sub={sub}><button type="button" className="category-drag-handle" title={i18n("拖曳排序子分類")} aria-label={`${i18n('拖曳排序子分類')} ${sub}`} onPointerDown={e=>categoryHandleDown(e,'sub',main,sub)} onPointerMove={categoryHandleMove} onPointerUp={categoryHandleUp} onPointerCancel={endCategoryDrag} onKeyDown={e=>categoryHandleKey(e,'sub',main,sub)}><GripVertical size={16}/></button>{(()=>{const Icon=CATEGORY_ICONS[categoryIcons[`${categoryFlow}/sub/${main}/${sub}`]||categoryIcons[`${categoryFlow}/main/${main}`]||suggestedIcon(main)]||Tags;return <Icon size={16} className="category-sub-icon"/>})()}<span>{i18n(sub)}</span><div className="category-tools"><button type="button" title={i18n("修改子分類")} aria-label={`${i18n('修改')} ${sub}`} onClick={()=>open('category',{name:sub,mode:'sub',parent:main,categoryType:categoryFlow})}><Edit3 size={15}/></button><button type="button" className="delete" title={i18n("刪除子分類")} aria-label={`${i18n('刪除')} ${sub}`} onClick={()=>delCategory(main,sub)}><X size={16}/></button></div></div>)}<button type="button" className="category-add-sub" onClick={()=>open('category',{name:'',mode:'sub',parent:main,categoryType:categoryFlow})}><Plus size={15}/> {i18n("新增子分類")}</button></div></div></div>)}</div></section>}
  {tab==='settings'&&<>{(isDemoMode||accounts.length>0||records.length>0)&&<section className="glass panel demo-entry-panel"><h2>{i18n('功能體驗')}</h2><p className="hint">{i18n('用一套虛構資料試用記帳、帳戶、投資、報表與排程。演示與個人帳本完全分開。')}</p><button type="button" className="demo-entry-button" onClick={()=>switchDemoMode(!isDemoMode)}>{isDemoMode?i18n('返回個人帳本'):i18n('進入演示模式')}</button></section>}<section className="glass panel settings-menu"><h2>{tr('記帳管理')}</h2><p className="hint">{i18n("管理帳戶、定期交易與收支分類")}</p>{[['accounts','帳戶管理','新增與修改銀行、現金、信用卡帳戶',Landmark],['projects','專案管理','建立與管理交易所屬專案',Tags],['recurring','定期交易','管理薪資、訂閱與週期性支出',Repeat2],['categories','分類管理','設定收入、支出主分類與子分類',Tags]].map(([key,label,desc,Icon])=><button className="action-row" key={key} onClick={()=>setTab(key)}><Icon size={20}/><span><b>{i18n(label)}</b><small>{i18n(desc)}</small></span><ChevronRight size={18}/></button>)}</section><section className="glass panel preferences-panel"><h2>{tr('主要貨幣')} / {tr('語言')} / {tr('金額顏色')}</h2>
- <Field label={tr('主要貨幣')}><SmartSelect value={primaryCurrency} onChange={e=>changePrimaryCurrency(e.target.value)}>{CURRENCIES.map(([code,label])=><option key={code} value={code}>{code} · {i18n(label)}</option>)}</SmartSelect></Field>
- {primaryCurrency!=='TWD'&&<div className="preference-rate"><small>{baseAvailable?`1 ${primaryCurrency} = ${mainRate.toFixed(4)} TWD${primaryRateDate?' · '+primaryRateDate:''}`:i18n("尚未取得主要貨幣匯率，總覽暫不計算換算數值")}</small><button type="button" className="soft-btn small" disabled={primaryRateLoading} onClick={()=>updatePrimaryRate(primaryCurrency)}><RefreshCcw size={15}/>{primaryRateLoading?i18n("更新中"):i18n("更新匯率")}</button></div>}
+ <Field label={tr('主要貨幣')}><CurrencyRateSelect value={primaryCurrency} onChange={changePrimaryCurrency} rates={currencyMenuRates} mainRate={mainRate} loading={currencyMenuLoading}/></Field>
+
  <p className="hint">{i18n("主要貨幣只影響總覽、持股與帳戶分組的換算顯示；帳戶餘額及交易紀錄仍以各自原幣保存。匯率僅供估算。")}</p>
  <Field label={tr('語言')}><SmartSelect value={language} onChange={e=>chooseLanguage(e.target.value)}>{SUPPORTED_LANGUAGES.map(([code,name])=><option key={code} value={code}>{name}</option>)}</SmartSelect></Field>
  <p className="hint">{i18n("介面文字依語言設定切換；使用者自行建立的帳戶、分類、專案及備註名稱不會被改寫。")}</p>

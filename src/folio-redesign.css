@@ -6448,3 +6448,44 @@ html .app-shell .summary-hero.investment-performance-summary-hero .summary-hero-
   color:var(--user-expense,var(--theme-expense,#35aa94))!important;
   -webkit-text-fill-color:var(--user-expense,var(--theme-expense,#35aa94))!important;
 }
+
+/* v250 — Primary currency selector: two columns, clean names and right-aligned quotes. */
+html .app-shell .currency-rate-select,
+.currency-rate-sheet .currency-rate-option {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  align-items:center!important;
+  gap:7px 10px!important;
+  width:100%;
+  text-align:left;
+}
+html .app-shell .currency-rate-select .currency-rate-option-label,
+.currency-rate-sheet .currency-rate-option-label {
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  text-align:left;
+}
+html .app-shell .currency-rate-select .currency-rate-option-value,
+.currency-rate-sheet .currency-rate-option-value {
+  min-width:0;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+  color:var(--theme-muted);
+  text-align:right;
+  justify-self:end;
+  font-size:clamp(12px,3vw,15px);
+  font-weight:650;
+}
+html .app-shell .currency-rate-select .currency-rate-arrow,
+.currency-rate-sheet .currency-rate-check {flex-shrink:0;}
+.currency-rate-sheet .currency-rate-option:not(.picked) {grid-template-columns:minmax(0,1fr) auto 19px;}
+.currency-rate-sheet .currency-rate-option:not(.picked)::after {content:"";width:19px;}
+.currency-rate-sheet .currency-rate-option.picked {grid-template-columns:minmax(0,1fr) auto 19px;}
+@media(max-width:370px){
+ html .app-shell .currency-rate-select,
+ .currency-rate-sheet .currency-rate-option {gap:6px!important;}
+ html .app-shell .currency-rate-select .currency-rate-option-value,
+ .currency-rate-sheet .currency-rate-option-value {font-size:12px!important;}
+}

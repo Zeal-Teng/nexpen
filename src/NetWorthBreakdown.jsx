@@ -25,8 +25,8 @@ export default function NetWorthBreakdown({data,format,language='zh-TW',currency
      <p className="summary-hero-description">{language==='en'?'Cash, deposits, securities, trusts and insurance, minus liabilities':language==='ja'?'現金・預金・証券・信託・保険から負債を控除':language==='zh-CN'?'现金、存款、证券、信托与保险，扣除负债':'現金、存款、證券、信託與保險，扣除負債'}</p>
      <div className="summary-hero-metrics"><div><small>{t.gross}</small><strong>{money(data.totalAssets)}</strong></div><div><small>{t.debt}</small><strong className={data.totalLiabilities>0?'expense':''}>{money(data.totalLiabilities)}</strong></div></div>
    </SummaryHero>
-   <NetWorthGoal goalTwd={goalTwd} currentTwd={data.netWorth} mainRate={mainRate} currency={currency} language={language} incomplete={data.missingQuotes.length>0} onSave={onSaveGoal}/>
    <NetWorthTrend history={history} format={format} currency={currency} language={language}/>
+   <NetWorthGoal goalTwd={goalTwd} currentTwd={data.netWorth} mainRate={mainRate} currency={currency} language={language} incomplete={data.missingQuotes.length>0} onSave={onSaveGoal}/>
    {data.missingQuotes.length>0&&<p className="networth-quote-warning"><AlertCircle size={16}/><span>{t.unknown} ({[...new Set(data.missingQuotes)].join('、')})</span></p>}
    <div className="investment-dashboard-section-title networth-section-title">
      <div><h3>{language==='en'?'Asset allocation & liabilities':language==='ja'?'資産構成と負債':language==='zh-CN'?'资产配置与负债':'資產配置與負債'}</h3><small>{language==='en'?'Tap a card to see allocation ratios and account details':language==='ja'?'カードをタップして資産比率と負債の内訳を表示':language==='zh-CN'?'点选卡片查看资产比例与负债明细':'點選卡片查看資產比例、各類金額與負債明細'}</small></div>
