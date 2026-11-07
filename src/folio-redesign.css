@@ -7125,3 +7125,64 @@ html .investment-product-backdrop .investment-product-sheet .native-date-control
     min-width:0!important;
   }
 }
+
+/* v269: body-level investment forms must inherit the active app theme.
+   Never hard-code ivory backgrounds on a portal outside .app-shell. */
+:root[data-theme] .investment-product-backdrop .investment-product-sheet {
+  background:var(--theme-surface)!important;
+  color:var(--theme-text)!important;
+  border:1px solid var(--theme-line)!important;
+  color-scheme:inherit;
+}
+:root[data-theme] .investment-product-sheet > header,
+:root[data-theme] .investment-product-sheet > form > footer {
+  border-color:var(--theme-line)!important;
+  background:var(--theme-surface)!important;
+  color:var(--theme-text)!important;
+}
+:root[data-theme] .investment-product-sheet :is(label,h3,h4,p,small){color:var(--theme-text)}
+:root[data-theme] .investment-product-sheet .hint,
+:root[data-theme] .investment-product-sheet .investment-fx-status {color:var(--theme-muted)!important}
+:root[data-theme] .investment-product-sheet :is(input:not([type=checkbox]),select,textarea,.native-date-control,.investment-numeric-trigger){
+  background:var(--theme-surface2)!important;
+  color:var(--theme-text)!important;
+  border:1px solid var(--theme-line)!important;
+  border-radius:12px!important;
+  box-sizing:border-box!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+:root[data-theme] .investment-product-sheet :is(select,textarea){width:100%;}
+:root[data-theme] .investment-product-sheet .investment-numeric-trigger {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  width:100%!important;
+  min-height:46px!important;
+  padding:10px 14px!important;
+  font-size:16px!important;
+  font-weight:600!important;
+  font-variant-numeric:tabular-nums!important;
+  text-align:left!important;
+  cursor:pointer;
+}
+:root[data-theme] .investment-product-sheet .investment-numeric-trigger > span:first-child {
+  flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+}
+:root[data-theme] .investment-product-sheet .investment-numeric-trigger .calc-mini{flex:0 0 auto;opacity:.7}
+:root[data-theme] .investment-product-sheet .investment-numeric-trigger:focus-visible {
+  outline:2px solid var(--theme-accent)!important;
+  outline-offset:2px!important;
+}
+:root[data-theme] .investment-product-sheet .savings-policy-fields,
+:root[data-theme] .investment-product-sheet .savings-projection-edit-row {
+  border-color:var(--theme-line)!important;
+}
+:root[data-theme] .investment-product-sheet > form > footer button:not([type=submit]) {
+  background:var(--theme-surface2)!important;color:var(--theme-text)!important;border-color:var(--theme-line)!important;
+}
+:root[data-theme] .investment-product-sheet > form > footer button[type=submit] {
+  background:var(--theme-accent)!important;color:var(--theme-accent-contrast)!important;
+}
+:root[data-theme] .investment-product-sheet > form > label .investment-fx-status {display:block;font-size:12px;line-height:1.4;font-weight:450;margin-top:2px}
