@@ -6941,3 +6941,104 @@ html .app-shell .investment-product-page[data-investment-type="savings"] .saving
   text-align:right!important;
   white-space:nowrap!important;
 }
+
+/* v265: the investment form is rendered into document.body via createPortal,
+   so this checkbox must not be scoped to .app-shell. */
+html .investment-product-backdrop .investment-product-sheet form > label.investment-product-historical-toggle {
+  display:grid !important;
+  grid-template-columns:22px minmax(0,1fr) !important;
+  align-items:center !important;
+  justify-content:start !important;
+  gap:10px !important;
+  margin:6px 0 !important;
+  min-height:36px !important;
+  cursor:pointer !important;
+  font-size:13px !important;
+  line-height:1.5 !important;
+}
+html .investment-product-backdrop .investment-product-sheet form > label.investment-product-historical-toggle input[type=checkbox] {
+  display:block !important;
+  position:static !important;
+  appearance:auto !important;
+  -webkit-appearance:checkbox !important;
+  accent-color:#175346 !important;
+  box-sizing:border-box !important;
+  width:20px !important;
+  min-width:20px !important;
+  max-width:20px !important;
+  height:20px !important;
+  min-height:20px !important;
+  max-height:20px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:4px !important;
+  background:transparent !important;
+  flex:none !important;
+  box-shadow:none !important;
+}
+html .investment-product-backdrop .investment-product-sheet form > label.investment-product-historical-toggle span {
+  min-width:0 !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+
+/* v267 – investment product detail surfaces follow the active app theme.
+   The previous pale hard-coded gradient/chips made values unreadable in dark mode. */
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-note,
+html .app-shell .investment-product-page .savings-detail-layout .savings-projection-panel,
+html .app-shell .investment-product-page .savings-detail-layout .savings-empty-state {
+  background:var(--theme-surface2)!important;
+  color:var(--theme-text)!important;
+  border-color:var(--theme-line)!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-card,
+html .app-shell .investment-product-page .savings-detail-layout .savings-policy-stats > div {
+  background:var(--theme-surface2)!important;
+  color:var(--theme-text)!important;
+  border:1px solid var(--theme-line)!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-chips > span {
+  background:var(--theme-chip)!important;
+  color:var(--theme-muted)!important;
+  border-color:var(--theme-line)!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-note strong,
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-card strong:not(.income):not(.expense),
+html .app-shell .investment-product-page .savings-detail-layout .savings-policy-stats strong:not(.income):not(.expense),
+html .app-shell .investment-product-page .savings-detail-layout .savings-projection-panel h3,
+html .app-shell .investment-product-page .savings-detail-layout .savings-empty-state strong {
+  color:var(--theme-text)!important;
+  -webkit-text-fill-color:var(--theme-text)!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-note p,
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-card small,
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-card span,
+html .app-shell .investment-product-page .savings-detail-layout .savings-policy-stats small,
+html .app-shell .investment-product-page .savings-detail-layout .savings-policy-heading small,
+html .app-shell .investment-product-page .savings-detail-layout .savings-projection-intro,
+html .app-shell .investment-product-page .savings-detail-layout .savings-empty-state p {
+  color:var(--theme-muted)!important;
+  -webkit-text-fill-color:var(--theme-muted)!important;
+  opacity:1!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-card strong.income,
+html .app-shell .investment-product-page .savings-detail-layout .savings-policy-stats strong.income {
+  color:var(--user-income,var(--theme-income))!important;
+  -webkit-text-fill-color:var(--user-income,var(--theme-income))!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout .savings-detail-card strong.expense,
+html .app-shell .investment-product-page .savings-detail-layout .savings-policy-stats strong.expense {
+  color:var(--user-expense,var(--theme-expense))!important;
+  -webkit-text-fill-color:var(--user-expense,var(--theme-expense))!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout .savings-policy-scroll th,
+html .app-shell .investment-product-page .savings-detail-layout .savings-policy-scroll td {
+  color:var(--theme-text)!important;
+  border-bottom-color:var(--theme-line)!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout .savings-policy-projection-select select {
+  background:var(--theme-chip)!important;
+  color:var(--theme-text)!important;
+  border:1px solid var(--theme-line)!important;
+}

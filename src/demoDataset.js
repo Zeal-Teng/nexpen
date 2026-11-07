@@ -7,6 +7,8 @@ const nextMonth = () => {const d=new Date();d.setDate(1);d.setMonth(d.getMonth()
 export function createDemoDataset() {
  const accounts = [
   {id:'demo-bank',name:'星河銀行｜日常帳戶',type:'bank',openingBalance:168000,currency:'TWD',fxRate:1,decimalPlaces:2,isDefault:true,includeInAssets:true},
+  {id:'demo-usd',name:'星河銀行｜美元帳戶',type:'bank',openingBalance:42000,currency:'USD',fxRate:31.8,decimalPlaces:2,includeInAssets:true},
+  {id:'demo-eur',name:'星河銀行｜歐元帳戶',type:'bank',openingBalance:9500,currency:'EUR',fxRate:35.4,decimalPlaces:2,includeInAssets:true},
   {id:'demo-cash',name:'現金錢包',type:'cash',openingBalance:5800,currency:'TWD',fxRate:1,decimalPlaces:0,includeInAssets:true},
   {id:'demo-credit',name:'示範信用卡',type:'credit',openingBalance:-12500,currency:'TWD',fxRate:1,decimalPlaces:0,includeInAssets:true},
   {id:'demo-broker',name:'星辰證券交割帳戶',type:'brokerage',openingBalance:920000,currency:'TWD',fxRate:1,decimalPlaces:0,includeInAssets:true},
@@ -38,12 +40,70 @@ export function createDemoDataset() {
   {id:'demo-tsmc-sell',date:daysBefore(31),action:'sell',symbol:'2330',securityName:'台積電（範例）',securityType:'stock',account:'demo-broker',shares:200,price:720,fee:123,tax:432,totalAmount:143445,matchedBuyId:'demo-tsmc-buy'},
   {id:'demo-tsmc-dividend',date:daysBefore(14),action:'dividend',symbol:'2330',securityName:'台積電（範例）',securityType:'stock',account:'demo-broker',amount:2400,fee:0,tax:0},
  ];
+ // Fictional samples for every standalone investment type. Cashflows use
+ // the SAME investmentFlows source as real trades, so diary/account balances
+ // and asset valuations are exercised together. Historical policy premiums
+ // intentionally have no sourceAccount and cannot debit a current cash account.
+ const demoProduct=(id,type,name,currency,fxRate,price,extra={})=>({
+  id:`demo-${id}`,type,name,currency,fxRate,price,priceDate:daysBefore(1),
+  createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),...extra
+ });
+ const investmentProducts=[
+  demoProduct('fund-global','fund','環球股票基金（示範）','USD',31.8,15.82,{symbol:'DEMO-GLOBAL'}),
+  demoProduct('fund-income','fund','平衡收益基金（示範）','TWD',1,11.64,{symbol:'DEMO-INCOME'}),
+  demoProduct('bond-gov','bond','美元公債（示範）','USD',31.8,102.35,{symbol:'US-TREASURY-DEMO',couponRate:'4.25',couponFrequency:'6',maturityDate:'2031-10-15'}),
+  demoProduct('bond-corp','bond','台幣公司債（示範）','TWD',1,98.75,{symbol:'TWD-CORP-DEMO',couponRate:'2.8',couponFrequency:'12',maturityDate:'2029-12-31'}),
+  demoProduct('savings-usd','savings','美元利率變動型終身壽險（示範）','USD',31.8,14550.28,{
+   institution:'示範保險公司',symbol:'DEMO-POLICY',startDate:'2020-11-07',policySubtype:'rateAdjustableWholeLife',premiumYears:'6',declaredRate:'3.75',bonusMethod:'increaseCoverage',
+   projectionRows:[
+    {year:5,cumulativePremium:10000,endValue:10125,nextValue:10180},
+    {year:6,cumulativePremium:12000,endValue:12300,nextValue:12355},
+    {year:7,cumulativePremium:12000,endValue:13020,nextValue:13075},
+    {year:10,cumulativePremium:12000,endValue:15360,nextValue:15430},
+    {year:15,cumulativePremium:12000,endValue:18900,nextValue:18980}
+   ]
+  }),
+  demoProduct('savings-twd','savings','台幣養老保險（示範）','TWD',1,158000,{institution:'示範人壽',symbol:'DEMO-ENDOW',startDate:'2023-05-01',maturityDate:'2033-05-01',policySubtype:'endowment',premiumYears:'10',declaredRate:'2.1',bonusMethod:'cash'}),
+  demoProduct('deposit-twd','termDeposit','星河銀行一年期定存（示範）','TWD',1,1,{institution:'星河銀行',symbol:'TWD-TD-DEMO',startDate:daysBefore(100),maturityDate:nextMonth(),couponRate:'1.8'}),
+  demoProduct('deposit-usd','termDeposit','美元六個月定存（示範）','USD',31.8,1,{institution:'星河銀行',symbol:'USD-TD-DEMO',startDate:daysBefore(90),maturityDate:nextMonth(),couponRate:'3.6'})
+ ];
+ const demoFlow=(id,assetId,kind,age,amount,shares,sourceAccount,extra={})=>({
+  id:`demo-${id}`,assetId:`demo-${assetId}`,kind,date:daysBefore(age),
+  amount,shares,sourceAccount,redemptionExchangeRate:1,redemptionFee:0,
+  createdAt:`${daysBefore(age)}T09:00:00.000Z`,...extra
+ });
+ const newInvestmentFlows=[
+  demoFlow('fund-global-buy','fund-global','contribution',120,11000,750,'demo-usd'),
+  demoFlow('fund-global-sell','fund-global','redemption',24,1700,100,'demo-usd',{redemptionFee:4,note:'基金部分贖回'}),
+  demoFlow('fund-global-dividend','fund-global','yield',12,48,0,'demo-usd'),
+  demoFlow('fund-income-buy','fund-income','contribution',140,200000,20000,'demo-bank'),
+  demoFlow('fund-income-redemption','fund-income','redemption',8,34000,3000,'demo-bank',{redemptionFee:80}),
+  demoFlow('bond-gov-buy','bond-gov','contribution',160,10050,10000,'demo-usd'),
+  demoFlow('bond-gov-coupon','bond-gov','yield',15,212.5,0,'demo-usd'),
+  demoFlow('bond-gov-redeem','bond-gov','redemption',5,2060,2000,'demo-usd',{redemptionFee:5}),
+  demoFlow('bond-corp-buy','bond-corp','contribution',100,148000,150000,'demo-bank'),
+  demoFlow('bond-corp-coupon','bond-corp','yield',15,2100,0,'demo-bank'),
+  demoFlow('savings-usd-2020','savings-usd','contribution',2100,2000,2000,'',{historical:true,date:'2020-11-07'}),
+  demoFlow('savings-usd-2021','savings-usd','contribution',1735,2000,2000,'',{historical:true,date:'2021-11-07'}),
+  demoFlow('savings-usd-2022','savings-usd','contribution',1370,2000,2000,'',{historical:true,date:'2022-11-07'}),
+  demoFlow('savings-usd-2023','savings-usd','contribution',1005,2000,2000,'',{historical:true,date:'2023-11-07'}),
+  demoFlow('savings-usd-2024','savings-usd','contribution',640,2000,2000,'',{historical:true,date:'2024-11-07'}),
+  demoFlow('savings-usd-2025','savings-usd','contribution',275,2000,2000,'',{historical:true,date:'2025-11-07'}),
+  demoFlow('savings-usd-payout','savings-usd','yield',20,110,0,'demo-usd',{note:'示範給付'}),
+  demoFlow('savings-twd-premium','savings-twd','contribution',95,150000,150000,'demo-bank'),
+  demoFlow('savings-twd-partial','savings-twd','redemption',17,30000,30000,'demo-bank',{redemptionFee:100}),
+  demoFlow('deposit-twd-open','deposit-twd','contribution',100,180000,180000,'demo-bank'),
+  demoFlow('deposit-twd-interest','deposit-twd','yield',10,800,0,'demo-bank'),
+  demoFlow('deposit-twd-withdraw','deposit-twd','redemption',2,20000,20000,'demo-bank'),
+  demoFlow('deposit-usd-open','deposit-usd','contribution',90,5000,5000,'demo-usd'),
+  demoFlow('deposit-usd-interest','deposit-usd','yield',9,45,0,'demo-usd')
+ ];
  const recurring = [
   {id:'demo-salary-rule',name:'每月示範薪資',type:'income',amount:68000,account:'demo-bank',mainCategory:'主動收入',subCategory:'薪資所得',freq:'monthly',nextDate:nextMonth()},
   {id:'demo-sub-rule',name:'影音訂閱示例',type:'expense',amount:390,account:'demo-credit',mainCategory:'訂閱服務',subCategory:'影音串流',freq:'monthly',nextDate:nextMonth()},
  ];
  const investmentValuations=[{assetId:'demo-policy',date:daysBefore(2),value:418500,createdAt:new Date().toISOString()}];
- const investmentFlows=[{id:'demo-trust-flow',assetId:'demo-trust',kind:'contribution',date:daysBefore(35),amount:60000,shares:100,sourceAccount:'demo-bank',note:'示範追加投入',createdAt:new Date().toISOString()}];
+ const investmentFlows=[{id:'demo-trust-flow',assetId:'demo-trust',kind:'contribution',date:daysBefore(35),amount:60000,shares:100,sourceAccount:'demo-bank',note:'示範追加投入',createdAt:new Date().toISOString()},...newInvestmentFlows];
  // A demo trend must span multiple days so all 7/30/90-day tabs show
  // meaningful movement immediately. These are fictional daily snapshots,
  // not historical market observations or data from a real user's ledger.
@@ -71,7 +131,7 @@ export function createDemoDataset() {
   {key:'transactionTemplates',value:[]},
   {key:'stockClosingQuotes',value:{'2330':{price:790,date:daysBefore(1),source:'demo'},'0050':{price:165,date:daysBefore(1),source:'demo'}}},
   {key:'netWorthGoalTwd',value:3000000},
-  {key:'demoSeedVersion',value:1},
+  {key:'demoSeedVersion',value:2},
  ];
- return {accounts,records,stocks,recurring,investmentValuations,investmentFlows,netWorthHistory,settings};
+ return {accounts,records,stocks,recurring,investmentValuations,investmentFlows,investmentProducts,netWorthHistory,settings};
 }
