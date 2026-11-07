@@ -79,7 +79,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
   setBusy(true);setError('');
   try{
    if(entry.entry==='valuation'){
-    await db.transaction('rw',db.investmentValuations,db.accounts,async()=>{
+    await db.transaction('rw',db.investmentFlows,db.investmentValuations,db.accounts,async()=>{
      const current=await db.investmentValuations.get(entry.id);
      if(!current||current.assetId!==active.id)throw Error(i18n('估值紀錄不存在'));
      await db.investmentValuations.delete(entry.id);
@@ -189,7 +189,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
     const value=number(form.currentValue);
     if(!form.valueDate)throw Error(i18n('請選擇估值日期'));
     if(!Number.isFinite(value)||value<0||String(form.currentValue).trim()==='')throw Error(i18n('請輸入有效保單現值'));
-    await db.transaction('rw',db.accounts,db.investmentValuations,async()=>{
+    await db.transaction('rw',db.investmentFlows,db.investmentValuations,db.accounts,async()=>{
      const old=editingEntry?.entry==='valuation'?await db.investmentValuations.get(editingEntry.id):null;
      if(editingEntry&&!old)throw Error(i18n('原始估值紀錄不存在，請重新開啟'));
      if(old&&old.assetId!==active.id)throw Error(i18n('估值關聯不正確'));

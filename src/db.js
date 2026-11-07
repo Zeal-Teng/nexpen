@@ -16,6 +16,68 @@ db.version(4).stores({marketCache:'key'});
 db.version(5).stores({investmentValuations:'++id,assetId,date',investmentFlows:'id,assetId,date,sourceAccount'});
 // v148: one local end-of-day/latest-observed net worth entry per calendar day.
 db.version(6).stores({netWorthHistory:'date'});
+// v254: advance Dexie schema so a repaired legacy IndexedDB can be reopened
+// using the same native database version. Existing tables and rows are retained.
+db.version(7).stores({investmentValuations:'++id,assetId,date',investmentFlows:'id,assetId,date,sourceAccount',netWorthHistory:'date'});
+db.version(8).stores({investmentValuations:'++id,assetId,date',investmentFlows:'id,assetId,date,sourceAccount',netWorthHistory:'date'});
+db.version(9).stores({investmentValuations:'++id,assetId,date',investmentFlows:'id,assetId,date,sourceAccount',netWorthHistory:'date'});
+
+/**
+ * Repair a legacy physical IndexedDB schema BEFORE opening it through Dexie.
+ * Dexie maps schema version 9 to native IndexedDB version 90, not 9.
+ * An IDB transaction fails with NotFoundError if one of its object stores does
+ * not physically exist, even if Dexie declares that store in db.version().
+ * This routine only creates missing stores/indexes, never deletes or clears rows.
+ */
+export async function ensureInvestmentSchema(){
+ const physical=await new Promise((resolve,reject)=>{
+  const request=indexedDB.open(db.name);
+  request.onerror=()=>reject(request.error||new Error('無法讀取本機記帳資料庫'));
+  request.onsuccess=()=>resolve(request.result);
+ });
+ const specs={
+  records:{keyPath:'id',indexes:['date','type','account','mainCategory']},
+  accounts:{keyPath:'id',indexes:['name','type']},
+  stocks:{keyPath:'id',indexes:['date','symbol','action']},
+  recurring:{keyPath:'id',indexes:['nextDate']},
+  settings:{keyPath:'key',indexes:[]},
+  marketCache:{keyPath:'key',indexes:[]},
+  investmentValuations:{keyPath:'id',autoIncrement:true,indexes:['assetId','date']},
+  investmentFlows:{keyPath:'id',indexes:['assetId','date','sourceAccount']},
+  netWorthHistory:{keyPath:'date',indexes:[]}
+ };
+ const missing=Object.keys(specs).filter(name=>!physical.objectStoreNames.contains(name));
+ const nativeVersion=physical.version;
+ physical.close();
+ if(missing.length){
+  // v9 is native v90. Do not open a DB above our known schema, because
+  // upgrading an unknown future version could make recovery impossible.
+  if(nativeVersion>=90)throw new Error('資料庫版本較新且缺少資料表，請先備份並更新 APP，勿清除網站資料');
+  await new Promise((resolve,reject)=>{
+   const request=indexedDB.open(db.name,90);
+   request.onblocked=()=>reject(new Error('資料庫正在其他分頁使用，請關閉其他 NEXPEN 分頁後重新開啟'));
+   request.onerror=()=>reject(request.error||new Error('資料庫升級失敗，原有資料未刪除'));
+   request.onupgradeneeded=()=>{
+    const native=request.result;
+    for(const [name,spec] of Object.entries(specs)){
+     const store=native.objectStoreNames.contains(name)
+      ?request.transaction.objectStore(name)
+      :native.createObjectStore(name,{keyPath:spec.keyPath,autoIncrement:Boolean(spec.autoIncrement)});
+     for(const field of spec.indexes)if(!store.indexNames.contains(field))store.createIndex(field,field);
+    }
+   };
+   request.onsuccess=()=>{request.result.close();resolve();};
+  });
+ }
+ // Dexie must not open until the missing native stores have been restored.
+ await db.open();
+ for(const name of Object.keys(specs)){
+  if(!db.backendDB().objectStoreNames.contains(name)){
+   throw new Error(`資料庫缺少 ${name} 資料表，請先備份，勿清除網站資料`);
+  }
+ }
+}
+
 export const today = () => {const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 import {defaultCategories,migrateCategoryData} from './categoryPresets.js';
 export {defaultCategories} from './categoryPresets.js';
@@ -59,6 +121,11 @@ export async function ensureDefaults(){
     }
    }
    await db.settings.put({key:'categoryPresetVersion',value:171});
+  }
+  const typeSetting=await db.settings.get('accountTypes');
+  if(typeSetting&&Array.isArray(typeSetting.value)){
+   const cleaned=typeSetting.value.filter(t=>t.id!=='trust'&&t.id!=='policy');
+   if(cleaned.length!==typeSetting.value.length)await db.settings.put({key:'accountTypes',value:cleaned.length?cleaned:[{id:'bank',name:'銀行帳戶'}]});
   }
   if(!await db.settings.get('theme'))await db.settings.put({key:'theme',value:'dark'});
   if(!await db.settings.get('fontScale'))await db.settings.put({key:'fontScale',value:1});
