@@ -36,7 +36,7 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtSumm
     const priced=holding&&Number(quote?.price)>0;
     const unrealized=priced?holding.shares*Number(quote.price)-holding.cost:null;
     return <section className="stock-detail-view">
-      <button type="button" className="stock-back investment-nav-back" onClick={onBack}><ArrowLeft size={18}/> {tr('返回股票','Back to stocks')}</button>
+
       <section className="investment-third-level investment-third-listview">
        <div className="investment-third-listview-heading"><h2>{tr('買賣與股利紀錄','Trade and dividend history')}</h2><small>{active.symbol}{active.securityName?` · ${active.securityName}`:''} · {active.transactions.length} {tr('筆紀錄','records')}</small></div>
        <div className="stock-trade-detail-list investment-stage-history investment-third-list-content">

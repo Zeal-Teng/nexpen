@@ -22,7 +22,7 @@ const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
 const initialForm=()=>({kind:'contribution',date:today(),amount:'',shares:'',costBasis:'',sourceAccount:'',exchangeRate:'',redemptionFee:'',note:'',currentValue:'',valueDate:today()});
 
-export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],primaryCurrency='TWD',onChanged,onEditAccount,onBackOverview,onDetailChange,backToListSignal=0,askConfirm}){
+export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],primaryCurrency='TWD',onChanged,onEditAccount,onCreateAsset,onBackOverview,onDetailChange,backToListSignal=0,askConfirm}){
  const displayMoney=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
  const summaryMoney=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0})}`;
  const money=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
@@ -206,7 +206,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
   }catch(e){setError(e.message)}finally{setBusy(false)}
  };
  return <div className="investment-assets-page">
-  {!active&&<button type="button" className="stock-back investment-upper-back investment-nav-back" onClick={onBackOverview}><ArrowLeft size={18}/>{i18n("返回投資總覽")}</button>}
+  <div className="investment-product-header investment-legacy-product-header"><button type="button" className="stock-back investment-upper-back investment-nav-back" onClick={()=>{if(active){setSelected('');onDetailChange?.(false)}else onBackOverview()}}><ArrowLeft size={18}/>{active?`返回${i18n(label[type])}清單`:i18n('返回投資總覽')}</button><button type="button" className="soft-btn small" onClick={onCreateAsset}><Plus size={17}/>新增{i18n(label[type])}</button></div>
   {!active&&<SummaryHero className="investment-dashboard-hero investment-performance-summary-hero" eyebrow={`NEXPEN · ${type==='trust'?'TRUST':'POLICY'}`} title={i18n(label[type])} label={i18n('估算現值')} value={summary&&summary.value!==null?summaryMoney(summary.value,items[0].currency):'—'} detailId={`investment-${type}-summary-details`}>
     <div className="summary-hero-metrics">
       <div><small>{i18n('持有成本')}</small><strong>{summary?summaryMoney(summary.cost,items[0].currency):'—'}</strong></div>
@@ -214,7 +214,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
     </div>
   </SummaryHero>}
   {active?<>
-   <button type="button" className="stock-back investment-nav-back" onClick={()=>setSelected('')}><ArrowLeft size={17}/> {i18n("返回")}{i18n(label[type])}{i18n("列表")}</button>
+
    <section className="investment-third-level investment-third-listview">
     <div className="investment-third-listview-heading"><h2>{i18n('資金異動／估值歷史')}</h2><small>{active.name} · {history.length} {i18n('筆紀錄')} · 已實現損益 {displayMoney(metrics(active).realized,active.currency)}</small></div>
     <div className="stock-trade-detail-list investment-valuation-history investment-stage-history investment-third-list-content">

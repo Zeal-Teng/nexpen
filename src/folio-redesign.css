@@ -7416,3 +7416,23 @@ html .app-shell .investment-product-stage-stack > .investment-tier-card.tier-gra
 html .app-shell .investment-trust-policy-stack > .investment-tier-card.tier-gray {
   --tier-color:#969da7!important;
 }
+
+/* v276: consistent investment-product-header in stock/trust/policy pages.
+   Reset the legacy global small-button margin to prevent horizontal overflow. */
+html .app-shell .investment-legacy-product-header{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:10px!important;flex-wrap:wrap!important;min-width:0!important;margin-bottom:12px!important;
+}
+html .app-shell .investment-legacy-product-header>.stock-back{
+  flex:1 1 auto;min-width:0;max-width:100%;margin:0!important;
+}
+html .app-shell .investment-legacy-product-header>.soft-btn.small{
+  margin:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  gap:7px!important;min-width:0!important;max-width:100%!important;white-space:normal!important;
+  text-align:center!important;overflow-wrap:anywhere;
+}
+html .app-shell .investment-legacy-product-header>.soft-btn.small svg{flex:none!important;}
+@media(max-width:380px){
+ html .app-shell .investment-legacy-product-header{gap:8px!important;}
+ html .app-shell .investment-legacy-product-header>.soft-btn.small{font-size:13px!important;padding-inline:10px!important;}
+}
