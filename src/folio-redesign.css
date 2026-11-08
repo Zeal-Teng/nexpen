@@ -7222,3 +7222,156 @@ html .investment-product-sheet .investment-valuation-readonly{
 }
 
 html .app-shell .investment-current-fx{display:block;margin-top:6px;font-weight:650;color:var(--theme-text);overflow-wrap:anywhere}
+
+/* v271: investment editing controls follow the ledger's underline field language. */
+html .investment-product-backdrop .investment-product-sheet form :is(input:not([type=checkbox]), textarea, .investment-numeric-trigger, .investment-sheet-select, .native-date-control),
+:root[data-theme] .investment-product-sheet :is(input:not([type=checkbox]), textarea, .investment-numeric-trigger, .investment-sheet-select, .native-date-control),
+html .investment-product-backdrop .investment-product-sheet .savings-policy-fields :is(input:not([type=checkbox]),textarea,.investment-numeric-trigger,.investment-sheet-select,.native-date-control){
+  appearance:none!important;
+  display:flex!important;
+  align-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  border:0!important;
+  border-bottom:1px solid var(--theme-line,#bdb5a7)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--theme-text,#292822)!important;
+  min-height:43px!important;
+  padding:9px 1px!important;
+  text-align:left!important;
+  font:inherit;
+}
+html .investment-product-backdrop .investment-product-sheet form :is(input:not([type=checkbox]), textarea, .investment-numeric-trigger, .investment-sheet-select, .native-date-control):focus-visible{
+  outline:none!important;
+  border-bottom:2px solid var(--theme-accent,#154d40)!important;
+}
+html .investment-product-backdrop .investment-product-sheet .investment-sheet-select{
+  justify-content:space-between!important;
+  gap:12px!important;
+  cursor:pointer;
+}
+html .investment-product-sheet .investment-sheet-select>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html .investment-product-sheet .investment-sheet-select>svg{flex:0 0 auto}
+html .investment-product-sheet .investment-sheet-select:disabled{opacity:.55;cursor:not-allowed}
+html .investment-product-backdrop .investment-product-sheet form .native-date-control .native-date-input{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  opacity:0!important;
+  padding:0!important;
+  margin:0!important;
+}
+html .investment-product-backdrop .investment-product-sheet form > footer .investment-form-delete{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  margin-right:auto!important;
+  color:var(--user-expense,#cf4f61)!important;
+  background:transparent!important;
+  border:1px solid color-mix(in srgb,var(--user-expense,#cf4f61) 32%,transparent)!important;
+}
+html .investment-product-backdrop .investment-product-sheet form>footer button{white-space:nowrap;min-width:0}
+html .investment-select-backdrop{z-index:11050!important}
+html .investment-select-backdrop .picker-sheet{color:var(--theme-text);background:var(--theme-surface);max-height:82dvh;overflow:auto}
+html .investment-select-backdrop .picker-option{color:var(--theme-text)}
+@media(max-width:430px){
+ html .investment-product-backdrop .investment-product-sheet form>footer{gap:7px!important;padding-inline:12px!important}
+ html .investment-product-backdrop .investment-product-sheet form>footer button{padding:10px 12px!important}
+}
+
+/* Investment policy/trust editor uses the same underline presentation. */
+html .app-shell .investment-modal .investment-field :is(input:not([type=checkbox]),.investment-sheet-select,.native-date-control,.investment-number-trigger){
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;
+ background:transparent!important;color:var(--theme-text)!important;
+ border:0!important;border-bottom:1px solid var(--theme-line)!important;border-radius:0!important;
+ box-shadow:none!important;min-height:43px!important;padding:8px 2px!important;
+}
+html .app-shell .investment-modal .investment-field :is(input:not([type=checkbox]),.investment-sheet-select,.native-date-control,.investment-number-trigger):focus-visible{
+ outline:none!important;border-bottom:2px solid var(--theme-accent)!important;
+}
+
+/* v272: eliminate inset spacing inside net worth trend plot. */
+html .app-shell .networth-trend-plot{padding:0!important;}
+
+/* v273 — Per-category investment color editing, shared across the category's first-level card. */
+html .investment-category-color-picker{
+  display:grid;gap:11px;min-width:0;padding:13px 0 16px;
+  border-bottom:1px solid var(--theme-line,rgba(128,115,93,.25));
+  color:var(--theme-text,inherit);
+}
+html .investment-category-color-title{display:grid;gap:3px}
+html .investment-category-color-title strong{font-size:13px;font-weight:740}
+html .investment-category-color-title small{font-size:11px;line-height:1.45;color:var(--theme-muted,#827d75)}
+html .investment-color-swatches{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+html .investment-color-swatch{
+  width:35px;height:35px;flex:0 0 35px;padding:0;margin:0!important;min-width:35px;
+  display:grid;place-items:center;border-radius:50%;
+  border:2px solid transparent!important;background:var(--swatch-color)!important;
+  color:#1e2928;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.11);
+}
+html .investment-color-swatch.selected{outline:2px solid var(--theme-text,#292822);outline-offset:3px}
+html .investment-color-swatch span{font-size:17px;font-weight:800}
+html .investment-color-custom{display:inline-flex!important;flex-direction:row!important;align-items:center!important;gap:7px!important;font-size:12px!important;cursor:pointer}
+html .investment-color-custom input[type="color"]{
+  appearance:none;-webkit-appearance:none;display:block;
+  width:36px!important;height:36px!important;padding:2px!important;
+  min-width:36px!important;min-height:36px!important;
+  border:1px solid var(--theme-line,#c8c0b5)!important;border-radius:50%!important;
+  background:transparent!important;cursor:pointer;
+}
+html .investment-color-custom input[type="color"]::-webkit-color-swatch-wrapper{padding:0}
+html .investment-color-custom input[type="color"]::-webkit-color-swatch{border:0;border-radius:50%}
+/* The chosen --peek comes from the investment category row, while the card's own
+   inline --stack-accent keeps the lattice artwork in the same accent. */
+
+/* v273 — Investment second-layer motif: offset architectural rounded diamonds,
+   replacing the old clipped hexagons. The front of cards stays clear for numbers. */
+html .app-shell .investment-second-level .investment-tier-card > .investment-tier-peek::before{
+  content:""!important;display:block!important;
+  position:absolute!important;right:-27px!important;top:-55px!important;
+  width:156px!important;height:156px!important;
+  border:2px solid color-mix(in srgb,var(--tier-color,#bfa3dc) 40%,transparent)!important;
+  border-radius:22px!important;
+  background:color-mix(in srgb,var(--tier-color,#bfa3dc) 9%,transparent)!important;
+  clip-path:none!important;box-shadow:none!important;
+  opacity:.56!important;transform:rotate(32deg)!important;pointer-events:none!important;z-index:0!important;
+}
+html .app-shell .investment-second-level .investment-tier-card > .investment-tier-peek::after{
+  content:""!important;display:block!important;
+  position:absolute!important;right:17px!important;top:-52px!important;
+  width:122px!important;height:122px!important;
+  border:1.5px solid color-mix(in srgb,var(--tier-color,#bfa3dc) 55%,transparent)!important;
+  border-radius:20px!important;
+  background:transparent!important;clip-path:none!important;box-shadow:none!important;
+  opacity:.48!important;transform:rotate(32deg)!important;
+  pointer-events:none!important;z-index:0!important;
+}
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded > .investment-tier-peek::before{transform:rotate(40deg) translate(-4px,4px)!important}
+html .app-shell .investment-second-level .investment-tier-card.tier-expanded > .investment-tier-peek::after{transform:rotate(40deg) translate(-4px,4px)!important}
+html .app-shell .investment-second-level .investment-tier-peek > *{position:relative;z-index:1}
+@media(max-width:540px){
+ html .investment-color-swatches{gap:10px}
+ html .app-shell .investment-second-level .investment-tier-card > .investment-tier-peek::before{width:128px!important;height:128px!important;right:-24px!important;top:-45px!important}
+ html .app-shell .investment-second-level .investment-tier-card > .investment-tier-peek::after{width:102px!important;height:102px!important;right:13px!important;top:-44px!important}
+}
+
+/* v274 — The color choice is an ordinary underlined field; options open in the app's bottom sheet. */
+html .investment-category-color-picker{display:flex!important;flex-direction:column!important;gap:6px!important;padding:5px 0 12px!important;border:0!important;min-width:0!important}
+html .investment-category-color-label{font-size:13px;font-weight:650;color:var(--theme-text)}
+html .investment-category-color-trigger{width:100%;min-height:44px;max-width:100%;min-width:0;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0!important;border-bottom:1px solid var(--theme-line)!important;border-radius:0!important;padding:8px 2px!important;background:transparent!important;color:var(--theme-text)!important;box-shadow:none!important;cursor:pointer}
+html .investment-category-current{display:flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums;min-width:0}
+html .investment-category-current i{display:block;flex:0 0 25px;width:25px;height:25px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
+html .investment-color-backdrop{z-index:11100!important}
+html .investment-color-sheet{padding-bottom:calc(20px + env(safe-area-inset-bottom))!important;min-width:0}
+html .investment-color-options{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px 9px;padding:22px 20px;justify-items:center}
+html .investment-color-sheet .investment-color-swatch{width:39px;height:39px;min-width:0;flex:auto;display:grid;place-items:center;color:#172523}
+html .investment-color-custom-sheet{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 20px 18px;color:var(--theme-text);font-size:14px;font-weight:650}
+html .investment-color-custom-sheet input[type="color"]{width:46px!important;height:42px!important;flex:0 0 46px;padding:2px!important;border:1px solid var(--theme-line)!important;border-radius:12px!important;background:transparent!important;cursor:pointer}
+@media(max-width:380px){html .investment-color-options{grid-template-columns:repeat(4,minmax(0,1fr));}}
