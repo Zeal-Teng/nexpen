@@ -23,7 +23,7 @@ test('portfolio FX always prioritizes latest rate over historical valuation rate
  assert.match(net,/productTwdRate\(product\)/);
 });
 test('investment editors keep dated valuation input apart from basic metadata and cash flow',()=>{
- assert.match(ui,/dialog==='valuation'\?<form onSubmit=\{saveValuation\}>/);
+ assert.match(ui,/dialog==='valuation'\?<form id="investment-product-edit-form" onSubmit=\{saveValuation\}>/);
  assert.match(ui,/valuationRows\(asset\)\.map/);
  assert.match(ui,/productWithValuations/);
  assert.match(ui,/參考匯率/);

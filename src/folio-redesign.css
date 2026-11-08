@@ -7436,3 +7436,52 @@ html .app-shell .investment-legacy-product-header>.soft-btn.small svg{flex:none!
  html .app-shell .investment-legacy-product-header{gap:8px!important;}
  html .app-shell .investment-legacy-product-header>.soft-btn.small{font-size:13px!important;padding-inline:10px!important;}
 }
+
+/* v277 — Fund, bond, savings and deposit edit sheets: floating form actions.
+   The dialog is portaled to document.body, so these selectors must not depend on .app-shell. */
+html .investment-product-backdrop .investment-product-sheet > form {
+  padding-bottom: calc(214px + env(safe-area-inset-bottom, 0px)) !important;
+}
+html .investment-product-backdrop .investment-product-floating-actions {
+  position: absolute;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+}
+html .investment-product-backdrop .investment-product-action-fab {
+  position: static !important;
+  display: grid !important;
+  place-items: center;
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  min-height: 58px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1px solid var(--theme-line, #7777) !important;
+  border-radius: 50% !important;
+  color: var(--theme-text, #222) !important;
+  background: var(--theme-surface2, #eee) !important;
+  box-shadow: 0 8px 25px rgba(0,0,0,.26), 0 2px 8px rgba(0,0,0,.15) !important;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+html .investment-product-backdrop .investment-product-action-save {
+  color: var(--cp-action-text, #fff) !important;
+  background: var(--cp-action, var(--theme-accent, #327b83)) !important;
+}
+html .investment-product-backdrop .investment-product-action-delete {
+  color: #fff !important;
+  background: #bc304b !important;
+}
+html .investment-product-backdrop .investment-product-action-fab:disabled {opacity:.45;cursor:not-allowed;}
+html .investment-product-backdrop .investment-product-action-fab:active:not(:disabled) {transform:scale(.95);}
+@media (max-width: 700px) {
+  html .investment-product-backdrop .investment-product-floating-actions {right:17px;bottom:calc(20px + env(safe-area-inset-bottom, 0px));}
+}

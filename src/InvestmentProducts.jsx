@@ -1,7 +1,7 @@
 import InvestmentCategoryColorPicker from './InvestmentCategoryColorPicker.jsx';
 import React,{useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {ChevronLeft,ChevronRight,Plus,Trash2,Edit3,X} from 'lucide-react';
+import {ChevronLeft,ChevronRight,Plus,Trash2,Edit3,X,Check} from 'lucide-react';
 import {db,uid,today} from './db.js';
 import {investmentProductPosition,investmentProductValue,productCashRate,validateProductTrade} from './investmentProducts.js';
 import {InvestmentStack,InvestmentStackCard,InvestmentStackAsset} from './InvestmentStack.jsx';
@@ -215,7 +215,7 @@ export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=
    </>}
   {calc&&<AmountCalculator key={calc.value} precision={8} initial={calc.value} onDone={v=>{calc.update(v);setError('')}} onClose={()=>setCalc(null)}/>}
   {dialog&&createPortal(<div className="investment-product-backdrop" onClick={close}><section className="investment-product-sheet" role="dialog" aria-modal="true" aria-label={dialog==='product'?'編輯投資商品':dialog==='valuation'?'投資估值':'投資交易'} onClick={e=>e.stopPropagation()}><header><h3>{dialog==='product'?`${editing?'編輯':'新增'}${typeName}`:dialog==='valuation'?`${valuationEditing?'編輯':'新增'}估值 · ${asset?.name}`:`${actions[flowForm.kind]} · ${asset?.name}`}</h3><div className="sheet-head-actions">{dialog==='product'&&<InvestmentCategoryColorPicker iconOnly type={type} colors={categoryColors} onChange={onCategoryColorChange}/>}<button type="button" className="circle-button" onClick={close} aria-label="關閉"><X size={20}/></button></div></header>
-    {dialog==='valuation'?<form onSubmit={saveValuation}><label>估值日期<NativeDatePicker required value={valuationForm.date} onChange={e=>{fxManual.current=false;setFxInfo('');setValuationForm(f=>({...f,date:e.target.value,fxRate:'',fxDate:'',fxSource:''}))}}/></label><label>{isDeposit?'定存本金依交易記錄計算':isSavings?'目前可領回解約金／現值':isBond?'每百元債券價格':'每單位基金淨值'}{isDeposit?<span className="investment-valuation-readonly">{showFigure(position?.units||0,asset.currency)}</span>:calcButton(valuationForm.price,v=>setValuationForm(f=>({...f,price:v})),'估值金額')}</label>{asset?.currency!=='TWD'&&<label>當時參考匯率（1 {asset.currency} 折合 TWD）{calcButton(valuationForm.fxRate,v=>{fxManual.current=true;setFxInfo('手動輸入參考匯率');setValuationForm(f=>({...f,fxRate:v,fxDate:'',fxSource:'manual'}))},'參考匯率')}{fxInfo&&<small className="investment-fx-status">{fxInfo}</small>}</label>}<p className="hint">此處匯率僅作歷史參考，不決定目前投資總值。{isDeposit?'定存本金由存入和領回交易計算。':''}</p>{error&&<p role="alert" className="investment-product-error">{error}</p>}<footer>{valuationEditing&&<button type="button" className="investment-form-delete" disabled={busy} onClick={async()=>{if(await deleteValuation(valuationEditing))close()}}><Trash2 size={16}/>刪除</button>}<button type="button" onClick={close}>取消</button><button type="submit" disabled={busy}>儲存</button></footer></form>:dialog==='product'?<form onSubmit={saveProduct}>
+    {dialog==='valuation'?<form id="investment-product-edit-form" onSubmit={saveValuation}><label>估值日期<NativeDatePicker required value={valuationForm.date} onChange={e=>{fxManual.current=false;setFxInfo('');setValuationForm(f=>({...f,date:e.target.value,fxRate:'',fxDate:'',fxSource:''}))}}/></label><label>{isDeposit?'定存本金依交易記錄計算':isSavings?'目前可領回解約金／現值':isBond?'每百元債券價格':'每單位基金淨值'}{isDeposit?<span className="investment-valuation-readonly">{showFigure(position?.units||0,asset.currency)}</span>:calcButton(valuationForm.price,v=>setValuationForm(f=>({...f,price:v})),'估值金額')}</label>{asset?.currency!=='TWD'&&<label>當時參考匯率（1 {asset.currency} 折合 TWD）{calcButton(valuationForm.fxRate,v=>{fxManual.current=true;setFxInfo('手動輸入參考匯率');setValuationForm(f=>({...f,fxRate:v,fxDate:'',fxSource:'manual'}))},'參考匯率')}{fxInfo&&<small className="investment-fx-status">{fxInfo}</small>}</label>}<p className="hint">此處匯率僅作歷史參考，不決定目前投資總值。{isDeposit?'定存本金由存入和領回交易計算。':''}</p>{error&&<p role="alert" className="investment-product-error">{error}</p>}</form>:dialog==='product'?<form id="investment-product-edit-form" onSubmit={saveProduct}>
      {(isPrincipal)&&<label>{isSavings?'保險公司':'存款銀行'}<input value={productForm.institution||''} onChange={e=>setProductForm(f=>({...f,institution:e.target.value}))}/></label>}
      <label>名稱<input required value={productForm.name} onChange={e=>setProductForm(f=>({...f,name:e.target.value}))}/></label>
      <label>{isSavings?'保單名稱／識別碼':isDeposit?'定存編號': '代號／識別碼'}<input value={productForm.symbol||''} onChange={e=>setProductForm(f=>({...f,symbol:e.target.value}))}/></label>
@@ -242,8 +242,8 @@ export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=
       </section>}
 
      {(isBond||isDeposit)&&<><label>{isDeposit?'定存年利率（%）':'票面年利率（%）'}{productNumber('couponRate','票面或定存年利率')}</label><label>到期日<NativeDatePicker value={productForm.maturityDate||''} onChange={e=>setProductForm(f=>({...f,maturityDate:e.target.value}))}/></label>{!isDeposit&&<label>每隔幾個月付息<InvestmentSheetSelect value={productForm.couponFrequency||'6'} onChange={e=>setProductForm(f=>({...f,couponFrequency:e.target.value}))}><option value="1">每月</option><option value="3">每季</option><option value="6">每半年</option><option value="12">每年</option></InvestmentSheetSelect></label>}</>}
-     {isSavings&&<p className="hint">現值請依保險公司提供的解約金或保單帳戶價值輸入，不能直接以已繳保費代替。</p>}{isDeposit&&<p className="hint">本金投入及到期領回需另登錄資金異動；利率僅供參考，不會自動產生利息。</p>}{error&&<p role="alert" className="investment-product-error">{error}</p>}<footer><button type="button" onClick={close}>取消</button><button type="submit" disabled={busy}>儲存</button></footer></form>:
-     <form onSubmit={saveFlow}>
+     {isSavings&&<p className="hint">現值請依保險公司提供的解約金或保單帳戶價值輸入，不能直接以已繳保費代替。</p>}{isDeposit&&<p className="hint">本金投入及到期領回需另登錄資金異動；利率僅供參考，不會自動產生利息。</p>}{error&&<p role="alert" className="investment-product-error">{error}</p>}</form>:
+     <form id="investment-product-edit-form" onSubmit={saveFlow}>
       <label>交易類型<InvestmentSheetSelect value={flowForm.kind} onChange={e=>setFlowForm(f=>({...f,kind:e.target.value}))}>{Object.entries(actions).map(([key,label])=><option key={key} value={key}>{label}</option>)}</InvestmentSheetSelect></label>
       <label>日期<NativeDatePicker required value={flowForm.date} onChange={e=>{flowFxManual.current=false;setFlowFxInfo('');setFlowForm(f=>({...f,date:e.target.value,exchangeRate:'',exchangeRateDate:''}))}}/></label>
       {flowForm.kind!=='yield'&&!(isPrincipal&&flowForm.kind==='contribution')&&<label>{isPrincipal?'要減少的本金':isBond?'交易面額':'基金單位數'}{flowNumber('shares','交易數量或本金')}</label>}
@@ -255,7 +255,12 @@ export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=
       {isSavings&&flowForm.kind==='contribution'&&flowForm.historical&&<p className="hint">此筆會列入保單累計成本與 XIRR 計算，但不會再扣款，也不會新增日記帳收支。請逐筆填寫歷史繳費日期，勿把多年累計保費當成單次繳費。</p>}
       <label>備註<input value={flowForm.note} onChange={e=>setFlowForm(f=>({...f,note:e.target.value}))}/></label>
       {error&&<p role="alert" className="investment-product-error">{error}</p>}
-      <footer>{editing&&<button type="button" className="investment-form-delete" disabled={busy} onClick={async()=>{if(await deleteFlow(editing))close()}}><Trash2 size={16}/>刪除</button>}<button type="button" onClick={close}>取消</button><button type="submit" disabled={busy}>儲存</button></footer></form>}
+      </form>}
+   <div className="investment-product-floating-actions" role="group" aria-label="投資表單操作">
+    <button type="submit" form="investment-product-edit-form" className="fab investment-product-action-fab investment-product-action-save" title="儲存" aria-label="儲存" disabled={busy}><Check size={26}/></button>
+    {dialog==='valuation'&&valuationEditing&&<button type="button" className="fab investment-product-action-fab investment-product-action-delete" disabled={busy} title="刪除估值" aria-label="刪除估值" onClick={async()=>{if(await deleteValuation(valuationEditing))close()}}><Trash2 size={20}/></button>}
+    {dialog==='flow'&&editing&&<button type="button" className="fab investment-product-action-fab investment-product-action-delete" disabled={busy} title="刪除交易" aria-label="刪除交易" onClick={async()=>{if(await deleteFlow(editing))close()}}><Trash2 size={20}/></button>}
+   </div>
    </section></div>, document.body)}
  </section>;
 }

@@ -11,7 +11,7 @@ test('investment forms route all dropdowns to the bottom-sheet picker',()=>{
 });
 test('investment flow deletion is available in the editor rather than ledger rows',()=>{
  assert.doesNotMatch(src,/aria-label="刪除異動"/);
- assert.match(src,/editing&&<button type="button" className="investment-form-delete"/);
+ assert.match(src,/dialog==='flow'&&editing&&<button type="button" className="fab investment-product-action-fab investment-product-action-delete"/);
 });
 test('investment forms use underline appearance for inputs and select triggers',()=>{
  assert.match(css,/v271: investment editing controls/);
