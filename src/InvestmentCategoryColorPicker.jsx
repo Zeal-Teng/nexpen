@@ -14,14 +14,14 @@ export function validInvestmentColor(value){return typeof value==='string'&&/^#[
 export function categoryColor(type,colors={}){
  const selected=colors?.[type];return validInvestmentColor(selected)?selected:INVESTMENT_CATEGORY_DEFAULT_COLORS[type]||'#caa8dc';
 }
-export default function InvestmentCategoryColorPicker({type,colors={},onChange}){
+export default function InvestmentCategoryColorPicker({type,colors={},onChange,iconOnly=false}){
  const [open,setOpen]=useState(false);
  if(!type||!onChange)return null;
  const value=categoryColor(type,colors);
- return <div className="investment-category-color-picker" role="group" aria-label="卡片顏色">
-  <span className="investment-category-color-label">卡片顏色</span>
-  <button type="button" className="investment-category-color-trigger" aria-haspopup="dialog" aria-expanded={open} onClick={()=>setOpen(true)}>
-   <span className="investment-category-current"><i style={{backgroundColor:value}} aria-hidden="true"/><span>{value.toUpperCase()}</span></span><ChevronRight size={18} aria-hidden="true"/>
+ return <div className={"investment-category-color-picker"+(iconOnly?" investment-category-color-picker-icon":"")} role="group" aria-label="卡片顏色">
+  {!iconOnly&&<span className="investment-category-color-label">卡片顏色</span>}
+  <button type="button" className={iconOnly?"circle-button investment-category-color-circle":"investment-category-color-trigger"} title="卡片顏色" aria-label="卡片顏色" aria-haspopup="dialog" aria-expanded={open} onClick={()=>setOpen(true)}>
+   {iconOnly?<span className="investment-category-color-icon" style={{backgroundColor:value}} aria-hidden="true"/>:<><span className="investment-category-current"><i style={{backgroundColor:value}} aria-hidden="true"/><span>{value.toUpperCase()}</span></span><ChevronRight size={18} aria-hidden="true"/></>}
   </button>
   {open&&createPortal(<div className="picker-backdrop investment-select-backdrop investment-color-backdrop" onClick={()=>setOpen(false)}>
    <div className="picker-sheet investment-color-sheet" role="dialog" aria-modal="true" aria-label="卡片顏色" onClick={e=>e.stopPropagation()}>

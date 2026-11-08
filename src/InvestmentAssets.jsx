@@ -22,7 +22,10 @@ const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
 const initialForm=()=>({kind:'contribution',date:today(),amount:'',shares:'',costBasis:'',sourceAccount:'',exchangeRate:'',redemptionFee:'',note:'',currentValue:'',valueDate:today()});
 
-export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],onChanged,onEditAccount,onBackOverview,onDetailChange,backToListSignal=0,askConfirm}){
+export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],primaryCurrency='TWD',onChanged,onEditAccount,onBackOverview,onDetailChange,backToListSignal=0,askConfirm}){
+ const displayMoney=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
+ const summaryMoney=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0})}`;
+ const money=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
  const [selected,setSelected]=useState(''),[dialog,setDialog]=useState(''),[editingEntry,setEditingEntry]=useState(null),[form,setForm]=useState(initialForm()),[error,setError]=useState(''),[busy,setBusy]=useState(false),[numberField,setNumberField]=useState(null);
  useEffect(()=>{onDetailChange?.(Boolean(selected));},[selected,onDetailChange]);
  useEffect(()=>{if(backToListSignal>0){setSelected('');setDialog('');setNumberField(null);}},[backToListSignal]);
@@ -256,7 +259,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
      </div>:<p className="hint investment-empty-assets">{i18n('尚未建立')}{i18n(label[type])}{i18n('帳戶。請至「帳戶管理」新增，並選擇帳戶類型「')}{i18n(label[type])}」。</p>}
     </section>
    </InvestmentStackCard>
-   <InvestmentStackCard accent="coral" title={i18n('已實現交易')} summary={null} amount={realizedSingleCurrency&&realizedItems.length?summaryMoney(realizedProceedsTotal,realizedItems[0].asset.currency):realizedItems.length?'—':null}
+   <InvestmentStackCard accent="gray" title={i18n('已實現交易')} summary={null} amount={realizedSingleCurrency&&realizedItems.length?summaryMoney(realizedProceedsTotal,realizedItems[0].asset.currency):realizedItems.length?'—':null}
     profit={realizedSingleCurrency&&realizedItems.length?`${realizedTotal>=0?'+':''}${summaryMoney(realizedTotal,realizedItems[0].asset.currency)}`:null}
     rate={realizedItems.length&&realizedBasisTotal>0?`${realizedTotal>=0?'+':''}${(realizedTotal/realizedBasisTotal*100).toFixed(2)}%`:null} profitTone={realizedTotal>=0?'income':'expense'}>
     <section className="glass panel investment-stage-list investment-holdings-list" aria-label={`${i18n(label[type])} · ${i18n('已實現交易')}`}>

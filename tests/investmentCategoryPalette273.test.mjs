@@ -6,9 +6,9 @@ const products=fs.readFileSync(new URL('../src/InvestmentProducts.jsx',import.me
 const colors=fs.readFileSync(new URL('../src/InvestmentCategoryColorPicker.jsx',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../src/folio-redesign.css',import.meta.url),'utf8');
 test('color picker is available for all investment create/edit entry points',()=>{
- assert.match(app,/<InvestmentCategoryColorPicker type="stocks"/);
- assert.match(app,/<InvestmentCategoryColorPicker type=\{form\.type\}/);
- assert.match(products,/<InvestmentCategoryColorPicker type=\{type\}/);
+ assert.match(app,/<InvestmentCategoryColorPicker iconOnly type=\{dialog==='stock'\?'stocks':form.type\}/);
+ assert.match(app,/dialog==='account'&&isInvestmentAssetType\(form\.type\)/);
+ assert.match(products,/<InvestmentCategoryColorPicker iconOnly type=\{type\}/);
 });
 test('category palette stores under settings, is restored, and colors first-level cards',()=>{
  assert.match(app,/db\.settings\.put\(\{key:'investmentCategoryColors'/);
