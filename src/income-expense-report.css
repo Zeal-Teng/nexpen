@@ -1,0 +1,63 @@
+.app-shell .income-expense-report{display:grid;gap:16px;width:100%;min-width:0;padding-bottom:110px}
+.app-shell .report-panel{padding:18px;border-radius:22px;min-width:0}
+.app-shell .report-period-tabs,.app-shell .report-pill-switch{display:flex;gap:5px;flex-wrap:wrap}
+.app-shell .report-period-tabs{padding:5px;background:var(--surface-soft,rgba(135,145,155,.10));border-radius:16px}
+.app-shell .report-period-tabs button{flex:1;min-height:42px;border:0;border-radius:12px;background:transparent;color:var(--text,var(--ink,#28313b));font:inherit;font-weight:700;cursor:pointer}
+.app-shell .report-period-tabs button.selected,.app-shell .report-pill-switch button.selected{background:var(--theme-accent,#477c68);color:#fff}
+.app-shell .report-period-nav{display:flex;align-items:center;justify-content:center;gap:8px;padding-top:15px;min-width:0}
+.app-shell .report-period-nav>strong{flex:1;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:17px}
+.app-shell .report-period-nav button{min-width:36px;min-height:38px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line,rgba(128,128,128,.24));border-radius:12px;background:transparent;color:inherit;cursor:pointer}
+.app-shell .report-period-nav button.report-now{padding:0 10px;gap:5px;white-space:nowrap}
+.app-shell .report-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.app-shell .report-summary-card{padding:17px 12px;border-radius:18px;min-width:0;display:flex;flex-direction:column;gap:9px}
+.app-shell .report-summary-card span,.app-shell .report-summary-card small{opacity:.7;font-size:12px}
+.app-shell .report-summary-card strong{font-size:clamp(16px,3vw,25px);letter-spacing:-.03em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.app-shell .income-expense-report .income{color:var(--user-income,#26ab7d)}
+.app-shell .income-expense-report .expense{color:var(--user-expense,#e75365)}
+.app-shell .report-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.app-shell .report-section-head h2{font-size:18px;display:flex;align-items:center;gap:7px;margin:0}
+.app-shell .report-section-head>span{font-size:12px;opacity:.65}
+.app-shell .report-switches{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.app-shell .report-pill-switch button{display:flex;align-items:center;gap:5px;border:1px solid var(--line,rgba(128,128,128,.22));background:transparent;color:inherit;padding:9px 12px;border-radius:12px;cursor:pointer;font:inherit;font-weight:600}
+.app-shell .report-categories{display:grid;gap:17px}
+.app-shell .report-category-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.app-shell .report-category-top>span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.app-shell .report-category-top>span:last-child{text-align:right;align-items:flex-end}
+.app-shell .report-category-top b{font-size:14px;overflow-wrap:anywhere}
+.app-shell .report-category-top strong{font-size:15px}
+.app-shell .report-category-top small{font-size:11px;opacity:.65}
+.app-shell .report-bar-track{height:8px;border-radius:20px;background:rgba(130,140,150,.14);overflow:hidden;margin-top:9px}
+.app-shell .report-bar-fill{height:100%;border-radius:20px;min-width:0;background:var(--user-expense,#e75365)}
+.app-shell .report-bar-fill.income{background:var(--user-income,#26ab7d)}
+.app-shell .report-timeline{display:grid;gap:12px;max-height:440px;overflow:auto}
+.app-shell .report-timeline-row{display:grid;grid-template-columns:minmax(66px,auto) minmax(0,1fr) minmax(65px,auto);gap:9px;align-items:center;font-variant-numeric:tabular-nums}
+.app-shell .report-tick{font-size:12px;opacity:.75}.app-shell .report-tick-value{font-size:12px;text-align:right}
+.app-shell .report-dual-bars{display:grid;gap:3px}.app-shell .report-mini-bar{height:7px;min-width:0;border-radius:5px;background:var(--user-income,#26ab7d)}
+.app-shell .report-mini-bar.expense{background:var(--user-expense,#e75365)}
+.app-shell .report-legend{display:flex;gap:16px;font-size:12px;margin-top:14px}
+.app-shell .report-legend-income{color:var(--user-income,#26ab7d)}.app-shell .report-legend-expense{color:var(--user-expense,#e75365)}
+.app-shell .report-empty,.app-shell .report-footnote{font-size:13px;opacity:.7;line-height:1.6}
+@media(max-width:520px){.app-shell .report-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.app-shell .report-summary-card:last-child{grid-column:span 2}.app-shell .report-period-nav{gap:3px}.app-shell .report-period-nav button.report-now{font-size:12px;padding:0 7px}}
+
+/* v287: Reports share the diary calendar and date range instead of adding a second navigation. */
+.app-shell .income-expense-report.embedded-report{padding-bottom:110px}
+.app-shell .income-expense-report.embedded-report .report-panel{margin:0}
+
+/* v288: a compact floating diary mode switch replaces the full-width tabs.
+   With transactions visible, place it above the existing Add FAB; in analysis
+   use the main FAB position and suppress Add entirely. */
+.app-shell .fab.diary-mode-fab {
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  z-index:23;
+  background:var(--theme-surface, #fff)!important;
+  color:var(--theme-text, #26313b)!important;
+  border:1px solid var(--theme-line, rgba(100,110,120,.25))!important;
+  box-shadow:0 5px 18px rgba(20,30,45,.20)!important;
+}
+.app-shell .fab.diary-mode-fab-stacked {bottom:110px!important;}
+@media (max-width:800px) {
+  .app-shell .fab.diary-mode-fab-stacked {bottom:calc(162px + env(safe-area-inset-bottom, 0px))!important;}
+}
+.app-shell .fab.diary-mode-fab:focus-visible {outline:3px solid var(--theme-accent,#477c68);outline-offset:3px;}
