@@ -23,6 +23,6 @@ test('realized second level uses gray card in every investment category',()=>{
 });
 test('primary currency is omitted from investment display amounts only',()=>{
  assert.match(products,/const showFigure=\(n,code='TWD'\)=>figure\(n,code===primaryCurrency\?'':code\)/);
- assert.match(assets,/const displayMoney=\(v,c\)=>`\$\{c===primaryCurrency\?'':c\+' '\}/);
- assert.match(products,/\{code\?code\+' ':''\}/);
+ assert.match(assets,/const displayMoney=\(v,c\)=>formatMoneyDisplay\(v,\{currency:c,primaryCurrency\}\)/);
+ assert.match(products,/const figure=\(n,code='TWD'\)=>moneySymbol\(/);
 });

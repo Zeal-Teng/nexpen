@@ -1,3 +1,4 @@
+import {formatMoneyDisplay} from './moneyDisplay.js';
 import MarqueeInput from './MarqueeInput.jsx';
 import React,{useEffect,useState} from 'react';
 import AnimatedNumber from './AnimatedNumber.jsx';
@@ -17,7 +18,7 @@ export default function NetWorthGoal({goalTwd=null,currentTwd=0,mainRate=1,curre
  const goal=Number(goalTwd)>0?Number(goalTwd):null;
  const localValue=goal&&usableRate?goal/Number(mainRate):null;
  const current=Number(currentTwd)||0;
- const display=n=>`${currency==='TWD'?'':currency+' '}${new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0}).format(n)}`;
+ const display=n=>formatMoneyDisplay(n,{currency,primaryCurrency:'TWD',maximumFractionDigits:0});
  const progress=goal?Math.max(0,current/goal*100):0;
  const remaining=goal?Math.max(0,goal-current):0;
  useEffect(()=>{if(!editing)setDraft(localValue===null?'':String(Math.round(localValue)));},[editing,goalTwd,mainRate]);

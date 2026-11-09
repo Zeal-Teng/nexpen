@@ -1,3 +1,4 @@
+import {moneySymbol} from './moneyDisplay.js';
 import React,{useState} from 'react';
 import {Wallet,Landmark,ChartNoAxesCombined,Shield,Layers3,Coins,ChartLine,HandCoins,AlertCircle,ChevronRight} from 'lucide-react';
 import {ASSET_GROUPS} from './netWorth.js';
@@ -18,7 +19,7 @@ export default function NetWorthBreakdown({data,format,language='zh-TW',currency
  const t=translations[language]||translations['zh-TW'];
  const [openCard,setOpenCard]=useState(null);
  // 與投資頁面完全共用 Card Stack 元件，保持相同的堆疊露邊、展開和陰影。
- const money=value=>currency==='TWD'?format(value):`${currency} ${format(value)}`;
+ const money=value=>moneySymbol(format(value),currency,'TWD');
  const formatPct=value=>`${value.toFixed(1)}%`;
  return <section className="networth-breakdown" aria-label={t.title}>
    <SummaryHero className="networth-overview-hero" eyebrow="NEXPEN · NET WORTH" title={t.net} label={t.net} value={money(data.netWorth)} detailId="networth-hero-details">

@@ -1,3 +1,4 @@
+import {moneySymbol} from './moneyDisplay.js';
 import InvestmentCategoryColorPicker,{categoryColor} from './InvestmentCategoryColorPicker.jsx';
 import {productTwdRate} from './investmentValuationsProduct.js';
 import {balanceAuditDelta,isBalanceAudit} from './balanceAudit.js';
@@ -176,7 +177,7 @@ const suggestedIcon=name=>{if(/餐|食|飯|早餐|午餐|晚餐/.test(name))retu
 const mobileNav=[['daily','日記帳',Wallet],['stocks','投資',TrendingUp],['dashboard','總覽',ChartNoAxesCombined],['settings','設定',Settings]];
 const settingsPages=['accounts','accountTypes','projects','recurring','categories'];
 const nav=[['daily','日記帳',Wallet],['dashboard','總覽',ChartNoAxesCombined],['accounts','帳戶',Landmark],['projects','專案管理',Tags],['stocks','投資',TrendingUp],['recurring','定期',Repeat2],['categories','分類',Tags],['settings','設定',Settings]];
-const fmt=n=>'NT$ '+Math.round(Number(n)||0).toLocaleString('zh-TW');const fmtUnit=n=>'NT$ '+Number(n||0).toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:4});const fmtCurrency=(amount,currency='TWD')=>new Intl.NumberFormat('zh-TW',{style:'currency',currency,maximumFractionDigits:currency==='TWD'||currency==='JPY'?0:2}).format(Number(amount)||0);const fmtSigned=n=>(n<0?'-':'+')+fmt(Math.abs(n));const picker={expense:'支出',income:'收入',transfer:'轉帳'};const stockNames={buy:'買進',sell:'賣出',dividend:'配息'};const parseDate=s=>new Date(s+'T12:00:00');const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const fmt=n=>'$'+Math.round(Number(n)||0).toLocaleString('zh-TW');const fmtUnit=n=>'$'+Number(n||0).toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:4});const fmtCurrency=(amount,currency='TWD')=>new Intl.NumberFormat('zh-TW',{style:'currency',currency,maximumFractionDigits:currency==='TWD'||currency==='JPY'?0:2}).format(Number(amount)||0);const fmtSigned=n=>(n<0?'-':'+')+fmt(Math.abs(n));const picker={expense:'支出',income:'收入',transfer:'轉帳'};const stockNames={buy:'買進',sell:'賣出',dividend:'配息'};const parseDate=s=>new Date(s+'T12:00:00');const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 // Taiwan exchange-traded shares / ETF fee estimates. Real settlement may differ by broker.
 const SECURITY_TYPES=[{id:'stock',label:'一般股票'},{id:'etf',label:'一般 ETF'},{id:'bondEtf',label:'債券 ETF'}];
 const asAmount=n=>Math.round(Number(n)||0);
@@ -433,20 +434,20 @@ export default function App(){
  const [quotes,setQuotes]=useState({});const [quoteLoading,setQuoteLoading]=useState(false);const [quoteStatus,setQuoteStatus]=useState('');
  const quoteRequest=useRef({busy:false,last:0,pendingCodes:new Set()});
  const startupRatesRequested=useRef(false);
- const mainRate=primaryCurrency==='TWD'?1:Number(primaryTwdRate);const baseAvailable=Number.isFinite(mainRate)&&mainRate>0;const crossRateToPrimary=(currency,twdRate)=>{if(currency===primaryCurrency)return 1;if(!baseAvailable)return NaN;const base=currency==='TWD'?1:Number(twdRate);return Number.isFinite(base)&&base>0?base/mainRate:NaN};const formatFxRate=rate=>Number.isFinite(rate)&&rate>0?Number(rate.toPrecision(9)).toLocaleString('zh-TW',{maximumFractionDigits:8}):'匯率尚未取得';const inPrimary=n=>baseAvailable?Number(n)/mainRate:NaN;const fmtPrimary=n=>baseAvailable?renderCurrency(inPrimary(n),primaryCurrency,['JPY','KRW'].includes(primaryCurrency)?0:2):'匯率尚未取得';
+ const mainRate=primaryCurrency==='TWD'?1:Number(primaryTwdRate);const baseAvailable=Number.isFinite(mainRate)&&mainRate>0;const crossRateToPrimary=(currency,twdRate)=>{if(currency===primaryCurrency)return 1;if(!baseAvailable)return NaN;const base=currency==='TWD'?1:Number(twdRate);return Number.isFinite(base)&&base>0?base/mainRate:NaN};const formatFxRate=rate=>Number.isFinite(rate)&&rate>0?Number(rate.toPrecision(9)).toLocaleString('zh-TW',{maximumFractionDigits:8}):'匯率尚未取得';const inPrimary=n=>baseAvailable?Number(n)/mainRate:NaN;const fmtPrimary=n=>baseAvailable?moneySymbol(new Intl.NumberFormat('zh-TW',{maximumFractionDigits:['JPY','KRW'].includes(primaryCurrency)?0:2}).format(inPrimary(n))):'匯率尚未取得';
  // v53: Currency codes below an entry only identify balances NOT denominated in the primary currency.
  const nonPrimaryCode=currency=>{const c=currency||'TWD';return c===primaryCurrency?'':c};
  const accountCurrencyCode=id=>nonPrimaryCode(accounts.find(a=>a.id===id)?.currency);
  // v54: The account currency label is shown only when different from the primary currency.
  // Per-entry figures remain in their native currency; group totals and net worth retain explicit primary currency.
  const fmtEntryNumber=(amount,account)=>new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:precisionFor(account)}).format(Number(amount)||0);
- const fmtPrimaryNumber=n=>baseAvailable?new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:['JPY','KRW'].includes(primaryCurrency)?0:2}).format(inPrimary(n)):'匯率尚未取得';
+ const fmtPrimaryNumber=n=>baseAvailable?moneySymbol(new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:['JPY','KRW'].includes(primaryCurrency)?0:2}).format(inPrimary(n))):'匯率尚未取得';
  // v150: Only investment summary figures are rounded. Detailed amounts preserve cents.
- const fmtInvestmentMoney=n=>baseAvailable?new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(inPrimary(n)):'匯率尚未取得';
- const fmtInvestmentDetail=n=>baseAvailable?new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:2}).format(inPrimary(n)):'匯率尚未取得';
- const fmtAccountFigure=(amount,account)=>`${nonPrimaryCode(account?.currency)?nonPrimaryCode(account?.currency)+' ':''}${fmtEntryNumber(amount,account)}`;
- const fmtStockUnit=n=>`${primaryCurrency==='TWD'?'':'TWD '}${new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:4}).format(Number(n)||0)}`;
- const fmtStockTradeAmount=n=>`${primaryCurrency==='TWD'?'':'TWD '}${new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(n)||0)}`;
+ const fmtInvestmentMoney=n=>baseAvailable?moneySymbol(new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(inPrimary(n))):'匯率尚未取得';
+ const fmtInvestmentDetail=n=>baseAvailable?moneySymbol(new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:2}).format(inPrimary(n))):'匯率尚未取得';
+ const fmtAccountFigure=(amount,account)=>moneySymbol(fmtEntryNumber(amount,account),account?.currency||primaryCurrency,primaryCurrency);
+ const fmtStockUnit=n=>moneySymbol(new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:4}).format(Number(n)||0),'TWD',primaryCurrency);
+ const fmtStockTradeAmount=n=>moneySymbol(new Intl.NumberFormat('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(n)||0),'TWD',primaryCurrency);
 
  const [rateLoading,setRateLoading]=useState(false);const [calculator,setCalculator]=useState(null);const [form,setForm]=useState({});const patch=(key,value)=>setForm(f=>({...f,[key]:value}));
  const [categoryPickerOpen,setCategoryPickerOpen]=useState(false);
@@ -1539,7 +1540,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
    {transactionTemplates.length?transactionTemplates.map(template=><div className="transaction-inline-template" key={template.id}>
     <button type="button" className="transaction-template-choice" onClick={()=>applyTemplate(template)} aria-label={`${i18n('套用範本')} ${template.name}`}>
      <span className="transaction-template-title">{template.name}</span>
-     <small>{i18n(picker[template.type]||template.type)} · {template.type==='transfer'?i18n('內部轉帳'):i18n(template.subCategory||template.mainCategory)}{template.amount?` · ${Number(template.amount).toLocaleString(language||'zh-TW')}`:''}</small>
+     <small>{i18n(picker[template.type]||template.type)} · {template.type==='transfer'?i18n('內部轉帳'):i18n(template.subCategory||template.mainCategory)}{template.amount?` · ${moneySymbol(Number(template.amount).toLocaleString(language||'zh-TW'))}`:''}</small>
      <small className="transaction-template-account">{i18n('帳戶')}：{template.type==='transfer'
       ?`${accounts.find(a=>a.id===template.fromAccount)?.name||i18n('未指定轉出帳戶')} → ${accounts.find(a=>a.id===template.toAccount)?.name||i18n('未指定轉入帳戶')}`
       :(accounts.find(a=>a.id===template.account)?.name||i18n('未指定帳戶'))}</small>
@@ -1567,7 +1568,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   const actual=String(form.actualBalance??'').trim();
   let delta=null;
   try{delta=balanceAuditDelta(actual,computed,precisionFor(account));}catch{}
-  const formatValue=n=>`${account.currency||'TWD'} ${Number(n).toLocaleString('zh-TW',{maximumFractionDigits:precisionFor(account)})}`;
+  const formatValue=n=>moneySymbol(Number(n).toLocaleString('zh-TW',{maximumFractionDigits:precisionFor(account)}),account.currency||'TWD',primaryCurrency);
   return <section className="balance-audit-panel">
     <p className="hint">{account.name} · 實際餘額與帳面餘額核對，差異會另外記在日記帳，不列入一般收支。</p>
     <Field label="盤點日期"><NativeDatePicker value={form.date} onChange={e=>patch('date',e.target.value)} required/></Field>

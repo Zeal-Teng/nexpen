@@ -1,3 +1,4 @@
+import {moneySymbol} from './moneyDisplay.js';
 import React,{useEffect,useMemo,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {ChevronLeft,ChevronRight,CalendarDays,TrendingUp,TrendingDown,ChartPie,X} from 'lucide-react';
@@ -33,7 +34,7 @@ export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',prima
  const detailRows=useMemo(()=>activeSelection?selectReportEntries(rows,{period,date,...activeSelection}):[],[rows,period,date,activeSelection]);
  const rate=primaryCurrency==='TWD'?1:Number(primaryTwdRate);
  const canConvert=Number.isFinite(rate)&&rate>0;
- const format=n=>canConvert?new Intl.NumberFormat(language||'zh-TW',{maximumFractionDigits:['JPY','KRW'].includes(primaryCurrency)?0:2}).format(n/rate):'—';
+ const format=n=>canConvert?moneySymbol(new Intl.NumberFormat(language||'zh-TW',{maximumFractionDigits:['JPY','KRW'].includes(primaryCurrency)?0:2}).format(n/rate)):'—';
  const now=()=>{const today=new Date();setLocalDate(`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`)};
  const dateLabel=period==='year'?date.slice(0,4):period==='month'?date.slice(0,7):date;
  const maxTick=Math.max(1,...report.timeline.flatMap(r=>[r.income,r.expense]));
@@ -46,12 +47,12 @@ export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',prima
   {!embedded&&<div className="report-summary-grid">
    <div className="glass report-summary-card"><span>{t.income}</span><strong className="income">{format(report.income)}</strong></div>
    <div className="glass report-summary-card"><span>{t.expense}</span><strong className="expense">{format(report.expense)}</strong></div>
-   <div className="glass report-summary-card"><span>{t.net}</span><strong className={report.net>=0?'income':'expense'}>{format(report.net)}</strong><small>{report.count} {t.records}</small></div>
+   <div className="glass report-summary-card"><span>{t.net}</span><strong className={report.net>=0?'income':'expense'}>{format(report.net)}</strong></div>
   </div>}
   <section className="glass report-panel">
    <div className="report-section-head"><h2><ChartPie size={19}/>{t.category}</h2></div>
    <div className="report-switches"><div className="report-pill-switch">{['expense','income'].map(k=><button type="button" key={k} className={flow===k?'selected':''} aria-pressed={flow===k} onClick={()=>setFlow(k)}>{k==='income'?<TrendingUp size={16}/>:<TrendingDown size={16}/>} {t[k]}</button>)}</div><div className="report-pill-switch">{['main','sub'].map(k=><button type="button" key={k} className={level===k?'selected':''} aria-pressed={level===k} onClick={()=>setLevel(k)}>{t[k]}</button>)}</div></div>
-   {report.categories.length?<div className="report-categories">{report.categories.map((g,i)=><button type="button" className="report-category-row report-drilldown-trigger" key={g.main+'/'+g.sub} aria-label={`${g.name} · ${g.count} ${t.records} · ${t.details}`} onClick={()=>setSelection({scopeKey,kind:'category',flow,level,main:g.main,sub:g.sub,title:g.name})}><div className="report-category-top"><span><b>{i+1}. {g.name}</b>{level==='sub'&&<small>{g.main}</small>}</span><span><strong>{format(g.value)}</strong><small>{g.percent.toFixed(1)}% · {g.count} {t.records}</small></span><ChevronRight className="report-row-chevron" size={17}/></div><div className="report-bar-track"><div className={'report-bar-fill '+flow} style={{width:`${g.percent}%`}}/></div></button>)}</div>:<p className="report-empty">{t.none}</p>}
+   {report.categories.length?<div className="report-categories">{report.categories.map((g,i)=><button type="button" className="report-category-row report-drilldown-trigger" key={g.main+'/'+g.sub} aria-label={`${g.name} · ${t.details}`} onClick={()=>setSelection({scopeKey,kind:'category',flow,level,main:g.main,sub:g.sub,title:g.name})}><div className="report-category-top"><span><b>{i+1}. {g.name}</b>{level==='sub'&&<small>{g.main}</small>}</span><span className="report-category-values"><strong>{format(g.value)}</strong><small>{g.percent.toFixed(1)}%</small></span><ChevronRight className="report-row-chevron" size={17}/></div><div className="report-bar-track"><div className={'report-bar-fill '+flow} style={{width:`${g.percent}%`}}/></div></button>)}</div>:<p className="report-empty">{t.none}</p>}
   </section>
   <section className="glass report-panel">
    <div className="report-section-head"><h2><TrendingUp size={19}/>{t.trend}</h2></div>
@@ -65,7 +66,7 @@ export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',prima
   {activeSelection&&typeof document!=='undefined'&&createPortal(<div className="report-details-backdrop" role="presentation" onClick={()=>setSelection(null)}>
    <section className="report-details-sheet" role="dialog" aria-modal="true" aria-label={`${t.details} · ${activeSelection.title}`} onClick={event=>event.stopPropagation()}>
     <div className="report-details-grabber"/>
-    <header className="report-details-head"><div><strong>{activeSelection.title}</strong><small>{t.details} · {detailRows.length} {t.records}</small></div><button type="button" className="circle-button report-details-close" aria-label={t.close} onClick={()=>setSelection(null)}><X size={21}/></button></header>
+    <header className="report-details-head"><div><strong>{activeSelection.title}</strong><small>{t.details}</small></div><button type="button" className="circle-button report-details-close" aria-label={t.close} onClick={()=>setSelection(null)}><X size={21}/></button></header>
     <div className="report-details-list" role="list">
      {detailRows.map((row,index)=><button type="button" role="listitem" key={`${row.id||row.date}-${index}`} className="report-details-entry" disabled={!onSelectRow} onClick={()=>{if(onSelectRow){setSelection(null);onSelectRow(row);}}}>
       <span className="report-details-entry-main"><b>{row.note||row.subCategory||row.mainCategory||t[row.type]}</b><small>{row.date} · {row.mainCategory||t[row.type]}{row.subCategory?` / ${row.subCategory}`:''}</small></span>

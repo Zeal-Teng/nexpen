@@ -1,3 +1,4 @@
+import {formatMoneyDisplay} from './moneyDisplay.js';
 import {suggestedRedemptionRate} from './investmentCashFlow.js';
 import {categoryColor} from './InvestmentCategoryColorPicker.jsx';
 import {contributionTrustShares} from './trustShares.js';
@@ -16,17 +17,17 @@ import InvestmentSheetSelect from './InvestmentSheetSelect.jsx';
 
 const fmt=(n)=>Number(n||0).toLocaleString('zh-TW',{maximumFractionDigits:2});
 const percentage=(v,c)=>c>0?`${v-c>=0?'+':''}${((v-c)/c*100).toFixed(2)}%`:'—';
-const money=(v,c)=>`${c} ${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
-const summaryMoney=(v,c)=>`${c==='TWD'?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0})}`;
-const displayMoney=(v,c)=>`${c==='TWD'?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
+const money=(v,c)=>formatMoneyDisplay(v,{currency:c,primaryCurrency:'TWD'});
+const summaryMoney=(v,c)=>formatMoneyDisplay(v,{currency:c,primaryCurrency:'TWD',maximumFractionDigits:0});
+const displayMoney=(v,c)=>formatMoneyDisplay(v,{currency:c,primaryCurrency:'TWD'});
 const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
 const initialForm=()=>({kind:'contribution',date:today(),amount:'',shares:'',costBasis:'',sourceAccount:'',exchangeRate:'',redemptionFee:'',note:'',currentValue:'',valueDate:today()});
 
 export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],primaryCurrency='TWD',onChanged,onEditAccount,onCreateAsset,onBackOverview,onDetailChange,backToListSignal=0,askConfirm,categoryColors={}}){
- const displayMoney=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
- const summaryMoney=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0})}`;
- const money=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
+ const displayMoney=(v,c)=>formatMoneyDisplay(v,{currency:c,primaryCurrency});
+ const summaryMoney=(v,c)=>formatMoneyDisplay(v,{currency:c,primaryCurrency,maximumFractionDigits:0});
+ const money=(v,c)=>formatMoneyDisplay(v,{currency:c,primaryCurrency});
  const [selected,setSelected]=useState(''),[dialog,setDialog]=useState(''),[editingEntry,setEditingEntry]=useState(null),[form,setForm]=useState(initialForm()),[error,setError]=useState(''),[busy,setBusy]=useState(false),[numberField,setNumberField]=useState(null);
  useEffect(()=>{onDetailChange?.(Boolean(selected));},[selected,onDetailChange]);
  useEffect(()=>{if(backToListSignal>0){setSelected('');setDialog('');setNumberField(null);}},[backToListSignal]);

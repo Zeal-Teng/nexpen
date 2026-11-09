@@ -1,3 +1,4 @@
+import {moneySymbol} from './moneyDisplay.js';
 import React,{useMemo,useState} from 'react';
 import AnimatedNumber from './AnimatedNumber.jsx';
 import {TrendingUp,TrendingDown,Minus} from 'lucide-react';
@@ -30,7 +31,7 @@ export default function NetWorthTrend({history=[],format,language='zh-TW',curren
  const pts=data.map((p,i)=>[x(i),y(p.netWorth)]);
  const path=pts.map(([px,py],i)=>`${i?'L':'M'}${px.toFixed(2)} ${py.toFixed(2)}`).join(' ');
  const fill=path&&`${path} L${pts.at(-1)[0]} ${H-B} L${pts[0][0]} ${H-B} Z`;
- const value=n=>`${currency==='TWD'?'':currency+' '}${format(n)}`;
+ const value=n=>moneySymbol(format(n),currency,'TWD');
  return <section className="networth-trend-panel" aria-label={t.title}>
   <div className="networth-trend-heading"><h3>{t.title}</h3>{point&&<time dateTime={point.date} className="networth-trend-heading-date">{point.date}{point.complete===false?` · ${t.incomplete}`:""}</time>}</div>
   <div className="networth-trend-ranges" role="group" aria-label={t.title}>{[7,30,90,'all'].map(r=><button key={r} type="button" aria-pressed={range===r} onClick={()=>{setRange(r);setSelected(null)}} className={range===r?'active':''}>{r==='all'?t.all:`${r}${t.days}`}</button>)}</div>

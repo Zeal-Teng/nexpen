@@ -228,3 +228,18 @@ html body > .report-details-backdrop .report-details-sheet .report-details-head 
   outline:3px solid var(--theme-accent,#477c68);
   outline-offset:3px;
 }
+
+/* v294: Category metrics align with timeline values; counts stay hidden. */
+html .app-shell .income-expense-report .report-category-top {
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,max-content) 17px;
+  align-items:center;gap:10px;width:100%;
+}
+html .app-shell .income-expense-report .report-category-values {
+  display:flex;flex-direction:column;align-items:flex-end;
+  justify-self:end;text-align:right;min-width:0;gap:3px;
+  font-variant-numeric:tabular-nums;
+}
+html .app-shell .income-expense-report .report-category-values strong,
+html .app-shell .income-expense-report .report-category-values small {
+  display:block;text-align:right;
+}

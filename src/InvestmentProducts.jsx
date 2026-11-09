@@ -1,3 +1,4 @@
+import {moneySymbol} from './moneyDisplay.js';
 import InvestmentCategoryColorPicker,{categoryColor} from './InvestmentCategoryColorPicker.jsx';
 import React,{useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
@@ -14,7 +15,7 @@ import {productTwdRate,valuationRows,productWithValuations} from './investmentVa
 import {savingsCashFlows,calculateXirr} from './savingsPolicy.js';
 
 const numeric=v=>Number(v)||0;
-const figure=(n,code='TWD')=>`${code?code+' ':''}${numeric(n).toLocaleString('zh-TW',{maximumFractionDigits:4})}`;
+const figure=(n,code='TWD')=>moneySymbol(numeric(n).toLocaleString('zh-TW',{maximumFractionDigits:4}),code||'', '');
 const typeLabels={fund:'基金',bond:'債券',savings:'儲蓄險',termDeposit:'定存'};
 const kindLabels={
  fund:{contribution:'申購',redemption:'贖回',yield:'基金配息'},
