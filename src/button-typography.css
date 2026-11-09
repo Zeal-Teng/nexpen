@@ -1,0 +1,97 @@
+/* v282: one typography token for action button labels across every screen.
+   Keep purpose-built large numeric keys, calendar day cells, narrow navigation
+   tabs and icon-only controls at their established sizes. */
+:root {
+  --nexpen-button-label-size: 14px;
+  --nexpen-button-label-weight: 700;
+}
+
+/* App sheets are sometimes rendered in a body portal, outside .app-shell. */
+html body :is(
+  .app-shell,
+  .sheet,
+  .investment-product-backdrop,
+  .picker-sheet,
+  .calculator-sheet,
+  .nexpen-confirm-dialog,
+  .nexpen-update-banner,
+  .nexpen-install-banner,
+  .template-modal
+) button:not(:is(
+  .circle-button,
+  .mini-btn,
+  .icon-tiny,
+  .fab,
+  .sheet-close-button,
+  .nexpen-confirm-close,
+  .calc-key,
+  .week-day,
+  .calendar-day,
+  .date-picker-day,
+  .pin-key,
+  .pinpad-key,
+  .pin-pad-key,
+  .category-drag-handle,
+  .account-type-drag-handle,
+  .account-stack-sort-handle,
+  .account-entry-sort-handle,
+  .transaction-template-icon-button
+)) {
+  font-size: var(--nexpen-button-label-size) !important;
+}
+
+/* Dedicated action classes: share the same font even when outside those roots. */
+html body :is(
+  button.soft-btn,
+  button.primary-btn,
+  button.danger-btn,
+  button.compact,
+  button.pill,
+  button.chip,
+  button.smart-select,
+  button.picker-option,
+  button.money-trigger,
+  button.investment-sheet-select,
+  button.investment-numeric-trigger,
+  button.nexpen-confirm-cancel,
+  button.nexpen-confirm-submit,
+  button.nexpen-update-primary,
+  button.nexpen-install-action
+) {
+  font-size: var(--nexpen-button-label-size) !important;
+}
+
+/* Labels wrapped in spans or bold tags should not override button typography. */
+html body :is(
+  .soft-btn,
+  .primary-btn,
+  .danger-btn,
+  .picker-option,
+  .nexpen-confirm-actions button,
+  .sheet-actions button,
+  .investment-product-actions button
+) > :is(span,b,strong) {
+  font-size: inherit !important;
+}
+
+/* Small bottom navigation carries five destinations; using 14px would cause
+   clipping on iPhone SE. Its icon/label typography is a distinct navigation scale. */
+@media (max-width:800px) {
+  html body .app-shell .bottom-nav button {
+    font-size: 11px !important;
+  }
+}
+
+
+/* v283: Investment third-level 2x2 action grid.
+   v263 added a highly specific 12px !important mobile override in
+   folio-redesign.css. A general .soft-btn rule cannot beat that selector;
+   explicitly target the actual savings/fund/bond/deposit buttons here. */
+html body .app-shell .investment-product-page .savings-detail-history .savings-action-grid > button.soft-btn.small {
+  font-size: var(--nexpen-button-label-size) !important;
+  font-weight: var(--nexpen-button-label-weight) !important;
+  line-height: 1.35 !important;
+}
+html body .app-shell .investment-product-page .savings-detail-history .savings-action-grid > button.soft-btn.small > :is(span, b, strong) {
+  font-size: inherit !important;
+}

@@ -7485,3 +7485,36 @@ html .investment-product-backdrop .investment-product-action-fab:active:not(:dis
 @media (max-width: 700px) {
   html .investment-product-backdrop .investment-product-floating-actions {right:17px;bottom:calc(20px + env(safe-area-inset-bottom, 0px));}
 }
+
+/* v281: destructive product action must be unmistakably red, in both themes. */
+html .app-shell .investment-product-page .savings-detail-layout > button.investment-product-remove.soft-btn.small {
+  background:#c72c49!important;
+  color:#fff!important;
+  border:1px solid #a9223a!important;
+  box-shadow:0 5px 15px rgba(146,30,54,.23)!important;
+  font-weight:750!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout > button.investment-product-remove.soft-btn.small:hover {
+  background:#aa203a!important;
+}
+html .app-shell .investment-product-page .savings-detail-layout > button.investment-product-remove.soft-btn.small:focus-visible {
+  outline:3px solid #e88b9d!important;outline-offset:3px;
+}
+/* Header close/cancel buttons: a clearly bordered circle with strong icon contrast,
+   including sheets rendered in a portal outside .app-shell. */
+html .app-shell .sheet-head-actions > .circle-button.sheet-close-btn,
+html .investment-product-sheet > header .sheet-head-actions > button.circle-button.sheet-close-btn {
+  background:color-mix(in srgb,var(--theme-text,#253145) 9%,var(--theme-surface,#ffffff))!important;
+  color:var(--theme-text,#253145)!important;
+  border:1.5px solid color-mix(in srgb,var(--theme-text,#253145) 42%,transparent)!important;
+  box-shadow:0 1px 4px rgba(25,36,55,.15)!important;
+  opacity:1!important;
+}
+html .app-shell .sheet-head-actions > .circle-button.sheet-close-btn svg,
+html .investment-product-sheet > header .sheet-head-actions > button.circle-button.sheet-close-btn svg {
+  stroke:currentColor!important;stroke-width:2.6!important;opacity:1!important;
+}
+html .app-shell .sheet-head-actions > .circle-button.sheet-close-btn:focus-visible,
+html .investment-product-sheet > header .sheet-head-actions > button.circle-button.sheet-close-btn:focus-visible {
+  outline:2px solid var(--theme-accent,#318a9e)!important;outline-offset:3px;
+}

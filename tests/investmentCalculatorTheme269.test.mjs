@@ -7,7 +7,7 @@ test('fund bond insurance term deposit numeric fields use shared amount calculat
  assert.match(ui,/import AmountCalculator/);
  for(const key of ['premiumYears','declaredRate','couponRate','shares','amount','fee'])assert.ok(ui.includes(`'${key}'`),key);
  assert.match(ui,/valuationForm\.price/);
- for(const key of ['year','cumulativePremium','endValue','nextValue'])assert.match(ui,new RegExp(`projectionNumber\\(i,'${key}'`));
+ assert.doesNotMatch(ui,/projectionNumber\(/); // Annual projections removed in v280.
  assert.match(ui,/flowForm\.exchangeRate/);
  assert.equal((ui.match(/type="number"/g)||[]).length,0);
 });

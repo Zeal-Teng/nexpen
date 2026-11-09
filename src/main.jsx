@@ -16,3 +16,4 @@ class ErrorBoundary extends React.Component {
 ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App/><PwaUpdateManager/></ErrorBoundary>);
 
 import './demo-mode.css';
+import './button-typography.css';

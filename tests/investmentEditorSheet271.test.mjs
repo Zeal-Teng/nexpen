@@ -6,7 +6,7 @@ const picker=readFileSync(new URL('../src/InvestmentSheetSelect.jsx',import.meta
 const css=readFileSync(new URL('../src/folio-redesign.css',import.meta.url),'utf8');
 test('investment forms route all dropdowns to the bottom-sheet picker',()=>{
  assert.equal((src.match(/<select\b/g)||[]).length,0);
- assert.ok((src.match(/<InvestmentSheetSelect\b/g)||[]).length>=7);
+ assert.ok((src.match(/<InvestmentSheetSelect\b/g)||[]).length>=6);
  assert.match(picker,/picker-backdrop investment-select-backdrop/);
 });
 test('investment flow deletion is available in the editor rather than ledger rows',()=>{

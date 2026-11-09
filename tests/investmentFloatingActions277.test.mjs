@@ -7,7 +7,7 @@ test('all three investment editor forms share submit ID and floating save button
  assert.equal((src.match(/<form id="investment-product-edit-form"/g)||[]).length,3);
  assert.match(src,/type="submit" form="investment-product-edit-form" className="fab investment-product-action-fab investment-product-action-save"/);
  assert.doesNotMatch(src,/investment-product-action-cancel/);
- assert.match(src,/className="circle-button" onClick=\{close\} aria-label="關閉"/);
+ assert.match(src,/className="circle-button sheet-close-btn" onClick=\{close\} aria-label="關閉"/);
  assert.doesNotMatch(src,/<footer>[\s\S]{0,260}取消/);
 });
 test('edit-only delete actions remain separate and floating, with scroll clearance',()=>{
