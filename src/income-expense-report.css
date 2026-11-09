@@ -61,3 +61,170 @@
   .app-shell .fab.diary-mode-fab-stacked {bottom:calc(162px + env(safe-area-inset-bottom, 0px))!important;}
 }
 .app-shell .fab.diary-mode-fab:focus-visible {outline:3px solid var(--theme-accent,#477c68);outline-offset:3px;}
+
+/* v289: report controls follow every configured light/dark theme. */
+html .app-shell .income-expense-report .report-pill-switch button {
+  background:var(--theme-surface, transparent)!important;
+  border:1px solid var(--theme-line,rgba(128,128,128,.3))!important;
+  color:var(--theme-text,#26313b)!important;
+  font-size:var(--nexpen-button-label-size,14px)!important;
+  font-weight:700;
+  box-shadow:none!important;
+  min-height:38px;
+  transition:background-color .18s,border-color .18s,color .18s;
+}
+html .app-shell .income-expense-report .report-pill-switch button.selected,
+html .app-shell .income-expense-report .report-pill-switch button[aria-pressed="true"] {
+  background:var(--theme-accent,#477c68)!important;
+  border-color:var(--theme-accent,#477c68)!important;
+  color:var(--theme-accent-contrast,#fff)!important;
+}
+html .app-shell .income-expense-report .report-pill-switch button:focus-visible {
+  outline:2px solid var(--theme-accent,#477c68);
+  outline-offset:2px;
+}
+.app-shell .report-ratio-summary {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-width:0;padding:12px 14px;margin-bottom:15px;
+  border:1px solid var(--theme-line,rgba(128,128,128,.25));
+  border-radius:14px;background:var(--theme-surface2,var(--theme-chip,rgba(128,128,128,.07)));
+  color:var(--theme-text,inherit);
+}
+.app-shell .report-ratio-summary-copy {display:flex;flex-direction:column;gap:3px;min-width:0}
+.app-shell .report-ratio-summary-copy strong {font-size:14px}
+.app-shell .report-ratio-summary-copy small {font-size:12px;color:var(--theme-muted,inherit)}
+.app-shell .report-ratio-summary-value {font-variant-numeric:tabular-nums;font-size:22px;white-space:nowrap}
+.app-shell .report-tick-value {display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
+.app-shell .report-tick-value strong {font-size:13px;color:var(--theme-text,inherit);font-variant-numeric:tabular-nums}
+.app-shell .report-tick-value small {font-size:11px;color:var(--theme-muted,inherit);font-variant-numeric:tabular-nums}
+.app-shell .report-legend-net {color:var(--theme-muted,inherit)}
+@media(max-width:430px){
+  .app-shell .report-timeline-row {grid-template-columns:minmax(58px,auto) minmax(0,1fr) minmax(72px,auto);gap:6px}
+  .app-shell .report-switches {gap:8px}
+  .app-shell .report-pill-switch button {padding:8px 9px}
+}
+
+/* v290: tap any category/timeline item to inspect every matching ledger entry. */
+html .app-shell .income-expense-report .report-drilldown-trigger {
+  appearance:none;-webkit-appearance:none;width:100%;display:block;
+  border:0;padding:5px 2px;margin:0;background:transparent;
+  color:var(--theme-text,inherit);text-align:left;font:inherit;cursor:pointer;
+  min-width:0;border-radius:10px;
+}
+html .app-shell .income-expense-report .report-drilldown-trigger:focus-visible {
+  outline:2px solid var(--theme-accent,#477c68);outline-offset:2px;
+}
+.app-shell .income-expense-report .report-category-top {min-width:0}
+.app-shell .income-expense-report .report-row-chevron {flex-shrink:0;color:var(--theme-muted,inherit);opacity:.7}
+html .app-shell .income-expense-report .report-timeline-row.report-drilldown-trigger {
+  display:grid;grid-template-columns:minmax(66px,auto) minmax(0,1fr) minmax(65px,auto) 16px;
+  gap:9px;align-items:center;
+}
+.report-details-backdrop {
+  position:fixed;inset:0;z-index:6000;background:rgba(9,15,25,.55);
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.report-details-sheet {
+  width:min(100%,640px);max-height:min(88dvh,850px);display:flex;flex-direction:column;
+  padding:12px 16px max(16px,env(safe-area-inset-bottom,0px));
+  background:var(--theme-surface,#fff);color:var(--theme-text,#26313b);
+  border:1px solid var(--theme-line,rgba(128,128,128,.3));
+  border-radius:24px 24px 0 0;box-shadow:0 -10px 35px rgba(0,0,0,.25);
+}
+.report-details-grabber {height:5px;width:42px;border-radius:8px;background:var(--theme-line,#aaa);margin:0 auto 14px}
+.report-details-head {display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--theme-line,rgba(128,128,128,.2))}
+.report-details-head>div {display:flex;flex-direction:column;gap:4px;min-width:0}
+.report-details-head strong {font-size:17px;overflow-wrap:anywhere}
+.report-details-head small {font-size:12px;color:var(--theme-muted,inherit)}
+.report-details-close {flex-shrink:0;border:1px solid var(--theme-line,rgba(128,128,128,.35))!important;color:var(--theme-text,#26313b)!important;background:var(--theme-surface2,#eee)!important}
+.report-details-list {overflow:auto;overscroll-behavior:contain;min-height:0}
+.report-details-entry {display:flex;align-items:center;width:100%;gap:12px;min-height:65px;padding:12px 4px;border:0;border-bottom:1px solid var(--theme-line,rgba(128,128,128,.18));background:transparent;color:var(--theme-text,#26313b);font:inherit;text-align:left;cursor:pointer}
+.report-details-entry:disabled {cursor:default;opacity:1}
+.report-details-entry-main {flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.report-details-entry-main b {font-size:14px;overflow-wrap:anywhere}
+.report-details-entry-main small {font-size:12px;color:var(--theme-muted,inherit)}
+.report-details-entry>strong {font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.report-details-entry>svg {flex-shrink:0;color:var(--theme-muted,inherit)}
+@media(max-width:430px){html .app-shell .income-expense-report .report-timeline-row.report-drilldown-trigger {grid-template-columns:minmax(58px,auto) minmax(0,1fr) minmax(72px,auto) 16px;gap:6px}}
+
+
+/* v292: Detail drawer is portaled to body so mobile navigation and transformed
+   diary containers cannot clip or displace it beneath the screen. */
+html body > .report-details-backdrop {
+  position:fixed!important;
+  inset:0!important;
+  width:100vw;
+  height:100dvh;
+  z-index:2147483000!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  box-sizing:border-box;
+  padding:0!important;
+  background:rgba(9,15,25,.62);
+  overflow:hidden;
+  overscroll-behavior:contain;
+}
+html body > .report-details-backdrop > .report-details-sheet {
+  position:relative!important;
+  margin:0!important;
+  flex:0 1 auto;
+  width:min(100%,640px);
+  min-width:0;
+  max-height:calc(100dvh - env(safe-area-inset-top, 0px) - 18px);
+  display:flex!important;
+  flex-direction:column;
+  overflow:hidden;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+  background:var(--theme-surface,#fff);
+  color:var(--theme-text,#26313b);
+  box-shadow:0 -12px 40px rgba(0,0,0,.3);
+}
+html body > .report-details-backdrop .report-details-head,
+html body > .report-details-backdrop .report-details-grabber {flex-shrink:0}
+html body > .report-details-backdrop .report-details-list {
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding-bottom:8px;
+}
+@media(max-width:600px){
+ html body > .report-details-backdrop > .report-details-sheet {width:100%;border-radius:24px 24px 0 0;}
+}
+
+/* v293: Portal-based report details must override global circle-button styles.
+   Read theme tokens from :root, not from .app-shell (the dialog is in body). */
+html body > .report-details-backdrop .report-details-sheet .report-details-head > button.circle-button.report-details-close {
+  appearance:none;
+  -webkit-appearance:none;
+  display:grid;
+  place-items:center;
+  flex:0 0 40px;
+  width:40px;
+  height:40px;
+  min-width:40px;
+  min-height:40px;
+  padding:0;
+  border-radius:50%!important;
+  background:var(--theme-surface2,#e8e8e8)!important;
+  color:var(--theme-text,#26313b)!important;
+  border:1.5px solid var(--theme-outline,var(--theme-line,#929292))!important;
+  box-shadow:0 2px 7px rgba(0,0,0,.13)!important;
+  opacity:1!important;
+  cursor:pointer;
+}
+html body > .report-details-backdrop .report-details-sheet .report-details-head > button.circle-button.report-details-close svg {
+  width:21px;
+  height:21px;
+  color:var(--theme-text,#26313b)!important;
+  stroke:currentColor!important;
+  stroke-width:2.5;
+  opacity:1!important;
+}
+html body > .report-details-backdrop .report-details-sheet .report-details-head > button.circle-button.report-details-close:focus-visible {
+  outline:3px solid var(--theme-accent,#477c68);
+  outline-offset:3px;
+}
