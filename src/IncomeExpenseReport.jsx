@@ -10,7 +10,7 @@ function movePeriod(date,period,delta){
  const next=period==='year'?new Date(y+delta,m-1,Math.min(d,28)):period==='month'?new Date(y,m-1+delta,Math.min(d,28)):new Date(y,m-1,d+delta);
  return `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`;
 }
-const labels={ 'zh-TW':{report:'收支報表',day:'日',month:'月',year:'年',income:'收入',expense:'支出',net:'收支結餘',main:'主分類',sub:'子分類',category:'分類排行',trend:'收支趨勢',ratio:'收支比',ratioCaption:'支出 ÷ 收入',none:'此期間尚無收支紀錄',records:'筆',details:'符合的交易明細',close:'關閉',today:'今天',nowMonth:'本月',nowYear:'今年',note:'轉帳、帳戶校正與投資買賣本金不計入一般收支。'},en:{report:'Income & expense report',day:'Day',month:'Month',year:'Year',income:'Income',expense:'Expenses',net:'Net cash flow',main:'Categories',sub:'Subcategories',category:'Category breakdown',trend:'Cash flow trend',ratio:'Expense ratio',ratioCaption:'Expenses / income',none:'No income or expenses for this period',records:'entries',details:'Matching transactions',close:'Close',today:'Today',nowMonth:'This month',nowYear:'This year',note:'Transfers, balance adjustments and investment principal are excluded.'}};
+const labels={ 'zh-TW':{report:'收支報表',day:'日',month:'月',year:'年',income:'收入',expense:'支出',net:'收支結餘',main:'主分類',sub:'子分類',category:'分類排行',trend:'收支趨勢',ratio:'當月收支比',ratioCaption:'當月支出 ÷ 當月收入',none:'此期間尚無收支紀錄',records:'筆',details:'符合的交易明細',close:'關閉',today:'今天',nowMonth:'本月',nowYear:'今年',note:'轉帳、帳戶校正與投資買賣本金不計入一般收支。'},en:{report:'Income & expense report',day:'Day',month:'Month',year:'Year',income:'Income',expense:'Expenses',net:'Net cash flow',main:'Categories',sub:'Subcategories',category:'Category breakdown',trend:'Cash flow trend',ratio:'Monthly expense ratio',ratioCaption:'Monthly expenses / monthly income',none:'No income or expenses for this period',records:'entries',details:'Matching transactions',close:'Close',today:'Today',nowMonth:'This month',nowYear:'This year',note:'Transfers, balance adjustments and investment principal are excluded.'}};
 export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',primaryTwdRate=1,initialDate,period:externalPeriod,date:externalDate,embedded=false,language='zh-TW',onSelectRow}){
  const [localPeriod,setLocalPeriod]=useState('month');
  const [localDate,setLocalDate]=useState(initialDate||new Date().toISOString().slice(0,10));
@@ -21,6 +21,8 @@ export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',prima
  const [selection,setSelection]=useState(null);
  const t=labels[language]||labels['zh-TW'];
  const report=useMemo(()=>aggregateIncomeExpense(rows,{period,date,flow,level}),[rows,period,date,flow,level]);
+ // Daily income is irregular: ratio is meaningful only for a full calendar month.
+ const monthlyReport=useMemo(()=>aggregateIncomeExpense(rows,{period:'month',date,flow,level}),[rows,date,flow,level]);
  const scopeKey=`${period}|${date}|${flow}|${level}`;
  const activeSelection=selection?.scopeKey===scopeKey?selection:null;
  // The diary lives inside a transformed/clipped application shell. Portal the
@@ -56,12 +58,12 @@ export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',prima
   </section>
   <section className="glass report-panel">
    <div className="report-section-head"><h2><TrendingUp size={19}/>{t.trend}</h2></div>
-   <div className="report-ratio-summary" aria-label={`${t.ratio}: ${renderRatio(report.income,report.expense)}`}>
-    <div className="report-ratio-summary-copy"><strong>{t.ratio}</strong><small>{t.ratioCaption}</small></div>
-    <b className="report-ratio-summary-value">{renderRatio(report.income,report.expense)}</b>
-   </div>
-   {report.timeline.length?<div className="report-timeline">{report.timeline.map(tick=><button type="button" className="report-timeline-row report-drilldown-trigger" key={tick.key} aria-label={`${tick.key} · ${t.details}`} onClick={()=>setSelection({scopeKey,kind:'timeline',tick:tick.key,title:tick.key})}><span className="report-tick">{tick.key}</span><div className="report-dual-bars"><div className="report-mini-bar income" style={{width:`${Math.max(0,tick.income/maxTick*100)}%`}} title={`${t.income}: ${format(tick.income)}`}/><div className="report-mini-bar expense" style={{width:`${Math.max(0,tick.expense/maxTick*100)}%`}} title={`${t.expense}: ${format(tick.expense)}`}/></div><span className="report-tick-value"><strong>{renderRatio(tick.income,tick.expense)}</strong><small>{format(tick.income-tick.expense)}</small></span><ChevronRight className="report-row-chevron" size={16}/></button>)}</div>:<p className="report-empty">{t.none}</p>}
-   <div className="report-legend"><span className="report-legend-income">● {t.income}</span><span className="report-legend-expense">● {t.expense}</span><span className="report-legend-net">{t.net}</span></div>
+   {period!=='year'&&<div className="report-ratio-summary" aria-label={`${t.ratio}: ${renderRatio(monthlyReport.income,monthlyReport.expense)}`}>
+    <div className="report-ratio-summary-copy"><strong>{t.ratio}</strong><small>{date.slice(0,7)} · {t.ratioCaption}</small></div>
+    <b className="report-ratio-summary-value">{renderRatio(monthlyReport.income,monthlyReport.expense)}</b>
+   </div>}
+   {report.timeline.length?<div className="report-timeline">{report.timeline.map(tick=><button type="button" className="report-timeline-row report-drilldown-trigger" key={tick.key} aria-label={`${tick.key} · ${t.details}`} onClick={()=>setSelection({scopeKey,kind:'timeline',tick:tick.key,title:tick.key})}><span className="report-tick">{tick.key}</span><div className="report-bidirectional-bars" role="img" aria-label={`${t.expense} ${format(tick.expense)}；${t.income} ${format(tick.income)}`}><span className="report-bidirectional-half expense" title={`${t.expense}: ${format(tick.expense)}`}><span className="report-bidirectional-fill expense" style={{width:`${Math.max(0,tick.expense/maxTick*100)}%`}}/></span><span className="report-bidirectional-half income" title={`${t.income}: ${format(tick.income)}`}><span className="report-bidirectional-fill income" style={{width:`${Math.max(0,tick.income/maxTick*100)}%`}}/></span></div><span className="report-tick-value">{period==='year'&&<strong>{renderRatio(tick.income,tick.expense)}</strong>}<small>{format(tick.income-tick.expense)}</small></span><ChevronRight className="report-row-chevron" size={16}/></button>)}</div>:<p className="report-empty">{t.none}</p>}
+   <div className="report-legend"><span className="report-legend-expense">● {t.expense} ←</span><span className="report-legend-income">→ {t.income} ●</span><span className="report-legend-net">{t.net}</span></div>
   </section>
   {activeSelection&&typeof document!=='undefined'&&createPortal(<div className="report-details-backdrop" role="presentation" onClick={()=>setSelection(null)}>
    <section className="report-details-sheet" role="dialog" aria-modal="true" aria-label={`${t.details} · ${activeSelection.title}`} onClick={event=>event.stopPropagation()}>

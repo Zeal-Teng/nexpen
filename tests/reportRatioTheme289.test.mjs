@@ -16,9 +16,12 @@ test('report segmented buttons use accent contrast from selected theme',()=>{
  assert.match(css,/\.report-pill-switch button \{/);
  assert.match(css,/--theme-surface/);
 });
-test('timeline and summary show ratio while retaining net amounts',()=>{
+test('daily view uses whole-month ratio, yearly timeline compares monthly ratios',()=>{
  assert.match(component,/report-ratio-summary/);
- assert.match(component,/renderRatio\(report\.income,report\.expense\)/);
+ assert.match(component,/aggregateIncomeExpense\(rows,\{period:'month',date,flow,level\}\)/);
+ assert.match(component,/renderRatio\(monthlyReport\.income,monthlyReport\.expense\)/);
+ assert.match(component,/period!=='year'/);
+ assert.match(component,/period==='year'&&<strong>/);
  assert.match(component,/renderRatio\(tick\.income,tick\.expense\)/);
  assert.match(component,/format\(tick\.income-tick\.expense\)/);
 });
