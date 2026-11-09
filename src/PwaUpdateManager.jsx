@@ -12,7 +12,7 @@ const EDITOR_SELECTORS=[
 ].join(',');
 export function hasOpenEditor(doc=document){return !!doc.querySelector(EDITOR_SELECTORS)}
 export function requestPwaUpdateCheck(){window.dispatchEvent(new Event(UPDATE_EVENT))}
-export const pwaBuildInfo={version:'v279',buildId:BUILD_ID,buildTime:BUILD_TIME};
+export const pwaBuildInfo={version:'v284',buildId:BUILD_ID,buildTime:BUILD_TIME};
 
 export default function PwaUpdateManager(){
   const [available,setAvailable]=useState(false);
@@ -23,6 +23,11 @@ export default function PwaUpdateManager(){
   const inFlight=useRef(false);
   const bootUntil=useRef(Date.now()+12000);
   const latestRef=useRef('');
+  useEffect(()=>{
+    if(!message||available)return;
+    const timeout=window.setTimeout(()=>setMessage(''),3500);
+    return()=>window.clearTimeout(timeout);
+  },[message,available]);
 
   const activate=useCallback(async()=>{
     if(hasOpenEditor()){

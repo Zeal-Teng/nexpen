@@ -1,4 +1,5 @@
 import {suggestedRedemptionRate} from './investmentCashFlow.js';
+import {categoryColor} from './InvestmentCategoryColorPicker.jsx';
 import {contributionTrustShares} from './trustShares.js';
 import {investmentPosition,redemptionCostAt} from './investmentLedger.js';
 import {policyRedemptionProjection} from './policyRedemption.js';
@@ -22,7 +23,7 @@ const label={trust:'持股信託',policy:'投資保單'};
 const number=(v)=>Number(String(v??'').replaceAll(',',''));
 const initialForm=()=>({kind:'contribution',date:today(),amount:'',shares:'',costBasis:'',sourceAccount:'',exchangeRate:'',redemptionFee:'',note:'',currentValue:'',valueDate:today()});
 
-export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],primaryCurrency='TWD',onChanged,onEditAccount,onCreateAsset,onBackOverview,onDetailChange,backToListSignal=0,askConfirm}){
+export default function InvestmentAssets({type,items=[],flows=[],valuations=[],quotes={},cashAccounts=[],primaryCurrency='TWD',onChanged,onEditAccount,onCreateAsset,onBackOverview,onDetailChange,backToListSignal=0,askConfirm,categoryColors={}}){
  const displayMoney=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
  const summaryMoney=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0})}`;
  const money=(v,c)=>`${c===primaryCurrency?'':c+' '}${Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2,minimumFractionDigits:0})}`;
@@ -228,6 +229,7 @@ export default function InvestmentAssets({type,items=[],flows=[],valuations=[],q
   </>:<InvestmentStack className="investment-second-level investment-trust-policy-stack investment-asset-group-stack">
    <InvestmentStackCard
     accent={type==='trust'?'coral':'mint'}
+    color={categoryColor(type,categoryColors)}
     title={i18n('目前持有')}
     summary={null}
     amount={summary&&summary.value!==null?summaryMoney(summary.value,items[0].currency):items.length?'—':null}

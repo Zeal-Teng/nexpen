@@ -1,4 +1,4 @@
-import InvestmentCategoryColorPicker from './InvestmentCategoryColorPicker.jsx';
+import InvestmentCategoryColorPicker,{categoryColor} from './InvestmentCategoryColorPicker.jsx';
 import React,{useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {ChevronLeft,ChevronRight,Plus,Trash2,Edit3,X,Check} from 'lucide-react';
@@ -182,7 +182,7 @@ export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=
   {!asset?<>
    <SummaryHero eyebrow={`NEXPEN · ${{fund:'FUNDS',bond:'BONDS',savings:'SAVINGS',termDeposit:'DEPOSITS'}[type]}`} title={typeName} label={`${isDeposit?'未到期本金':'估算現值'}（${primaryCurrency}）`} value={summaryPriceMissing?'尚無完整估值':inPrimary(totals.value)} detailId={`investment-${type}-details`}><div className="summary-hero-metrics"><div><small>持有成本</small><strong>{inPrimary(totals.cost)}</strong></div><div><small>{isDeposit?'尚未領回本金差額':isSavings?'現值與保費差額':'未實現損益'}</small><strong className={totals.value>=totals.cost?'income':'expense'}>{summaryPriceMissing?'—':inPrimary(totals.value-totals.cost)}</strong></div></div></SummaryHero>
    <InvestmentStack className="investment-second-level investment-asset-group-stack investment-product-stage-stack">
-    <InvestmentStackCard title="目前持有" accent={isBond||isDeposit?'mint':'coral'} amount={holdingRows.length?inPrimary(heldValue):null} profit={holdingRows.length?inPrimary(heldValue-heldCost):null} rate={holdingRows.length?percent(heldValue-heldCost,heldCost):null} profitTone={heldValue>=heldCost?'income':'expense'}>
+    <InvestmentStackCard title="目前持有" color={categoryColor(type,categoryColors)} accent={isBond||isDeposit?'mint':'coral'} amount={holdingRows.length?inPrimary(heldValue):null} profit={holdingRows.length?inPrimary(heldValue-heldCost):null} rate={holdingRows.length?percent(heldValue-heldCost,heldCost):null} profitTone={heldValue>=heldCost?'income':'expense'}>
      <section className="glass panel investment-stage-list investment-holdings-list" aria-label={`${typeName} · 目前持有`}>
       {holdingRows.length?<div className="investment-tier-stack investment-asset-substack">{holdingRows.map(({product:p,position:pos})=>{
        const value=investmentProductValue(p,pos),gain=value-pos.cost;

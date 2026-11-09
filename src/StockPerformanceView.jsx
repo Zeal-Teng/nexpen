@@ -1,4 +1,5 @@
 import {t as i18n} from './i18n.js';
+import {categoryColor} from './InvestmentCategoryColorPicker.jsx';
 import React from 'react';
 import SummaryHero from './SummaryHero.jsx';
 import {InvestmentStack,InvestmentStackCard,InvestmentStackAsset,ClosingPrice} from './InvestmentStack.jsx';
@@ -7,7 +8,7 @@ import {ArrowLeft, ChevronRight} from 'lucide-react';
 function percent(value){return Number.isFinite(value)?`${value>=0?'+':''}${value.toFixed(2)}%`:'—';}
 function resultText(amount,fmt){return `${amount>=0?'+':'−'}${fmt(Math.abs(amount))}`;}
 
-export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtSummary=fmt,fmtUnit,fmtTradeNative,language,selectedSymbol,onSelect,onEdit,onBack,baseAvailable,convert,accounts=[],nativeStockCurrency,quoteLoading,onRefresh,RefreshIcon}){
+export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtSummary=fmt,fmtUnit,fmtTradeNative,language,selectedSymbol,onSelect,onEdit,onBack,baseAvailable,convert,accounts=[],nativeStockCurrency,quoteLoading,onRefresh,RefreshIcon,categoryColors={}}){
   const tr=(tw,en)=>{const value=i18n(tw,language);return language==='en'&&value===tw?en:value;};
   const active=groups.find(g=>g.symbol===selectedSymbol);
   const accountNames=new Map(accounts.map(a=>[String(a.id),a.name]));
@@ -81,7 +82,7 @@ export default function StockPerformanceView({groups,holdings,quotes,fmt,fmtSumm
       </div>
     </SummaryHero>
     <p className="hint stock-price-explain">{tr('市值依最後成功收盤價估算，買進成本已含手續費；未實現損益不含未來賣出費稅。','Market value is based on the latest stored closing prices; unrealized P/L excludes future selling costs and tax.')}</p>
-    <InvestmentStack className="investment-second-level"><InvestmentStackCard accent="lavender" title={tr("目前持有","Current holdings")} summary={null} amount={allPriced?money(stockVal):"—"} profit={allPriced?result(stockProfit):"—"} rate={allPriced?percent(stockPct):"—"} profitTone={toneClass(allPriced?stockProfit:null)}><section className="glass panel stock-performance-section investment-stage-list"><div className="stock-holdings-heading"><div className="stock-quote-inline"><small>{(()=>{const dates=currentHoldings.map(h=>quotes[h.symbol]?.date).filter(Boolean).sort();return dates.length?`${tr('最後更新','Last updated')} ${dates.at(-1)}`:tr('尚未更新','Not updated')})()}</small><button type="button" className="stock-refresh-inline" aria-label={tr('更新收盤價','Refresh prices')} disabled={quoteLoading} onClick={onRefresh}><RefreshIcon size={17} className={quoteLoading?'spinning':''}/></button></div></div>
+    <InvestmentStack className="investment-second-level"><InvestmentStackCard accent="lavender" color={categoryColor('stocks',categoryColors)} title={tr("目前持有","Current holdings")} summary={null} amount={allPriced?money(stockVal):"—"} profit={allPriced?result(stockProfit):"—"} rate={allPriced?percent(stockPct):"—"} profitTone={toneClass(allPriced?stockProfit:null)}><section className="glass panel stock-performance-section investment-stage-list"><div className="stock-holdings-heading"><div className="stock-quote-inline"><small>{(()=>{const dates=currentHoldings.map(h=>quotes[h.symbol]?.date).filter(Boolean).sort();return dates.length?`${tr('最後更新','Last updated')} ${dates.at(-1)}`:tr('尚未更新','Not updated')})()}</small><button type="button" className="stock-refresh-inline" aria-label={tr('更新收盤價','Refresh prices')} disabled={quoteLoading} onClick={onRefresh}><RefreshIcon size={17} className={quoteLoading?'spinning':''}/></button></div></div>
       <div className="investment-tier-stack investment-asset-substack">{currentHoldings.length?currentHoldings.map(h=>{const q=Number(quotes[h.symbol]?.price)||0;const profit=q>0?h.shares*q-h.cost:null;return <InvestmentStackAsset key={h.symbol} accent="lavender" stockLayout title={`${h.symbol}${h.details?.securityName?` · ${h.details.securityName}`:''}`} topRight={q>0?<ClosingPrice value={fmtUnit(q)} change={quotes[h.symbol]?.change}/>: '—'} sharesLine={`${tr('股數','Shares')} ${h.shares.toLocaleString()}`} averageLine={`${tr('均價','Avg.')} ${h.shares>0?fmtUnit(h.cost/h.shares):'—'}`} valueLine={q>0?money(h.shares*q):'—'} profit={profit!==null?result(profit):'—'} rate={profit!==null?percent(h.cost>0?profit/h.cost*100:null):'—'} profitTone={toneClass(profit)} onOpen={()=>onSelect(h.symbol)}/>;}):<p className="hint">{tr('沒有持股記錄','No current holdings')}</p>}</div>
     </section></InvestmentStackCard>
     <InvestmentStackCard accent="gray" title={tr("已實現交易","Realized trades")} summary={null} amount={money(totalSaleProceeds)} profit={result(sumRealized)} rate={sumBasis>0?percent(sumRealized/sumBasis*100):"—"} profitTone={toneClass(sumRealized)}><section className="glass panel stock-performance-section investment-stage-list">

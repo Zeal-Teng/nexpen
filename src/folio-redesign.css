@@ -6885,11 +6885,8 @@ html .app-shell .investment-product-page .savings-detail-layout > button.investm
   }
 }
 
-/* v264 — Category-specific second-stage "目前持有" stripe inherits the first-level palette. */
-html .app-shell .investment-product-page[data-investment-type="fund"] .investment-product-stage-stack > .investment-tier-card:first-child {--tier-color:#7fa7d6!important;}
-html .app-shell .investment-product-page[data-investment-type="bond"] .investment-product-stage-stack > .investment-tier-card:first-child {--tier-color:#7bc1b0!important;}
-html .app-shell .investment-product-page[data-investment-type="savings"] .investment-product-stage-stack > .investment-tier-card:first-child {--tier-color:#bda0e7!important;}
-html .app-shell .investment-product-page[data-investment-type="termDeposit"] .investment-product-stage-stack > .investment-tier-card:first-child {--tier-color:#e3ba69!important;}
+/* v284 — "目前持有" uses its saved category color via --tier-color inline.
+   Do not hardcode per-category !important colors here: they prevent live updates. */
 
 /* v264 — Actual iPhone savings history rows: name and value at top, date directly below.
    The button is the click target; no orphaned chevron on a third line. */

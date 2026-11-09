@@ -13,8 +13,8 @@ export function InvestmentStack({children,className=''}) {
   }):child)}
  </div>;
 }
-export function InvestmentStackCard({title,summary,amount,profit=null,rate=null,profitTone='',accent='lavender',children,expanded=false,onToggle=()=>{},stackIndex=0,className=''}) {
- return <article className={'investment-tier-card tier-'+accent+(expanded?' tier-expanded':'')+' '+className} style={{'--tier-index':stackIndex}}>
+export function InvestmentStackCard({title,summary,amount,profit=null,rate=null,profitTone='',accent='lavender',color=null,children,expanded=false,onToggle=()=>{},stackIndex=0,className=''}) {
+ return <article className={'investment-tier-card tier-'+accent+(expanded?' tier-expanded':'')+' '+className} style={{'--tier-index':stackIndex,...(color?{'--tier-color':color}:{})}}>
   <button type="button" className="investment-tier-peek" aria-expanded={expanded} onClick={onToggle}>
    <span className="investment-tier-top"><span className="investment-tier-marker"/><strong>{title}</strong><ChevronRight size={20} className="tier-chevron"/></span>
    {summary&&<span className="investment-tier-subtitle">{summary}</span>}
