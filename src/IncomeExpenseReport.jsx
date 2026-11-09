@@ -1,7 +1,7 @@
 import {moneySymbol} from './moneyDisplay.js';
 import React,{useEffect,useMemo,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {ChevronLeft,ChevronRight,CalendarDays,TrendingUp,TrendingDown,ChartPie,X} from 'lucide-react';
+import {ChevronLeft,ChevronRight,CalendarDays,TrendingUp,TrendingDown,ChartPie,X,SlidersHorizontal,Check} from 'lucide-react';
 import {aggregateIncomeExpense,expenseIncomeRatio,selectReportEntries} from './incomeExpenseReport.js';
 import './income-expense-report.css';
 
@@ -11,13 +11,15 @@ function movePeriod(date,period,delta){
  return `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`;
 }
 const labels={ 'zh-TW':{report:'收支報表',day:'日',month:'月',year:'年',income:'收入',expense:'支出',net:'收支結餘',main:'主分類',sub:'子分類',category:'分類排行',trend:'收支趨勢',ratio:'當月收支比',ratioCaption:'當月支出 ÷ 當月收入',none:'此期間尚無收支紀錄',records:'筆',details:'符合的交易明細',close:'關閉',today:'今天',nowMonth:'本月',nowYear:'今年',note:'轉帳、帳戶校正與投資買賣本金不計入一般收支。'},en:{report:'Income & expense report',day:'Day',month:'Month',year:'Year',income:'Income',expense:'Expenses',net:'Net cash flow',main:'Categories',sub:'Subcategories',category:'Category breakdown',trend:'Cash flow trend',ratio:'Monthly expense ratio',ratioCaption:'Monthly expenses / monthly income',none:'No income or expenses for this period',records:'entries',details:'Matching transactions',close:'Close',today:'Today',nowMonth:'This month',nowYear:'This year',note:'Transfers, balance adjustments and investment principal are excluded.'}};
-export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',primaryTwdRate=1,initialDate,period:externalPeriod,date:externalDate,embedded=false,language='zh-TW',onSelectRow}){
+export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',primaryTwdRate=1,initialDate,period:externalPeriod,date:externalDate,embedded=false,language='zh-TW',colorScheme='normal',onSelectRow}){
  const [localPeriod,setLocalPeriod]=useState('month');
  const [localDate,setLocalDate]=useState(initialDate||new Date().toISOString().slice(0,10));
  const period=embedded?externalPeriod||'day':localPeriod;
  const date=embedded?externalDate||localDate:localDate;
  const [flow,setFlow]=useState('expense');
  const [level,setLevel]=useState('main');
+ const [reportView,setReportView]=useState('category');
+ const [levelSheetOpen,setLevelSheetOpen]=useState(false);
  const [selection,setSelection]=useState(null);
  const t=labels[language]||labels['zh-TW'];
  const report=useMemo(()=>aggregateIncomeExpense(rows,{period,date,flow,level}),[rows,period,date,flow,level]);
@@ -51,21 +53,36 @@ export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',prima
    <div className="glass report-summary-card"><span>{t.expense}</span><strong className="expense">{format(report.expense)}</strong></div>
    <div className="glass report-summary-card"><span>{t.net}</span><strong className={report.net>=0?'income':'expense'}>{format(report.net)}</strong></div>
   </div>}
-  <section className="glass report-panel">
-   <div className="report-section-head"><h2><ChartPie size={19}/>{t.category}</h2></div>
-   <div className="report-switches"><div className="report-pill-switch">{['expense','income'].map(k=><button type="button" key={k} className={flow===k?'selected':''} aria-pressed={flow===k} onClick={()=>setFlow(k)}>{k==='income'?<TrendingUp size={16}/>:<TrendingDown size={16}/>} {t[k]}</button>)}</div><div className="report-pill-switch">{['main','sub'].map(k=><button type="button" key={k} className={level===k?'selected':''} aria-pressed={level===k} onClick={()=>setLevel(k)}>{t[k]}</button>)}</div></div>
+  <section className="report-panel report-unified-panel report-plain-section">
+   <div className="report-view-tabs" role="tablist" aria-label={t.report}>
+    <button type="button" role="tab" aria-selected={reportView==='category'} className={reportView==='category'?'selected':''} onClick={()=>setReportView('category')}><ChartPie size={17}/>{t.category}</button>
+    <button type="button" role="tab" aria-selected={reportView==='trend'} className={reportView==='trend'?'selected':''} onClick={()=>setReportView('trend')}><TrendingUp size={17}/>{t.trend}</button>
+   </div>
+   {reportView==='category'&&<div role="tabpanel" className="report-view-content report-category-panel">
+   <div className="report-compact-filters" aria-label={t.category}>
+    <div className="report-flow-toggle" role="group" aria-label={`${t.income} / ${t.expense}`}>
+     {['expense','income'].map(k=><button type="button" key={k} className={flow===k?'selected':''} aria-pressed={flow===k} onClick={()=>setFlow(k)}>{t[k]}</button>)}
+    </div>
+    <button type="button" className="report-level-picker" aria-label={`${t.main} / ${t.sub}`} aria-haspopup="dialog" aria-expanded={levelSheetOpen} onClick={()=>setLevelSheetOpen(true)}><SlidersHorizontal size={16}/><span>{t[level]}</span><ChevronRight size={15}/></button>
+   </div>
    {report.categories.length?<div className="report-categories">{report.categories.map((g,i)=><button type="button" className="report-category-row report-drilldown-trigger" key={g.main+'/'+g.sub} aria-label={`${g.name} · ${t.details}`} onClick={()=>setSelection({scopeKey,kind:'category',flow,level,main:g.main,sub:g.sub,title:g.name})}><div className="report-category-top"><span><b>{i+1}. {g.name}</b>{level==='sub'&&<small>{g.main}</small>}</span><span className="report-category-values"><strong>{format(g.value)}</strong><small>{g.percent.toFixed(1)}%</small></span><ChevronRight className="report-row-chevron" size={17}/></div><div className="report-bar-track"><div className={'report-bar-fill '+flow} style={{width:`${g.percent}%`}}/></div></button>)}</div>:<p className="report-empty">{t.none}</p>}
-  </section>
-  <section className="glass report-panel">
-   <div className="report-section-head"><h2><TrendingUp size={19}/>{t.trend}</h2></div>
+   </div>}
+   {reportView==='trend'&&<div role="tabpanel" className="report-view-content report-trend-panel">
    {period!=='year'&&<div className="report-ratio-summary" aria-label={`${t.ratio}: ${renderRatio(monthlyReport.income,monthlyReport.expense)}`}>
     <div className="report-ratio-summary-copy"><strong>{t.ratio}</strong><small>{date.slice(0,7)} · {t.ratioCaption}</small></div>
     <b className="report-ratio-summary-value">{renderRatio(monthlyReport.income,monthlyReport.expense)}</b>
    </div>}
    {report.timeline.length?<div className="report-timeline">{report.timeline.map(tick=><button type="button" className="report-timeline-row report-drilldown-trigger" key={tick.key} aria-label={`${tick.key} · ${t.details}`} onClick={()=>setSelection({scopeKey,kind:'timeline',tick:tick.key,title:tick.key})}><span className="report-tick">{tick.key}</span><div className="report-bidirectional-bars" role="img" aria-label={`${t.expense} ${format(tick.expense)}；${t.income} ${format(tick.income)}`}><span className="report-bidirectional-half expense" title={`${t.expense}: ${format(tick.expense)}`}><span className="report-bidirectional-fill expense" style={{width:`${Math.max(0,tick.expense/maxTick*100)}%`}}/></span><span className="report-bidirectional-half income" title={`${t.income}: ${format(tick.income)}`}><span className="report-bidirectional-fill income" style={{width:`${Math.max(0,tick.income/maxTick*100)}%`}}/></span></div><span className="report-tick-value">{period==='year'&&<strong>{renderRatio(tick.income,tick.expense)}</strong>}<small>{format(tick.income-tick.expense)}</small></span><ChevronRight className="report-row-chevron" size={16}/></button>)}</div>:<p className="report-empty">{t.none}</p>}
    <div className="report-legend"><span className="report-legend-expense">● {t.expense} ←</span><span className="report-legend-income">→ {t.income} ●</span><span className="report-legend-net">{t.net}</span></div>
+   </div>}
   </section>
-  {activeSelection&&typeof document!=='undefined'&&createPortal(<div className="report-details-backdrop" role="presentation" onClick={()=>setSelection(null)}>
+  {levelSheetOpen&&typeof document!=='undefined'&&createPortal(<div className="report-level-backdrop" role="presentation" onClick={()=>setLevelSheetOpen(false)}>
+   <section className="report-level-sheet" role="dialog" aria-modal="true" aria-label={`${t.main} / ${t.sub}`} onClick={event=>event.stopPropagation()}>
+    <div className="report-details-grabber"/><div className="report-level-sheet-title"><strong>{language==='en'?'Category level':'分類層級'}</strong><button type="button" className="circle-button report-details-close" aria-label={t.close} onClick={()=>setLevelSheetOpen(false)}><X size={19}/></button></div>
+    {['main','sub'].map(k=><button type="button" key={k} className={'report-level-option'+(level===k?' selected':'')} onClick={()=>{setLevel(k);setLevelSheetOpen(false)}}><span>{t[k]}</span>{level===k&&<Check size={19}/>}</button>)}
+   </section>
+  </div>,document.body)}
+  {activeSelection&&typeof document!=='undefined'&&createPortal(<div className="report-details-backdrop" style={{'--user-income':colorScheme==='reverse'?'#e75365':'#26ab7d','--user-expense':colorScheme==='reverse'?'#26ab7d':'#e75365'}} role="presentation" onClick={()=>setSelection(null)}>
    <section className="report-details-sheet" role="dialog" aria-modal="true" aria-label={`${t.details} · ${activeSelection.title}`} onClick={event=>event.stopPropagation()}>
     <div className="report-details-grabber"/>
     <header className="report-details-head"><div><strong>{activeSelection.title}</strong><small>{t.details}</small></div><button type="button" className="circle-button report-details-close" aria-label={t.close} onClick={()=>setSelection(null)}><X size={21}/></button></header>

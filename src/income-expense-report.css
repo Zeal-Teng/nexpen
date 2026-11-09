@@ -278,3 +278,129 @@ html .app-shell .income-expense-report .report-legend {flex-wrap:wrap;gap:10px 1
 @media(max-width:430px){
   html .app-shell .income-expense-report .report-bidirectional-fill {height:10px}
 }
+
+/* v299: One compact analysis surface with two views, instead of two stacked cards. */
+html .app-shell .income-expense-report .report-unified-panel {min-width:0;overflow:hidden}
+html .app-shell .income-expense-report .report-view-tabs {
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;
+ padding:4px;background:var(--theme-surface2,rgba(128,128,128,.1));
+ border:1px solid var(--theme-line,rgba(128,128,128,.18));border-radius:14px;
+ margin-bottom:16px;
+}
+html .app-shell .income-expense-report .report-view-tabs button {
+ display:flex;align-items:center;justify-content:center;gap:7px;
+ min-height:40px;min-width:0;border:0;border-radius:10px;
+ color:var(--theme-text,inherit);background:transparent;
+ font:inherit;font-size:14px;font-weight:700;cursor:pointer;
+}
+html .app-shell .income-expense-report .report-view-tabs button.selected {
+ background:var(--theme-accent,#477c68);
+ color:var(--theme-accent-contrast,#fff);
+ box-shadow:0 2px 6px rgba(0,0,0,.12);
+}
+html .app-shell .income-expense-report .report-view-tabs button:focus-visible {outline:2px solid var(--theme-accent,#477c68);outline-offset:2px}
+html .app-shell .income-expense-report .report-view-content {min-width:0}
+/* Report details are mounted under body: attach the user's chosen income and expense
+   colors to the portal, rather than inheriting missing .app-shell variables. */
+html body > .report-details-backdrop .report-details-entry > strong.income {
+ color:var(--user-income,#26ab7d)!important;
+ -webkit-text-fill-color:var(--user-income,#26ab7d)!important;
+}
+html body > .report-details-backdrop .report-details-entry > strong.expense {
+ color:var(--user-expense,#e75365)!important;
+ -webkit-text-fill-color:var(--user-expense,#e75365)!important;
+}
+
+/* v300: compact analytics navigation and one contextual category-level picker. */
+html .app-shell .income-expense-report .report-view-tabs {
+  background:transparent;border:0;border-bottom:1px solid var(--theme-line,rgba(128,128,128,.22));
+  border-radius:0;padding:0;gap:0;margin-bottom:12px;
+}
+html .app-shell .income-expense-report .report-view-tabs button {
+  border-radius:0;min-height:42px;box-shadow:none!important;
+  border-bottom:3px solid transparent;background:transparent!important;
+  color:var(--theme-muted,var(--theme-text,#26313b))!important;
+}
+html .app-shell .income-expense-report .report-view-tabs button.selected {
+  color:var(--theme-text,#26313b)!important;
+  border-bottom-color:var(--theme-accent,#477c68);
+}
+html .app-shell .income-expense-report .report-compact-filters {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-width:0;margin-bottom:16px;
+}
+html .app-shell .income-expense-report .report-flow-toggle {
+  display:inline-flex;align-items:center;gap:4px;min-width:0;
+}
+html .app-shell .income-expense-report .report-flow-toggle button {
+  border:0;background:transparent!important;color:var(--theme-muted,var(--theme-text,#26313b))!important;
+  font:inherit;font-size:14px;font-weight:700;min-height:38px;padding:7px 11px;
+  border-radius:10px;cursor:pointer;
+}
+html .app-shell .income-expense-report .report-flow-toggle button.selected {
+  background:var(--theme-surface2,rgba(128,128,128,.10))!important;
+  color:var(--theme-text,#26313b)!important;
+  box-shadow:inset 0 0 0 1px var(--theme-line,rgba(128,128,128,.25));
+}
+html .app-shell .income-expense-report .report-level-picker {
+  display:flex;align-items:center;justify-content:flex-end;gap:7px;
+  border:0;border-bottom:1px solid var(--theme-line,rgba(128,128,128,.35));
+  padding:8px 1px;background:transparent!important;color:var(--theme-text,#26313b)!important;
+  font:inherit;font-size:14px;font-weight:700;white-space:nowrap;cursor:pointer;
+}
+html .app-shell .income-expense-report .report-level-picker svg:last-child {opacity:.65;transform:rotate(90deg)}
+html .app-shell .income-expense-report .report-flow-toggle button:focus-visible,
+html .app-shell .income-expense-report .report-level-picker:focus-visible {outline:2px solid var(--theme-accent,#477c68);outline-offset:2px}
+.report-level-backdrop {
+  position:fixed;inset:0;z-index:2147483010;
+  background:rgba(9,15,25,.55);display:flex;align-items:flex-end;justify-content:center;
+}
+.report-level-sheet {
+  width:min(100%,640px);box-sizing:border-box;
+  padding:13px 18px max(20px,env(safe-area-inset-bottom,0px));
+  border-radius:24px 24px 0 0;
+  background:var(--theme-surface,#fff);color:var(--theme-text,#26313b);
+  border:1px solid var(--theme-line,rgba(128,128,128,.3));
+  box-shadow:0 -12px 36px rgba(0,0,0,.24);
+}
+.report-level-sheet-title {display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px}
+.report-level-sheet-title strong {font-size:17px}
+.report-level-sheet .report-level-option {
+  display:flex;width:100%;align-items:center;justify-content:space-between;min-height:54px;
+  border:0;border-bottom:1px solid var(--theme-line,rgba(128,128,128,.18));
+  background:transparent;color:var(--theme-text,#26313b);font:inherit;font-size:14px;font-weight:700;
+  text-align:left;cursor:pointer;
+}
+.report-level-sheet .report-level-option.selected svg{color:var(--theme-accent,#477c68)}
+
+/* v301: the analysis view is content, not a nested glass card.
+   Scope the reset to the combined report: other summary cards keep their style. */
+html .app-shell .income-expense-report .report-unified-panel.report-plain-section {
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  padding:0!important;
+  margin:0!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  overflow:visible;
+}
+html .app-shell .income-expense-report .report-unified-panel.report-plain-section::before,
+html .app-shell .income-expense-report .report-unified-panel.report-plain-section::after {
+  content:none!important;display:none!important;
+}
+html .app-shell .income-expense-report .report-plain-section .report-view-tabs {
+  margin:0 0 16px;
+}
+html .app-shell .income-expense-report .report-plain-section .report-categories {
+  gap:24px;
+}
+html .app-shell .income-expense-report .report-plain-section .report-category-row {
+  padding:8px 0;
+}
+html .app-shell .income-expense-report .report-plain-section .report-view-content {
+  padding:0 2px;
+}
