@@ -1,3 +1,4 @@
+import {contributionPersonalCost} from './trustSubsidy.js';
 /** Investment flow amounts are in the asset currency. Linked account entries
  * are in the destination account currency, at the rate fixed on trade date.
  * Fee is charged in the linked account currency, not in asset currency. */
@@ -9,7 +10,7 @@ export function investmentCashMovement(flow){
  if(flow?.historical)return 0;
  const amount=Number(flow?.amount)||0;
  if(flow?.kind==='redemption')return amount*redemptionExchangeRate(flow)-Math.max(0,Number(flow.redemptionFee)||0);
- if(flow?.kind==='contribution')return -amount;
+ if(flow?.kind==='contribution')return -(flow?.personalCost!==undefined?contributionPersonalCost(flow):amount);
  if(flow?.kind==='yield')return amount*redemptionExchangeRate(flow)-Math.max(0,Number(flow.redemptionFee)||0);
  return 0;
 }

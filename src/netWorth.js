@@ -1,3 +1,4 @@
+import {trustQuoteKey} from './trustMarket.js';
 import {productTwdRate} from './investmentValuationsProduct.js';
 import {investmentProductPosition,investmentProductValue} from './investmentProducts.js';
 import {investmentCashMovement} from './investmentCashFlow.js';
@@ -37,18 +38,20 @@ export function computeNetWorth({accounts=[],records=[],stocks=[],investmentFlow
   const missingQuotes=[];
   for (const account of accounts) {
     if(account.includeInAssets===false) continue;
-    const rate=account.currency==='TWD'||!account.currency ? 1 : finite(account.fxRate)||1;
+    const rate=account.currency==='TWD'||!account.currency ? 1 : Number(account.fxRate);
     let value;
     if(account.type==='trust') {
       const symbol=String(account.trustSymbol||'').trim().toUpperCase();
       const {shares}=investmentPosition(account,investmentFlows);
-      const price=Number(quotes[symbol]?.price);
-      if(shares>0&&!(price>0)) missingQuotes.push(account.name||symbol||'持股信託');
-      value=price>0 ? shares*price : 0; // trust symbols are TWD-listed securities
+      const price=Number(quotes[trustQuoteKey(account)]?.price);
+      if(shares>0&&(!(price>0)||!(rate>0))) missingQuotes.push(account.name||symbol||'持股信託');
+      value=shares>0&&price>0&&rate>0 ? shares*price*rate : 0; // market-currency shares converted into TWD
     } else if(account.type==='policy') {
-      value=finite(account.policyValue)*rate;
+      value=finite(account.policyValue)*(rate>0?rate:0);
+      if(!(rate>0)) missingQuotes.push(account.name||'投資保單');
     } else {
-      value=finite(accountBalance(account,records,stocks,investmentFlows))*rate;
+      value=finite(accountBalance(account,records,stocks,investmentFlows))*(rate>0?rate:0);
+      if(!(rate>0)) missingQuotes.push(account.name||'帳戶匯率');
     }
     if(value>=0) groups[assetGroupForType(account.type,accountTypes)]+=value;
     else liabilities.push({id:account.id,name:account.name||'未命名帳戶',type:account.type,amount:-value});

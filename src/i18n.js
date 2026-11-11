@@ -1,12 +1,16 @@
 // NEXPEN UI localization. Keys use the original Traditional Chinese source labels.
 // Account names, custom categories and transaction notes are never translated automatically.
 const catalog={
-  "初始持有股數": {"en":"Initial shares","ja":"初期保有株数","zh-CN":"初始持有股数"},
+  "補助比例（%）": {"en":"Subsidy rate (%)","ja":"補助率（%）","zh-CN":"补助比例（%）"},
+  "初始成本": {"en":"Initial cost","ja":"初期取得原価","zh-CN":"初始成本"},
+  "目前成本": {"en":"Current cost","ja":"現在の取得原価","zh-CN":"目前成本"},
+  "資產類別": {"en":"Asset type","ja":"資産の種類","zh-CN":"资产类别"},
+  "初始股數": {"en":"Initial shares","ja":"初期保有株数","zh-CN":"初始股数"},
   "點擊輸入股數": {"en":"Tap to enter shares","ja":"タップして株数を入力","zh-CN":"点击输入股数"},
   "本次新增股數（可為 0）": {"en":"Additional shares (0 allowed)","ja":"追加株数（0も可）","zh-CN":"本次新增股数（可为0）"},
   "輸入本次新增股數": {"en":"Enter additional shares","ja":"追加株数を入力","zh-CN":"输入本次新增股数"},
   "請輸入有效的新增股數（可為 0）": {"en":"Enter a valid additional share count (0 allowed)","ja":"有効な追加株数を入力してください（0も可）","zh-CN":"请输入有效的新增股数（可为0）"},
-  "請輸入有效的股票代號及初始持有股數（可為 0）": {"en":"Enter a valid symbol and initial share count (0 allowed)","ja":"有効な銘柄コードと初期保有株数を入力してください（0も可）","zh-CN":"请输入有效的股票代码及初始持有股数（可为0）"},
+  "請輸入有效的股票代號及初始股數（可為 0）": {"en":"Enter a valid symbol and initial share count (0 allowed)","ja":"有効な銘柄コードと初期保有株数を入力してください（0も可）","zh-CN":"请输入有效的股票代码及初始持有股数（可为0）"},
   "此投資帳戶已有追加投入紀錄，初始成本、股票代號及初始股數不可直接修改；請從投資頁記錄新增投入": {"en":"This investment has contributions; initial cost, symbol, and shares cannot be edited directly. Record changes in Investments.","ja":"追加拠出があるため、初期費用・銘柄コード・初期株数は直接変更できません。投資画面から追加してください。","zh-CN":"此投资账户已有追加投入记录，初始成本、股票代码及初始股数不可直接修改；请从投资页记录新增投入"},
   "信託現值＝持有股數 × 最近收盤價。後續追加投入請在投資頁登記，不會重複建立一般股票交易。": {"en":"Trust value = shares held × latest closing price. Record contributions in Investments without duplicating stock trades.","ja":"信託時価＝保有株数×直近終値。追加拠出は投資画面に登録してください。株式取引は重複登録しません。","zh-CN":"信托现值＝持有股数 × 最近收盘价。后续追加投入请在投资页登记，不重复建立一般股票交易。"},
   "請填入建立此信託時已持有的股數及累計取得成本；現值會依股票收盤價自動估算，不需要填期初餘額。": {"en":"Enter the initial shares held and total acquisition cost. Value is estimated from the stock close; no opening balance is required.","ja":"信託設定時点の保有株数と取得総額を入力してください。時価は終値から自動計算され、開始残高は不要です。","zh-CN":"请输入设立信托时已持有的股数及累计取得成本；现值会依股票收盘价自动估算，无需填写期初余额。"},
@@ -941,10 +945,10 @@ const catalog={
     "ja": "最新保険評価額（",
     "zh-CN": "保单最新现值（"
   },
-  "本次投入金額（": {
-    "en": "Contribution amount (",
-    "ja": "今回の投資額（",
-    "zh-CN": "本次投入金额（"
+  "本次投入金額": {
+    "en": "Contribution amount",
+    "ja": "今回の投資額",
+    "zh-CN": "本次投入金额"
   },
   "本次新增張數（可為 0）": {
     "en": "Additional lots (may be 0)",

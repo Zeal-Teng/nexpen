@@ -1,4 +1,5 @@
 import {initialTrustShares, contributionTrustShares} from './trustShares.js';
+import {contributionPersonalCost} from './trustSubsidy.js';
 const num = value => Number.isFinite(Number(value)) ? Number(value) : 0;
 // Chronological replay keeps redemptions separate from contributions and retains
 // the correct remaining cost instead of incorrectly treating proceeds as cost.
@@ -8,7 +9,7 @@ export function investmentPosition(account, flows=[]) {
   const ordered=flows.filter(f=>f.assetId===account?.id && ['contribution','redemption'].includes(f.kind))
     .slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.createdAt||'').localeCompare(String(b.createdAt||''))||String(a.id).localeCompare(String(b.id)));
   for(const flow of ordered){
-    if(flow.kind==='contribution') {cost+=num(flow.amount);if(trust)shares+=contributionTrustShares(flow);}
+    if(flow.kind==='contribution') {cost+=trust?contributionPersonalCost(flow):num(flow.amount);if(trust)shares+=contributionTrustShares(flow);}
     else {
       const qty=contributionTrustShares(flow);
       // Trust uses weighted average remaining acquisition cost at redemption.
