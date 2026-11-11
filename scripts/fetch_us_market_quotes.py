@@ -1,96 +1,154 @@
 #!/usr/bin/env python3
-"""Build a publicly cached US *daily closing* price file for popular symbols.
+"""Publish cached US closes for static GitHub Pages, without user holdings.
 
-The user's watchlist stays local. Symbols beyond the published coverage may
-require direct client-side requests subject to third-party CORS restrictions.
-No secrets or personal account data are required.
+Fetch a bounded number of public symbols in parallel, preserve valid previous
+published quotes on upstream outages, and reject empty/incomplete output.
 """
+import concurrent.futures
 import csv
 import datetime as dt
 import io
 import json
+import os
 import pathlib
 import re
-import time
 import urllib.parse
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1] / 'public'
+PREVIOUS_URL = os.getenv('NEXPEN_PREVIOUS_US_QUOTES_URL',
+                         'https://zeal-teng.github.io/nexpen/us-market-quotes.json')
 DEFAULT = ('AAPL MSFT NVDA AMZN GOOGL GOOG META TSLA AMD INTC NFLX AVGO ORCL IBM '
            'CSCO CRM ADBE QCOM TXN MU PLTR UBER ABNB SHOP SQ PYPL COIN HOOD '
-           'V V MA JPM BAC WFC GS MS C BRK.B UNH JNJ PFE LLY MRK ABBV TMO '
+           'V MA JPM BAC WFC GS MS C BRK.B UNH JNJ PFE LLY MRK ABBV TMO '
            'COST WMT TGT HD LOW NKE DIS SBUX MCD KO PEP PG CAT BA GE XOM '
            'CVX OXY NEE F T GM RIVN LCID SMCI ARM SOFI VOO VTI SPY QQQ '
-           'QQQM DIA IWM SCHD VIG VYM VT BND TLT IEF HYG GLD SLV USO ').split()
+           'QQQM DIA IWM SCHD VIG VYM VT BND TLT IEF HYG GLD SLV USO').split()
+TODAY = dt.datetime.now(dt.timezone.utc).date()
+
+
+def valid(record):
+    if not isinstance(record, dict):
+        return False
+    try:
+        day = dt.date.fromisoformat(record['date'])
+        price = float(record['price'])
+        return 0 < price < 1_000_000 and 0 <= (TODAY - day).days <= 14
+    except (ValueError, TypeError, KeyError):
+        return False
+
+
+def request_text(url, *, timeout=7, accept='application/json'):
+    req = urllib.request.Request(url, headers={
+        'User-Agent': 'Mozilla/5.0 (compatible; NEXPEN-quote-builder/1.1)',
+        'Accept': accept,
+    })
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return response.read().decode('utf-8-sig')
+
 
 def parse_csv(body, symbol):
-    records=list(csv.DictReader(io.StringIO(body)))
-    today=dt.datetime.now(dt.timezone.utc).date()
-    for row in reversed(records):
-        try:
-            day=dt.date.fromisoformat(row['Date']); close=float(row['Close'])
-            if 0<close<1000000 and 0 <= (today-day).days <= 14:
-                return {'price':close, 'date':day.isoformat(), 'source':'Stooq 美國市場日收盤'}
-        except (KeyError, ValueError, TypeError):
-            continue
+    for row in reversed(list(csv.DictReader(io.StringIO(body)))):
+        record = {'price': row.get('Close'), 'date': row.get('Date'),
+                  'source': 'Stooq 美國市場日收盤'}
+        if valid(record):
+            record['price'] = float(record['price'])
+            return record
     return None
 
-def fetch(symbol):
-    url='https://stooq.com/q/d/l/?'+urllib.parse.urlencode({'s':symbol.lower().replace('.','-')+'.us','i':'d','d1':(dt.datetime.now(dt.timezone.utc).date()-dt.timedelta(days=12)).strftime('%Y%m%d')})
-    request=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'text/csv'})
-    with urllib.request.urlopen(request,timeout=14) as response:
-        return parse_csv(response.read().decode('utf-8-sig'),symbol)
+
+def fetch_stooq(symbol):
+    url = 'https://stooq.com/q/d/l/?' + urllib.parse.urlencode({
+        's': symbol.lower().replace('.', '-') + '.us',
+        'i': 'd', 'd1': (TODAY - dt.timedelta(days=15)).strftime('%Y%m%d'),
+    })
+    return parse_csv(request_text(url, accept='text/csv'), symbol)
+
 
 def fetch_yahoo(symbol):
-    """GitHub Actions server-side fallback; never expose credentials in the PWA."""
-    for host in ('query1.finance.yahoo.com','query2.finance.yahoo.com'):
-        url=f'https://{host}/v8/finance/chart/{urllib.parse.quote(symbol)}?range=14d&interval=1d'
-        request=urllib.request.Request(url, headers={
-            'User-Agent':'Mozilla/5.0 (compatible; NEXPEN/1.0)',
-            'Accept':'application/json',
-        })
+    for host in ('query1.finance.yahoo.com', 'query2.finance.yahoo.com'):
         try:
-            with urllib.request.urlopen(request,timeout=12) as response:
-                data=json.loads(response.read().decode('utf-8'))
-            result=(data.get('chart',{}).get('result') or [None])[0]
-            if not result:continue
-            timestamps=result.get('timestamp') or []
-            closes=((result.get('indicators') or {}).get('quote') or [{}])[0].get('close') or []
-            for timestamp,close in reversed(list(zip(timestamps,closes))):
-                if close is None or not (0<float(close)<1000000):continue
-                # Yahoo timestamps reference the corresponding exchange trading day.
-                day=dt.datetime.fromtimestamp(timestamp,dt.timezone.utc).date()
-                if 0<=(dt.datetime.now(dt.timezone.utc).date()-day).days<=14:
-                    return {'price':round(float(close),6),'date':day.isoformat(),'source':'Yahoo Finance 美國市場日收盤'}
-        except (OSError,ValueError,KeyError,TypeError):
+            url = (f'https://{host}/v8/finance/chart/'
+                   f'{urllib.parse.quote(symbol)}?range=14d&interval=1d')
+            data = json.loads(request_text(url))
+            result = (data.get('chart', {}).get('result') or [None])[0]
+            if not result:
+                continue
+            timestamps = result.get('timestamp') or []
+            closes = ((result.get('indicators') or {}).get('quote') or [{}])[0].get('close') or []
+            for stamp, close in reversed(list(zip(timestamps, closes))):
+                if close is None:
+                    continue
+                record = {'price': close,
+                          'date': dt.datetime.fromtimestamp(stamp, dt.timezone.utc).date().isoformat(),
+                          'source': 'Yahoo Finance 美國市場日收盤'}
+                if valid(record):
+                    record['price'] = round(float(close), 6)
+                    return record
+        except (OSError, ValueError, TypeError, KeyError):
             continue
     return None
 
-def fetch_with_fallback(symbol):
+
+def fetch(symbol):
     try:
-        data=fetch(symbol)
-        if data:return data
-    except (OSError,ValueError,KeyError,TypeError):pass
+        result = fetch_stooq(symbol)
+        if result:
+            return result
+    except (OSError, ValueError, TypeError, KeyError):
+        pass
     return fetch_yahoo(symbol)
 
-def main():
-    path=ROOT/'us-market-quotes.json';old={}
-    if path.exists():
-        try:old=json.loads(path.read_text()).get('quotes',{})
-        except (ValueError,OSError):pass
-    fresh={}; failed=[]
-    for symbol in DEFAULT:
-        if not re.fullmatch(r'[A-Z][A-Z0-9]*(?:\.[A-Z0-9]+)?',symbol):continue
-        code='US:'+symbol
+
+def load_previous(path):
+    for origin in (str(path), PREVIOUS_URL):
         try:
-            rec=fetch_with_fallback(symbol)
-            if rec and rec['date']>=old.get(code,{}).get('date',''):fresh[code]=rec
-            elif code in old:fresh[code]=old[code]
-        except Exception as error:
-            failed.append(symbol)
-            if code in old:fresh[code]=old[code]
-        time.sleep(0.12)
-    if not fresh:raise RuntimeError('No valid US closes or cached US prices; refusing empty publication')
-    path.write_text(json.dumps({'format':'nexpen-us-market-quotes-v1','generatedAt':dt.datetime.now(dt.timezone.utc).isoformat(),'quotes':fresh},separators=(',',':'))+'\n',encoding='utf-8')
-    print(f'US market quotes: {len(fresh)} symbols, missing {len(failed)}')
-if __name__=='__main__':main()
+            if origin.startswith('https://'):
+                data = json.loads(request_text(origin, timeout=8))
+            else:
+                data = json.loads(pathlib.Path(origin).read_text(encoding='utf-8'))
+            rows = data.get('quotes', {})
+            return {key: value for key, value in rows.items()
+                    if re.fullmatch(r'US:[A-Z][A-Z0-9]*(?:[.-][A-Z0-9]+)?', key)
+                    and valid(value)}
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+    return {}
+
+
+def build(symbols, previous, fetcher=fetch, workers=8):
+    output = dict(previous)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = {executor.submit(fetcher, symbol): symbol for symbol in symbols}
+        for future in concurrent.futures.as_completed(futures):
+            symbol = futures[future]
+            try:
+                record = future.result()
+            except Exception:
+                record = None
+            if valid(record):
+                key = 'US:' + symbol
+                if record['date'] >= output.get(key, {}).get('date', ''):
+                    output[key] = record
+    return output
+
+
+def main():
+    path = ROOT / 'us-market-quotes.json'
+    previous = load_previous(path)
+    symbols = [s for s in DEFAULT if re.fullmatch(r'[A-Z][A-Z0-9]*(?:\.[A-Z0-9]+)?', s)]
+    quotes = build(symbols, previous)
+    if 'US:AAPL' not in quotes or not valid(quotes['US:AAPL']):
+        raise RuntimeError('Cannot publish US quotes: valid AAPL close unavailable')
+    ROOT.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({
+        'format': 'nexpen-us-market-quotes-v1',
+        'generatedAt': dt.datetime.now(dt.timezone.utc).isoformat(),
+        'quotes': quotes,
+    }, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
+    print(f'US closing prices published: {len(quotes)}; AAPL={quotes["US:AAPL"]["price"]}'
+          f' ({quotes["US:AAPL"]["date"]})')
+
+
+if __name__ == '__main__':
+    main()
