@@ -5,13 +5,12 @@ Fetch a bounded number of public symbols in parallel, preserve valid previous
 published quotes on upstream outages, and reject empty/incomplete output.
 """
 import concurrent.futures
-import csv
 import datetime as dt
-import io
 import json
 import os
 import pathlib
 import re
+import time
 import urllib.parse
 import urllib.request
 
@@ -47,57 +46,45 @@ def request_text(url, *, timeout=7, accept='application/json'):
         return response.read().decode('utf-8-sig')
 
 
-def parse_csv(body, symbol):
-    for row in reversed(list(csv.DictReader(io.StringIO(body)))):
-        record = {'price': row.get('Close'), 'date': row.get('Date'),
-                  'source': 'Stooq 美國市場日收盤'}
-        if valid(record):
-            record['price'] = float(record['price'])
-            return record
-    return None
-
-
-def fetch_stooq(symbol):
-    url = 'https://stooq.com/q/d/l/?' + urllib.parse.urlencode({
-        's': symbol.lower().replace('.', '-') + '.us',
-        'i': 'd', 'd1': (TODAY - dt.timedelta(days=15)).strftime('%Y%m%d'),
-    })
-    return parse_csv(request_text(url, accept='text/csv'), symbol)
-
-
 def fetch_yahoo(symbol):
-    for host in ('query1.finance.yahoo.com', 'query2.finance.yahoo.com'):
-        try:
-            url = (f'https://{host}/v8/finance/chart/'
-                   f'{urllib.parse.quote(symbol)}?range=14d&interval=1d')
-            data = json.loads(request_text(url))
-            result = (data.get('chart', {}).get('result') or [None])[0]
-            if not result:
-                continue
-            timestamps = result.get('timestamp') or []
-            closes = ((result.get('indicators') or {}).get('quote') or [{}])[0].get('close') or []
-            for stamp, close in reversed(list(zip(timestamps, closes))):
-                if close is None:
+    """Only Yahoo Finance; alternate Yahoo hosts and retry transient failures."""
+    encoded = urllib.parse.quote(symbol, safe='')
+    for attempt in range(3):
+        for host in ('query1.finance.yahoo.com', 'query2.finance.yahoo.com'):
+            try:
+                url = (f'https://{host}/v8/finance/chart/{encoded}'
+                       '?range=14d&interval=1d')
+                data = json.loads(request_text(url, timeout=12))
+                result = (data.get('chart', {}).get('result') or [None])[0]
+                if not result:
                     continue
-                record = {'price': close,
-                          'date': dt.datetime.fromtimestamp(stamp, dt.timezone.utc).date().isoformat(),
-                          'source': 'Yahoo Finance 美國市場日收盤'}
-                if valid(record):
-                    record['price'] = round(float(close), 6)
-                    return record
-        except (OSError, ValueError, TypeError, KeyError):
-            continue
+                timestamps = result.get('timestamp') or []
+                closes = ((result.get('indicators') or {}).get('quote') or [{}])[0].get('close') or []
+                for stamp, close in reversed(list(zip(timestamps, closes))):
+                    if close is None:
+                        continue
+                    # Yahoo timestamps are UTC instants, but US session dates must
+                    # be interpreted in the America/New_York market timezone.
+                    from zoneinfo import ZoneInfo
+                    day = dt.datetime.fromtimestamp(stamp, ZoneInfo('America/New_York')).date()
+                    record = {'price': close, 'date': day.isoformat(),
+                              'source': 'Yahoo Finance 美國市場日收盤'}
+                    if valid(record):
+                        record['price'] = round(float(close), 6)
+                        return record
+            except (OSError, ValueError, TypeError, KeyError) as exc:
+                print(f'Yahoo {host} {symbol} attempt {attempt+1} failed: {exc}')
+        if attempt < 2:
+            time.sleep(1.5 * (attempt + 1))
     return None
 
 
-def fetch(symbol):
-    try:
-        result = fetch_stooq(symbol)
-        if result:
-            return result
-    except (OSError, ValueError, TypeError, KeyError):
-        pass
+def fetch_with_fallback(symbol):
+    # No Stooq or other provider: Yahoo-only host/retry fallback.
     return fetch_yahoo(symbol)
+
+
+fetch = fetch_with_fallback
 
 
 def load_previous(path):
@@ -116,7 +103,7 @@ def load_previous(path):
     return {}
 
 
-def build(symbols, previous, fetcher=fetch, workers=8):
+def build(symbols, previous, fetcher=fetch, workers=4):
     output = dict(previous)
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         futures = {executor.submit(fetcher, symbol): symbol for symbol in symbols}
@@ -143,6 +130,7 @@ def main():
     ROOT.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({
         'format': 'nexpen-us-market-quotes-v1',
+        'provider': 'Yahoo Finance',
         'generatedAt': dt.datetime.now(dt.timezone.utc).isoformat(),
         'quotes': quotes,
     }, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
