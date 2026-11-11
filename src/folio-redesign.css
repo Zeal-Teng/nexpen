@@ -7515,3 +7515,7 @@ html .app-shell .sheet-head-actions > .circle-button.sheet-close-btn:focus-visib
 html .investment-product-sheet > header .sheet-head-actions > button.circle-button.sheet-close-btn:focus-visible {
   outline:2px solid var(--theme-accent,#318a9e)!important;outline-offset:3px;
 }
+
+/* v317: account type color selection matches the investment sheet title action. */
+html .account-type-color-reset-sheet{display:block;margin:0 20px 12px;width:calc(100% - 40px);min-height:42px;border:1px solid var(--theme-line,rgba(128,128,128,.25));border-radius:11px;background:var(--theme-surface2,transparent);color:var(--theme-text,inherit);font-weight:650;cursor:pointer}
+html .account-type-color-reset-sheet:focus-visible{outline:2px solid var(--theme-accent,#4da6ce);outline-offset:2px}

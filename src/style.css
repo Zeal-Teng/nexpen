@@ -2191,3 +2191,15 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
   background:var(--theme-surface2)!important;color:var(--theme-text)!important;opacity:1!important;
 }
 .investment-action-sheet .investment-action-header .investment-action-close svg{margin:0!important;color:inherit!important;}
+
+/* v316: account type card color editor; colors use CSS vars and preserve themes. */
+.app-shell .account-type-color-editor{display:flex;flex-direction:column;gap:12px;width:100%;padding:6px 0}
+.app-shell .account-type-color-palette{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;max-width:360px}
+.app-shell .account-type-color-swatch{width:100%;aspect-ratio:1.35;min-height:34px;border-radius:10px;border:2px solid transparent;background:var(--swatch);color:#17232b;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px #0002}
+.app-shell .account-type-color-swatch.selected{border-color:var(--theme-text,#333);outline:2px solid var(--theme-surface,#fff);outline-offset:-4px}
+.app-shell .account-type-color-swatch:focus-visible{outline:3px solid var(--accent,#66c5f4);outline-offset:2px}
+.app-shell .account-type-color-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.app-shell .account-type-color-custom{display:inline-flex;align-items:center;gap:7px;font-size:13px;cursor:pointer}
+.app-shell .account-type-color-custom input{width:42px;height:35px;padding:2px;border:1px solid var(--theme-line);border-radius:9px;background:transparent;cursor:pointer}
+.app-shell .account-type-color-preview{display:inline-block;width:28px;height:28px;border-radius:8px;border:1px solid var(--theme-line)}
+.app-shell .account-type-color-dot{flex:0 0 13px;width:13px;height:13px;border-radius:50%;border:1px solid #0002;box-shadow:0 1px 3px #0002}
