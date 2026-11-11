@@ -176,7 +176,7 @@ export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=
  const percent=(delta,cost)=>cost>0?`${delta>=0?'+':''}${(delta/cost*100).toFixed(2)}%`:'—';
  const summaryPriceMissing=items.some(p=>investmentProductPosition(p,flows).units>0&&((!isDeposit&&!(Number(p.price)>0))||!(productTwdRate(p)>0)));
  const baseRate=primaryCurrency==='TWD'?1:Number(primaryTwdRate);
- const inPrimary=v=>baseRate>0?showFigure(v/baseRate,primaryCurrency):'匯率尚未取得';
+ const inPrimary=v=>baseRate>0?moneySymbol((Number(v)/baseRate).toLocaleString('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:0})): '匯率尚未取得';
  const totals=items.reduce((s,p)=>{const pos=investmentProductPosition(p,flows);const rate=productTwdRate(p);if(!(rate>0))return s;s.cost+=pos.cost*rate;s.value+=investmentProductValue(p,pos)*rate;return s},{cost:0,value:0});
  return <section className="investment-product-page" data-investment-type={type}>
   <div className="investment-product-header"><button type="button" className="stock-back investment-upper-back investment-nav-back" onClick={()=>{if(selected){setSelected(null);onDetailChange(false)}else onBackOverview()}}><ChevronLeft size={18}/>{selected?'返回'+typeName+'清單':'返回投資總覽'}</button><button className="soft-btn small" onClick={()=>openProduct()}><Plus size={17}/>新增{typeName}</button></div>

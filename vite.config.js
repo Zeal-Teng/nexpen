@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const buildId = `v285-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}`;
+const buildId = `v303-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}`;
 const buildTime = new Date().toISOString();
 
 export default defineConfig(({mode})=>({
@@ -11,12 +11,15 @@ export default defineConfig(({mode})=>({
   server:{proxy:{
     '/api/isin/twse':{target:'https://isin.twse.com.tw',changeOrigin:true,rewrite:()=>'/isin/C_public.jsp?strMode=2'},
     '/api/isin/tpex':{target:'https://isin.twse.com.tw',changeOrigin:true,rewrite:()=>'/isin/C_public.jsp?strMode=4'},
+    '/api/history/twse':{target:'https://www.twse.com.tw',changeOrigin:true,rewrite:path=>path.replace('/api/history/twse','/exchangeReport/MI_INDEX')},
+    '/api/history/tpex':{target:'https://www.tpex.org.tw',changeOrigin:true,rewrite:path=>path.replace('/api/history/tpex','/www/zh-tw/afterTrading/dailyQuotes')},
+    '/api/quotes/twse-date':{target:'https://openapi.twse.com.tw',changeOrigin:true,rewrite:()=>'/v1/exchangeReport/FMTQIK'},
     '/api/quotes/twse':{target:'https://openapi.twse.com.tw',changeOrigin:true,rewrite:()=>'/v1/exchangeReport/STOCK_DAY_ALL'},
     '/api/quotes/tpex':{target:'https://www.tpex.org.tw',changeOrigin:true,rewrite:()=>'/openapi/v1/tpex_mainboard_quotes'}
   }},
   plugins:[react(), {
     name:'nexpen-build-version',
-    generateBundle(){this.emitFile({type:'asset',fileName:'version.json',source:JSON.stringify({version:'v285',buildId,buildTime})})}
+    generateBundle(){this.emitFile({type:'asset',fileName:'version.json',source:JSON.stringify({version:'v303',buildId,buildTime})})}
   }, VitePWA({
     injectRegister:null,
     registerType:'prompt',

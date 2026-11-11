@@ -18,6 +18,6 @@ test('secondary cards and holding listviews place amount and performance beside 
 test('realized cards distinguish proceeds from realized profit',()=>{
  const stocks=read('StockPerformanceView.jsx');
  const assets=read('InvestmentAssets.jsx');
- assert.match(stocks,/amount=\{money\(totalSaleProceeds\)\} profit=\{result\(sumRealized\)\}/);
+ assert.match(stocks,/amount=\{summaryMoney\(totalSaleProceeds\)\} profit=\{summaryResult\(sumRealized\)\}/);
  assert.match(assets,/realizedProceedsTotal/);
 });
