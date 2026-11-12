@@ -30,6 +30,7 @@ import NetWorthBreakdown from './NetWorthBreakdown.jsx';
 import {useNetWorthHistory} from './useNetWorthHistory.js';
 import SummaryHero from './SummaryHero.jsx';
 import NetWorthGoal from './NetWorthGoal.jsx';
+import {normalizeGoalMilestones} from './goalMilestones.js';
 import AnimatedNumber from './AnimatedNumber.jsx';
 import {runDueRecurring} from './recurringAutomation.js';
 import {diaryTransactionTitle} from './recurringDisplay.js';
@@ -383,6 +384,12 @@ function AppPasswordSettings({hasPassword,onSet,onRemove,onVerify,numericPasswor
   catch(err){setError(err.message||i18n('密碼設定失敗'));}
   finally{setBusy(false);inFlight.current=false;}
  };
+ // Disable-password PIN: verify immediately on the sixth digit.
+ useEffect(()=>{
+  if(mode==='disable'&&step==='verify'&&numericPassword&&old.length===6&&!busy&&!inFlight.current){
+   void verify();
+  }
+ },[mode,step,numericPassword,old]);
  const title=step==='verify'?i18n('請輸入原密碼'):step==='new'?i18n('設定 6 碼數字密碼'):i18n('再次輸入新密碼');
  const value=step==='verify'?old:step==='new'?next:confirmation;
  const update=step==='verify'?setOld:step==='new'?setNext:setConfirmation;
@@ -401,7 +408,7 @@ function AppPasswordSettings({hasPassword,onSet,onRemove,onVerify,numericPasswor
     <p className="app-pin-wizard-subtitle">{mode==='disable'?i18n('驗證成功後將停用密碼'):mode==='change'&&step==='verify'?i18n('請先驗證目前密碼'):step==='confirm'?i18n('請再次輸入相同的六碼密碼'):i18n('請輸入六位數字')}</p>
     {step==='verify'&&!numericPassword?<input className="app-pin-wizard-legacy" type="password" autoComplete="current-password" value={old} autoFocus onChange={e=>{setOld(e.target.value);setError('')}} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();void verify()}}}/>:<PinPad embedded value={value} onChange={v=>{update(v);setError('')}}/>}
     {error&&<p className="app-lock-error" role="alert">{error}</p>}
-    <div className="app-pin-wizard-actions"><button type="button" className="soft-btn" disabled={busy} onClick={close}>{i18n('取消')}</button><button type="button" className="primary-btn" disabled={busy||(step==='verify'?!old||(numericPassword&&old.length!==6):value.length!==6)} onClick={()=>void (step==='verify'?verify():submit())}>{busy?i18n('驗證中…'):step==='verify'?i18n('驗證密碼'):step==='new'?i18n('下一步'):step==='confirm'?i18n('確認設定'):i18n('確認')}</button></div>
+    {!(mode==='disable'&&step==='verify'&&numericPassword)&&<div className="app-pin-wizard-actions"><button type="button" className="soft-btn" disabled={busy} onClick={close}>{i18n('取消')}</button><button type="button" className="primary-btn" disabled={busy||(step==='verify'?!old||(numericPassword&&old.length!==6):value.length!==6)} onClick={()=>void (step==='verify'?verify():submit())}>{busy?i18n('驗證中…'):step==='verify'?i18n('驗證密碼'):step==='new'?i18n('下一步'):step==='confirm'?i18n('確認設定'):i18n('確認')}</button></div>}
    </div>
   </div>,document.body)}
  </section>;
@@ -413,25 +420,27 @@ function PrivacyUnlockDialog({onVerify,onSuccess,onClose,numeric=true}){
  const [busy,setBusy]=useState(false),[attempts,setAttempts]=useState(0),[blockedUntil,setBlockedUntil]=useState(0);
  const inFlight=useRef(false);
  useEffect(()=>{if(!blockedUntil)return;const wait=Math.max(0,blockedUntil-Date.now());const timer=setTimeout(()=>setBlockedUntil(0),wait);return ()=>clearTimeout(timer);},[blockedUntil]);
- const submit=async(e)=>{
+ const submit=async(e,code=value)=>{
   e?.preventDefault();
-  if(inFlight.current||Date.now()<blockedUntil||!value||(numeric&&!/^[0-9]{6}$/.test(value)))return;
+  if(inFlight.current||Date.now()<blockedUntil||!code||(numeric&&!/^[0-9]{6}$/.test(code)))return;
   inFlight.current=true;setBusy(true);setError('');
   try{
-   if(await onVerify(value)){onSuccess();return;}
+   if(await onVerify(code)){onSuccess();return;}
    const next=attempts+1;setAttempts(next);setValue('');
    if(next%5===0){setBlockedUntil(Date.now()+30000);setError(i18n('密碼錯誤次數過多，請 30 秒後再試'));}
    else setError(i18n('密碼不正確'));
   }catch(err){setError(err.message||i18n('密碼驗證失敗'));setValue('');}
   finally{inFlight.current=false;setBusy(false);}
  };
+ useEffect(()=>{if(numeric&&value.length===6&&!busy&&Date.now()>=blockedUntil){void submit(undefined,value)}},[numeric,value,busy,blockedUntil]);
  return createPortal(<div className="app-pin-wizard-backdrop privacy-unlock-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget&&!busy)onClose()}}>
   <form className="app-pin-wizard" role="dialog" aria-modal="true" aria-labelledby="privacy-unlock-title" onSubmit={submit} onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();if(!busy)onClose()}}}>
    <div className="app-pin-wizard-heading"><h3 id="privacy-unlock-title">{i18n('解除金額隱私模式')}</h3><button type="button" onClick={onClose} disabled={busy} aria-label={i18n('取消')}><X size={20}/></button></div>
    <p className="app-pin-wizard-subtitle">{i18n('請輸入 App 密碼，驗證後才會顯示金額')}</p>
    {numeric?<PinPad embedded value={value} onChange={v=>{setValue(v);setError('')}}/>:<input className="app-pin-wizard-legacy" type="password" value={value} autoComplete="current-password" autoFocus onChange={e=>{setValue(e.target.value);setError('')}}/>}
    {error&&<p className="app-lock-error" role="alert">{error}</p>}
-   <div className="app-pin-wizard-actions"><button type="button" className="soft-btn" onClick={onClose} disabled={busy}>{i18n('取消')}</button><button type="submit" className="primary-btn" disabled={busy||!value||(numeric&&value.length!==6)||Date.now()<blockedUntil}>{busy?i18n('驗證中…'):i18n('驗證並顯示金額')}</button></div>
+   {busy&&<p className="app-pin-wizard-subtitle" aria-live="polite">{i18n('驗證中…')}</p>}
+   {!numeric&&<button type="submit" className="primary-btn" disabled={busy||!value||Date.now()<blockedUntil}>{i18n('驗證並顯示金額')}</button>}
   </form>
  </div>,document.body);
 }
@@ -440,6 +449,7 @@ export default function App(){
  const {askConfirm,confirmationDialog}=useConfirmDialog();
  const[language,setLanguage]=useState('zh-TW'),[colorScheme,setColorScheme]=useState('normal'),[primaryCurrency,setPrimaryCurrency]=useState('TWD'),[primaryTwdRate,setPrimaryTwdRate]=useState(1),[primaryRateDate,setPrimaryRateDate]=useState(''),[primaryRateLoading,setPrimaryRateLoading]=useState(false);const tr=value=>trText(value,language);setLocale(language);
  const [netWorthGoalTwd,setNetWorthGoalTwd]=useState(null);
+ const [netWorthMilestones,setNetWorthMilestones]=useState([]);
  const [hideAmounts,setHideAmounts]=useState(()=>{try{return localStorage.getItem('nexpen-hide-amounts')==='true'}catch{return false}});
  const [privacyUnlockOpen,setPrivacyUnlockOpen]=useState(false);
  useEffect(()=>{try{localStorage.setItem('nexpen-hide-amounts',String(hideAmounts))}catch{}},[hideAmounts]);
@@ -583,7 +593,7 @@ export default function App(){
   }
  };
  const toast=s=>{setNotice(i18n(s));setTimeout(()=>setNotice(''),3300)};
- async function reload(){await repairLegacyTrustContributions(db);const[r,a,s,rr,c,t,fs,ci,at,bf,sq,langSetting,colorSetting,baseSetting,baseRateSetting,projectSetting,investHistory,investFlows,investProducts,appLockSetting,fabSetting,accountOrderSetting,netWorthGoalSetting,transactionTemplateSetting,weekStartSetting]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.get('categories'),db.settings.get('theme'),db.settings.get('fontScale'),db.settings.get('categoryIcons'),db.settings.get('accountTypes'),db.settings.get('stockBrokerFees'),db.settings.get('stockClosingQuotes'),db.settings.get('language'),db.settings.get('amountColors'),db.settings.get('primaryCurrency'),db.settings.get('primaryTwdRate'),db.settings.get('projects'),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.investmentProducts.toArray(),db.settings.get('appLock'),db.settings.get('fabPosition'),db.settings.get('accountOrder'),db.settings.get('netWorthGoalTwd'),db.settings.get('transactionTemplates'),db.settings.get('weekStartsOn')]);setWeekStartsOn(weekStartSetting?.value===1?1:0);setTransactionTemplates(normalizeTemplates(transactionTemplateSetting?.value));setNetWorthGoalTwd(Number(netWorthGoalSetting?.value)>0?Number(netWorthGoalSetting.value):null);setAccountOrder(Array.isArray(accountOrderSetting?.value)?accountOrderSetting.value:[]);setFabPosition(fabSetting?.value==='left'?'left':'right');setPasswordConfig(appLockSetting?.value||null);if(!lockInitialized.current){setUnlocked(!appLockSetting?.value);lockInitialized.current=true;}setInvestmentValuations(investHistory);setInvestmentFlows(investFlows);setInvestmentProducts(investProducts);setProjects(projectSetting?.value||[]);setLanguage(langSetting?.value||'zh-TW');setColorScheme(colorSetting?.value||'normal');setPrimaryCurrency(baseSetting?.value||'TWD');setPrimaryTwdRate(Number(baseRateSetting?.value?.rate)||((baseSetting?.value||'TWD')==='TWD'?1:0));setPrimaryRateDate(baseRateSetting?.value?.date||'');setQuotes(sq?.value||{});setBrokerFees(bf?.value||{discount:60,minimum:20});setAccountTypes(ordinaryAccountTypes(at?.value));setRecords(r);setAccounts(a);setStocks(s);setRecurring(rr);setCategories(c?.value||defaultCategories);setTheme(isDemoMode?'dark':(t?.value||'folio'));setFontScale((()=>{const f=Number(fs?.value)||1;return f<=0.96?0.94:f>=1.05?1.14:1})());setCategoryIcons(ci?.value||{});setInvestmentCategoryColors((await db.settings.get('investmentCategoryColors'))?.value||{});}
+ async function reload(){await repairLegacyTrustContributions(db);const[r,a,s,rr,c,t,fs,ci,at,bf,sq,langSetting,colorSetting,baseSetting,baseRateSetting,projectSetting,investHistory,investFlows,investProducts,appLockSetting,fabSetting,accountOrderSetting,netWorthGoalSetting,netWorthMilestoneSetting,transactionTemplateSetting,weekStartSetting]=await Promise.all([db.records.toArray(),db.accounts.toArray(),db.stocks.toArray(),db.recurring.toArray(),db.settings.get('categories'),db.settings.get('theme'),db.settings.get('fontScale'),db.settings.get('categoryIcons'),db.settings.get('accountTypes'),db.settings.get('stockBrokerFees'),db.settings.get('stockClosingQuotes'),db.settings.get('language'),db.settings.get('amountColors'),db.settings.get('primaryCurrency'),db.settings.get('primaryTwdRate'),db.settings.get('projects'),db.investmentValuations.toArray(),db.investmentFlows.toArray(),db.investmentProducts.toArray(),db.settings.get('appLock'),db.settings.get('fabPosition'),db.settings.get('accountOrder'),db.settings.get('netWorthGoalTwd'),db.settings.get('netWorthMilestones'),db.settings.get('transactionTemplates'),db.settings.get('weekStartsOn')]);setWeekStartsOn(weekStartSetting?.value===1?1:0);setTransactionTemplates(normalizeTemplates(transactionTemplateSetting?.value));setNetWorthGoalTwd(Number(netWorthGoalSetting?.value)>0?Number(netWorthGoalSetting.value):null);setNetWorthMilestones(normalizeGoalMilestones(netWorthMilestoneSetting?.value));setAccountOrder(Array.isArray(accountOrderSetting?.value)?accountOrderSetting.value:[]);setFabPosition(fabSetting?.value==='left'?'left':'right');setPasswordConfig(appLockSetting?.value||null);if(!lockInitialized.current){setUnlocked(!appLockSetting?.value);lockInitialized.current=true;}setInvestmentValuations(investHistory);setInvestmentFlows(investFlows);setInvestmentProducts(investProducts);setProjects(projectSetting?.value||[]);setLanguage(langSetting?.value||'zh-TW');setColorScheme(colorSetting?.value||'normal');setPrimaryCurrency(baseSetting?.value||'TWD');setPrimaryTwdRate(Number(baseRateSetting?.value?.rate)||((baseSetting?.value||'TWD')==='TWD'?1:0));setPrimaryRateDate(baseRateSetting?.value?.date||'');setQuotes(sq?.value||{});setBrokerFees(bf?.value||{discount:60,minimum:20});setAccountTypes(ordinaryAccountTypes(at?.value));setRecords(r);setAccounts(a);setStocks(s);setRecurring(rr);setCategories(c?.value||defaultCategories);setTheme(isDemoMode?'dark':(t?.value||'folio'));setFontScale((()=>{const f=Number(fs?.value)||1;return f<=0.96?0.94:f>=1.05?1.14:1})());setCategoryIcons(ci?.value||{});setInvestmentCategoryColors((await db.settings.get('investmentCategoryColors'))?.value||{});}
  useEffect(()=>{ensureInvestmentSchema().then(()=>isDemoMode?initializeDemoOnLaunch():ensureDefaults()).then(reload).then(()=>setReady(true)).catch(e=>toast(e.message))},[]);
  // Every schedule is caught up automatically on startup and on foreground return.
  // IndexedDB transactions enforce exactly-once per schedule/date, including multi-tab races.
@@ -1348,7 +1358,31 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  };
  const importFile=async e=>{if(isDemoMode){toast(i18n('演示模式無法還原個人備份'));e.target.value='';return;}const file=e.target.files[0];e.target.value='';if(!file)return;try{const obj=JSON.parse(await file.text());if(obj?.app!=='cyberpulse-liquid'||![1,2,3].includes(obj.version)||!['records','accounts','stocks','recurring','settings'].every(k=>Array.isArray(obj[k])))throw Error(i18n("備份格式或版本不正確"));if(!(await askConfirm({kind:'restore',title:i18n('還原本機備份？'),subtitle:file.name,description:i18n('還原將覆蓋目前所有本機資料。請先確認已備份現有資料。'),details:`備份時間：${obj.exportedAt?new Date(obj.exportedAt).toLocaleString('zh-TW'):i18n('未記錄')}\n交易 ${obj.records.length} 筆 · 帳戶 ${obj.accounts.length} 個\n股票 ${obj.stocks.length} 筆 · 保單估值 ${(obj.investmentValuations||[]).length} 筆\n定期排程 ${obj.recurring.length} 筆` })))return;await restore(obj);await reload();toast(i18n("備份還原完成"))}catch(err){toast(i18n('匯入失敗：')+err.message)}};
  const chooseLanguage=async value=>{await db.settings.put({key:'language',value});setLanguage(value)};
+ const saveNetWorthMilestone=async amountTwd=>{
+  if(!Number.isFinite(Number(amountTwd))||Number(amountTwd)<=0)throw Error('目標金額無效');
+  if(netWorthData.missingQuotes.length)throw Error('有投資缺少報價，暫時無法記錄達標');
+  if(netWorthData.netWorth+0.00001<Number(amountTwd))throw Error('目前淨資產尚未達到此目標');
+  const date=today();
+  const current=normalizeGoalMilestones((await db.settings.get('netWorthMilestones'))?.value);
+  if(current.some(item=>item.amountTwd===Number(amountTwd)))throw Error('此目標已經記錄');
+  if(current.length&&Number(amountTwd)<=current[current.length-1].amountTwd)throw Error('新目標須高於上一次達成的目標');
+  const next=[...current,{amountTwd:Number(amountTwd),achievedDate:date}];
+  await db.settings.put({key:'netWorthMilestones',value:next});setNetWorthMilestones(next);
+ };
  const saveNetWorthGoal=async amountTwd=>{const valid=amountTwd===null?null:Number(amountTwd);if(valid!==null&&(!Number.isFinite(valid)||valid<=0))throw Error('目標金額必須大於零');await db.settings.put({key:'netWorthGoalTwd',value:valid});setNetWorthGoalTwd(valid);};
+ // Record only a confirmed, fully-priced snapshot while the app is open.
+ // Historical crossing dates cannot be reconstructed reliably from current valuations.
+ const milestoneWriteBusyRef=useRef(false);
+ useEffect(()=>{
+  if(!ready||isDemoMode||!Number.isFinite(Number(netWorthGoalTwd))||Number(netWorthGoalTwd)<=0)return;
+  if(netWorthData.missingQuotes.length||!Number.isFinite(netWorthData.netWorth)||netWorthData.netWorth<Number(netWorthGoalTwd))return;
+  if(netWorthMilestones.some(m=>m.amountTwd===Number(netWorthGoalTwd)))return;
+  if(netWorthMilestones.length&&Number(netWorthGoalTwd)<=netWorthMilestones[netWorthMilestones.length-1].amountTwd)return;
+  if(milestoneWriteBusyRef.current)return;
+  milestoneWriteBusyRef.current=true;
+  saveNetWorthMilestone(netWorthGoalTwd).catch(err=>console.warn('Automatic net worth milestone was not saved:',err)).finally(()=>{milestoneWriteBusyRef.current=false});
+ },[ready,netWorthGoalTwd,netWorthData.netWorth,netWorthData.missingQuotes.length,netWorthMilestones]);
+
  const chooseColors=async value=>{await db.settings.put({key:'amountColors',value});setColorScheme(value)};
  // Prevent an earlier network request overwriting a newer currency selection.
  activePrimaryCurrencyRef.current=primaryCurrency;
@@ -1446,7 +1480,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   </React.Fragment>;
 }):<Blank text={diaryView==='year'?i18n('這一年沒有符合條件的交易'):diaryView==='month'?i18n('這個月沒有符合條件的交易'):i18n('這一天沒有符合條件的交易')}/>}
 </div></section>}{diaryPanel==='analysis'&&<IncomeExpenseReport embedded period={diaryView} date={date} rows={diaryRecords.filter(r=>r.type==='expense'||r.type==='income').map(r=>({...r,reportAmount:toTWD(r.amount,r.account)}))} primaryCurrency={primaryCurrency} primaryTwdRate={mainRate} language={language} colorScheme={colorScheme} onSelectRow={row=>{if(row.isInvestmentFlow){const f=investmentFlows.find(f=>f.id===row.investmentFlowId);const asset=accounts.find(a=>a.id===f?.assetId);setTab('stocks');setInvestSection(asset?.type==='policy'?'policy':asset?.type==='trust'?'trust':investmentProducts.find(p=>p.id===f?.assetId)?.type||'fund');setSelectedStockSymbol(null);}else if(row.isStockDividend||row.isStockTrade){open('stock',stocks.find(s=>s.id===row.stockId));}else{open('transaction',row);}}}/>}</>}
- {tab==='dashboard'&&<NetWorthBreakdown data={netWorthData} history={netWorthHistory} goalTwd={netWorthGoalTwd} mainRate={mainRate} onSaveGoal={saveNetWorthGoal} format={n=>baseAvailable?new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(Math.round(inPrimary(n))):'匯率尚未取得'} language={language} currency={primaryCurrency}/>}
+ {tab==='dashboard'&&<NetWorthBreakdown data={netWorthData} history={netWorthHistory} goalTwd={netWorthGoalTwd} milestones={netWorthMilestones} onRecordGoal={saveNetWorthMilestone} mainRate={mainRate} onSaveGoal={saveNetWorthGoal} format={n=>baseAvailable?new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(Math.round(inPrimary(n))):'匯率尚未取得'} language={language} currency={primaryCurrency}/>}
  {tab==='accounts'&&<><div className="hero glass compact-hero"><span>{tr('帳戶資產總額（不含股票）')}</span><strong>{fmtPrimaryNumber(includedAccounts.filter(a=>!isInvestmentAssetType(a.type)).reduce((s,a)=>s+bal(a)*fxOf(a),0))}</strong><small>{i18n("依各帳戶匯率換算為")} {primaryCurrency}{i18n("，僅供估值")}</small></div><section className="accounts-group-section"><div className="section-header account-list-header"><h2>{tr('我的帳戶')}</h2><div className="account-list-toolbar"><button className="soft-btn small" type="button" onClick={()=>setTab('accountTypes')}><Tags size={15}/>{i18n("帳戶類型管理")}</button></div></div>{accounts.length?(()=>{
   const groups=accountTypes.filter(t=>!isInvestmentAssetType(t.id)&&accounts.some(a=>a.type===t.id));
   const current=groups.some(g=>g.id===expandedAccountStack)?expandedAccountStack:null;

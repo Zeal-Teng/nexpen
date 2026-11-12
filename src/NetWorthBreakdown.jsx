@@ -15,7 +15,7 @@ const translations={
 const icons={cash:Wallet,deposit:Landmark,securities:ChartNoAxesCombined,trust:Layers3,insurance:Shield,fund:ChartLine,bond:HandCoins,savings:Shield,termDeposit:Landmark,other:Coins};
 const colors={cash:'#35b9ab',deposit:'#638bd9',securities:'#a88be5',trust:'#ff9b82',insurance:'#e7b75f',fund:'#799bc5',bond:'#68a99c',savings:'#dbac72',termDeposit:'#87b49a',other:'#8fa6b0'};
 
-export default function NetWorthBreakdown({data,format,language='zh-TW',currency='TWD',history=[],goalTwd=null,mainRate=1,onSaveGoal=()=>{}}){
+export default function NetWorthBreakdown({data,format,language='zh-TW',currency='TWD',history=[],goalTwd=null,milestones=[],onRecordGoal=()=>{},mainRate=1,onSaveGoal=()=>{}}){
  const t=translations[language]||translations['zh-TW'];
  const [openCard,setOpenCard]=useState(null);
  // 與投資頁面完全共用 Card Stack 元件，保持相同的堆疊露邊、展開和陰影。
@@ -26,7 +26,7 @@ export default function NetWorthBreakdown({data,format,language='zh-TW',currency
      <p className="summary-hero-description">{language==='en'?'Cash, deposits, securities, trusts and insurance, minus liabilities':language==='ja'?'現金・預金・証券・信託・保険から負債を控除':language==='zh-CN'?'现金、存款、证券、信托与保险，扣除负债':'現金、存款、證券、信託與保險，扣除負債'}</p>
      <div className="summary-hero-metrics"><div><small>{t.gross}</small><strong>{money(data.totalAssets)}</strong></div><div><small>{t.debt}</small><strong className={data.totalLiabilities>0?'expense':''}>{money(data.totalLiabilities)}</strong></div></div>
    </SummaryHero>
-   <NetWorthGoal goalTwd={goalTwd} currentTwd={data.netWorth} mainRate={mainRate} currency={currency} language={language} incomplete={data.missingQuotes.length>0} onSave={onSaveGoal}/>
+   <NetWorthGoal goalTwd={goalTwd} milestones={milestones} onRecordGoal={onRecordGoal} currentTwd={data.netWorth} mainRate={mainRate} currency={currency} language={language} incomplete={data.missingQuotes.length>0} onSave={onSaveGoal}/>
    <NetWorthTrend history={history} format={format} currency={currency} language={language}/>
    {data.missingQuotes.length>0&&<p className="networth-quote-warning"><AlertCircle size={16}/><span>{t.unknown} ({[...new Set(data.missingQuotes)].join('、')})</span></p>}
    <div className="investment-dashboard-section-title networth-section-title">

@@ -12,7 +12,7 @@ const EDITOR_SELECTORS=[
 ].join(',');
 export function hasOpenEditor(doc=document){return !!doc.querySelector(EDITOR_SELECTORS)}
 export function requestPwaUpdateCheck(){window.dispatchEvent(new Event(UPDATE_EVENT))}
-export const pwaBuildInfo={version:'v321',buildId:BUILD_ID,buildTime:BUILD_TIME};
+export const pwaBuildInfo={version:'v324',buildId:BUILD_ID,buildTime:BUILD_TIME};
 
 export default function PwaUpdateManager(){
   const [available,setAvailable]=useState(false);
