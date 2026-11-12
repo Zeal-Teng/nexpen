@@ -7519,3 +7519,27 @@ html .investment-product-sheet > header .sheet-head-actions > button.circle-butt
 /* v317: account type color selection matches the investment sheet title action. */
 html .account-type-color-reset-sheet{display:block;margin:0 20px 12px;width:calc(100% - 40px);min-height:42px;border:1px solid var(--theme-line,rgba(128,128,128,.25));border-radius:11px;background:var(--theme-surface2,transparent);color:var(--theme-text,inherit);font-weight:650;cursor:pointer}
 html .account-type-color-reset-sheet:focus-visible{outline:2px solid var(--theme-accent,#4da6ce);outline-offset:2px}
+
+/* v320 - financial privacy visibility and smooth navigation */
+.app-shell .privacy-toggle {display:grid;place-items:center;flex-shrink:0}
+.app-shell .privacy-setting-button {display:inline-flex;align-items:center;gap:10px;border:1px solid var(--theme-line);background:var(--theme-surface);border-radius:14px;color:inherit;padding:12px 16px;font-weight:650}
+/* The privacy switch is a screen-only convenience, not data encryption. */
+.app-shell[data-hide-amounts="true"] :is(.summary-hero-value,.summary-hero-metrics,.diary-finance-summary .stat strong,.diary-list-amount,.recurring-amount,.networth-asset-amount,.investment-reference-amount,.investment-dashboard-hero strong,.investment-performance-summary-hero strong,.investment-stock-row-heading .investment-stock-price,.investment-stock-row-values,.investment-stock-row-metrics,.investment-summary-value,.investment-total,.account-stack-amount,.account-card-balance,.account-balance,.account-row-balance,.balance-audit-stats,.report-summary-card strong,.report-ratio-summary-value,.report-category-values,.report-tick-value,.savings-policy-stats,.stock-performance-value,.stock-stat-value,.transaction-category-trigger-values,.income-expense-amount,.net-worth-goal-value,.networth-goal-amount,.investment-product-value,.investment-product-summary,.investment-holding-value) {filter:blur(9px)!important;user-select:none!important;-webkit-user-select:none!important}
+.app-shell[data-hide-amounts="true"] :is(.summary-hero-value,.diary-list-amount,.recurring-amount,.networth-asset-amount,.investment-reference-amount) {pointer-events:none}
+.app-shell .sidebar {isolation:isolate}
+.app-shell .side-link {position:relative;z-index:1;transition:color .22s ease, transform .22s ease}
+.app-shell .side-link:hover {transform:translateX(2px)}
+.app-shell .side-link.selected {transition:color .2s ease;background:transparent!important;box-shadow:none!important}
+.app-shell .sidebar::before {content:"";position:absolute;z-index:0;left:12px;right:12px;top:57px;height:51px;border-radius:16px;background:var(--theme-accent);transform:translateY(calc(var(--side-index) * 54px));transition:transform .32s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.app-shell .bottom-nav {isolation:isolate}
+.app-shell .bottom-nav .nav-slide-indicator {position:absolute;z-index:0;left:4px;top:4px;bottom:4px;width:calc((100% - 8px) / 4);background:var(--theme-accent);border-radius:16px;transform:translateX(calc(var(--mobile-index) * 100%));transition:transform .32s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.app-shell .bottom-nav button {position:relative;z-index:1;transition:color .25s ease, transform .25s ease!important}
+.app-shell .bottom-nav button.active {background:transparent!important;box-shadow:none!important;color:var(--theme-accent-contrast)!important}
+.app-shell .bottom-nav button.active svg {transform:translateY(-2px) scale(1.07)}
+.app-shell .bottom-nav button svg {transition:transform .25s ease}
+@media(prefers-reduced-motion:reduce) {.app-shell .sidebar::before,.app-shell .bottom-nav .nav-slide-indicator,.app-shell .bottom-nav button,.app-shell .side-link{transition:none!important}}
+
+/* Additional financial surfaces: keep identifiers and labels visible where practical. */
+.app-shell[data-hide-amounts="true"] :is(.account-figures,.investment-reference-net,.investment-performance-badges,.investment-reference-badges,.investment-tier-financial,.investment-tier-bottom,.investment-account-list-values,.investment-generic-row-results,.investment-listview-main-value,.investment-listview-profit,.investment-listview-rate,.investment-stock-row-results,.investment-compact-summary,.stock-history-financial,.stock-history-financials,.stock-history-realized,.stock-holdings-heading .stock-quote-inline,.networth-goal-numbers,.networth-goal-remaining,.networth-trend-current,.networth-trend-selected,.networth-trend-compare-item,.report-legend-net,.investment-redemption-total) {filter:blur(9px)!important;user-select:none!important;-webkit-user-select:none!important}
+.app-shell[data-hide-amounts="true"] :is(.networth-trend-chart,.report-chart,.recharts-wrapper) svg text {filter:blur(8px)!important}
+.app-shell[data-hide-amounts="true"] :is(.recharts-tooltip-wrapper,.recharts-default-tooltip,.stock-price-explain,.stock-lot-preview,.investment-valuation-readonly,.investment-valuation-entry,.investment-current-fx,.investment-valuation-caption,.account-investment-fx,.diary-stat-in strong,.diary-stat-out strong,.diary-stat-net strong) {filter:blur(9px)!important;user-select:none!important}

@@ -1,7 +1,7 @@
 import {moneySymbol} from './moneyDisplay.js';
 import React,{useEffect,useMemo,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {ChevronLeft,ChevronRight,CalendarDays,TrendingUp,TrendingDown,ChartPie,X,SlidersHorizontal,Check} from 'lucide-react';
+import {ChevronLeft,ChevronRight,CalendarDays,TrendingUp,TrendingDown,ChartColumnIncreasing,X,SlidersHorizontal,Check} from 'lucide-react';
 import {aggregateIncomeExpense,expenseIncomeRatio,selectReportEntries} from './incomeExpenseReport.js';
 import './income-expense-report.css';
 
@@ -55,7 +55,7 @@ export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',prima
   </div>}
   <section className="report-panel report-unified-panel report-plain-section">
    <div className="report-view-tabs" role="tablist" aria-label={t.report}>
-    <button type="button" role="tab" aria-selected={reportView==='category'} className={reportView==='category'?'selected':''} onClick={()=>setReportView('category')}><ChartPie size={17}/>{t.category}</button>
+    <button type="button" role="tab" aria-selected={reportView==='category'} className={reportView==='category'?'selected':''} onClick={()=>setReportView('category')}><ChartColumnIncreasing size={17}/>{t.category}</button>
     <button type="button" role="tab" aria-selected={reportView==='trend'} className={reportView==='trend'?'selected':''} onClick={()=>setReportView('trend')}><TrendingUp size={17}/>{t.trend}</button>
    </div>
    {reportView==='category'&&<div role="tabpanel" className="report-view-content report-category-panel">

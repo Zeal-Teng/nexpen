@@ -12,7 +12,7 @@ const i18n={
 };
 export default function NetWorthTrend({history=[],format,language='zh-TW',currency='TWD'}){
  const t=i18n[language]||i18n['zh-TW'];
- const [range,setRange]=useState(30);
+ const [range,setRange]=useState(7);
  const [selected,setSelected]=useState(null);
  const sorted=useMemo(()=>history.filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.date)&&Number.isFinite(p.netWorth)).slice().sort((a,b)=>a.date.localeCompare(b.date)),[history]);
  const comparisons=useMemo(()=>netWorthComparisons(sorted,range),[sorted,range]);

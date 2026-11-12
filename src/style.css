@@ -1772,7 +1772,6 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 }
 :root[data-theme="portfolio"] .app-shell .searchbox,
 :root[data-theme="portfolio"] .app-shell .field input,
-:root[data-theme="portfolio"] .app-shell .field .smart-select,
 :root[data-theme="portfolio"] .app-shell .money-trigger {
  background:#f6f0e7!important;border-color:#e4d8c5!important;
 }
@@ -2203,3 +2202,10 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 .app-shell .account-type-color-custom input{width:42px;height:35px;padding:2px;border:1px solid var(--theme-line);border-radius:9px;background:transparent;cursor:pointer}
 .app-shell .account-type-color-preview{display:inline-block;width:28px;height:28px;border-radius:8px;border:1px solid var(--theme-line)}
 .app-shell .account-type-color-dot{flex:0 0 13px;width:13px;height:13px;border-radius:50%;border:1px solid #0002;box-shadow:0 1px 3px #0002}
+
+/* v318: Match other themes: dropdown triggers must stay transparent in Champagne Portfolio. */
+:root[data-theme="portfolio"] .app-shell .smart-select,
+:root[data-theme="portfolio"] .app-shell .field select,
+:root[data-theme="portfolio"] .app-shell .investment-sheet-select {
+ background:transparent!important;
+}
