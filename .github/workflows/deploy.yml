@@ -35,6 +35,9 @@ jobs:
       - name: Fetch TWSE and TPEx official closing quotes
         run: python3 scripts/fetch_market_quotes.py
 
+      - name: Fetch US daily closing prices from Yahoo Finance only
+        run: python3 scripts/fetch_us_market_quotes.py
+
       - name: Build listed and OTC security catalog from fetched quotes
         run: python3 scripts/fetch_security_catalog.py
 
@@ -51,6 +54,18 @@ jobs:
               print(f'{name}: {count} items ({p.stat().st_size} bytes)')
               if count < 100: raise SystemExit(f'ERROR: incomplete {name}: {count} items')
           PYVERIFY
+
+      - name: Verify US daily closing quotes are available
+        run: |
+          python3 - <<'PYUS'
+          import json
+          from pathlib import Path
+          p=Path('public/us-market-quotes.json')
+          if not p.is_file():raise SystemExit('ERROR: US daily quote file missing; build would show unpriced US trusts')
+          quotes=json.loads(p.read_text(encoding='utf-8')).get('quotes',{})
+          if 'US:AAPL' not in quotes:raise SystemExit('ERROR: AAPL missing from US quotes')
+          print('US daily closes:', len(quotes), 'AAPL:', quotes['US:AAPL'])
+          PYUS
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -70,6 +85,7 @@ jobs:
         run: |
           test -s dist/market-quotes.json
           test -s dist/security-catalog.json
+          test -s dist/us-market-quotes.json
           python3 - <<'PYVERIFY'
           import json
           for name,key in [('market-quotes.json','quotes'),('security-catalog.json','securities')]:

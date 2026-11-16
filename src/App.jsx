@@ -1456,7 +1456,10 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   const account=accounts.find(a=>a.id===x.account);
   const accountLabel=x.type==='transfer'?`${accounts.find(a=>a.id===x.fromAccount)?.name||i18n('未指定轉出帳戶')} → ${accounts.find(a=>a.id===x.toAccount)?.name||i18n('未指定轉入帳戶')}`:(account?.name||i18n('未指定帳戶'));
   const rawTitle=diaryTransactionTitle(x,picker[x.type]);
-  const displayTitle=(rawTitle===x.subCategory||rawTitle===x.mainCategory)?i18n(rawTitle):rawTitle;
+  const isCategorizedDiaryRow=!x.isStockTrade&&!x.isStockDividend&&!x.isInvestmentFlow&&(x.type==='expense'||x.type==='income');
+  const categoryTitle=x.subCategory||x.mainCategory||rawTitle;
+  const displayTitle=isCategorizedDiaryRow?i18n(categoryTitle):(rawTitle===x.subCategory||rawTitle===x.mainCategory?i18n(rawTitle):rawTitle);
+  const diaryNote=isCategorizedDiaryRow?String(x.note||'').trim():'';
   const signedAmount=`${x.type==='adjustment'?(Number(x.amount)>=0?'+':'−'):x.type==='expense'||(x.isStockTrade&&x.stockAction==='buy')||(x.isInvestmentFlow&&x.investmentAction==='contribution')?'-':x.type==='income'||(x.isStockTrade&&x.stockAction==='sell')||(x.isInvestmentFlow&&x.investmentAction==='redemption')?'+':''}${fmtAccountFigure(x.type==='adjustment'?Math.abs(Number(x.amount)):x.amount,accounts.find(a=>a.id===(x.type==='transfer'?x.fromAccount:x.account)))}`;
   const Icon=CATEGORY_ICONS[x.isInvestmentFlow?'trend':x.type==='stock'?'trend':x.type==='transfer'?'transfer':categoryIcons[`${x.type}/sub/${x.mainCategory}/${x.subCategory}`]||categoryIcons[`${x.type}/main/${x.mainCategory}`]||suggestedIcon(x.mainCategory||'')]||Tags;
   const editDiaryRow=()=>{if(isBalanceAudit(x)){openBalanceAudit(accounts.find(a=>a.id===x.account),x);return;}if(x.isInvestmentFlow){const f=investmentFlows.find(f=>f.id===x.investmentFlowId);const asset=accounts.find(a=>a.id===f?.assetId);setTab('stocks');setInvestSection(asset?.type==='policy'?'policy':asset?.type==='trust'?'trust':investmentProducts.find(p=>p.id===f?.assetId)?.type||'fund');setSelectedStockSymbol(null);return;}if(x.isStockDividend||x.isStockTrade)open('stock',stocks.find(s=>s.id===x.stockId));else open('transaction',x)};
@@ -1470,7 +1473,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
       <button type="button" className="diary-list-action" aria-label={`${displayTitle} · ${signedAmount} · ${accountLabel} · ${i18n('編輯')}`} onClick={editDiaryRow}>
         <span className="diary-list-main">
           <span className={'transaction-icon '+x.type}><Icon size={20}/></span>
-          <span className="diary-list-name"><b>{displayTitle}</b><small>{x.type==='adjustment'?'帳戶餘額盤點':x.type==='transfer'?i18n('帳戶轉帳'):i18n(x.mainCategory)||picker[x.type]}{x.projectId&&projects.some(p=>p.id===x.projectId)?' · '+projects.find(p=>p.id===x.projectId).name:''}</small></span>
+          <span className="diary-list-name"><b>{displayTitle}</b><small>{x.type==='adjustment'?'帳戶餘額盤點':x.type==='transfer'?i18n('帳戶轉帳'):i18n(x.mainCategory)||picker[x.type]}{diaryNote?' · '+diaryNote:''}{x.projectId&&projects.some(p=>p.id===x.projectId)?' · '+projects.find(p=>p.id===x.projectId).name:''}</small></span>
           <span className="diary-list-amount"><strong className={x.type==='adjustment'?(Number(x.amount)>=0?'income':'expense'):x.type==='expense'?'expense':x.type==='income'||(x.isInvestmentFlow&&x.investmentAction==='redemption')?'income':''}>{signedAmount}</strong><small>{accountLabel}</small></span>
           <ChevronRight size={18} className="diary-list-chevron" aria-hidden="true"/>
         </span>
@@ -1492,7 +1495,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
       <button type="button" className="account-stack-sort-handle" aria-label={`${i18n('拖曳排序帳戶類型')}：${label}`} title={`${i18n('拖曳排序')} ${label}`} onPointerDown={e=>accountStackPointerDown(e,'group',type)} onPointerMove={accountStackPointerMove} onPointerUp={accountStackPointerUp} onPointerCancel={stopAccountStackDrag} onKeyDown={e=>accountStackKey(e,'group',type)}><GripVertical size={19}/></button>
       <button type="button" className="account-stack-peek" aria-expanded={expanded} aria-controls={'account-stack-details-'+type} onClick={()=>setExpandedAccountStack(previous=>previous===type?null:type)}>
         <span className="account-stack-peek-top"><span className={'account-stack-heading-icon type-'+type} aria-hidden="true">{type==='cash'?<Wallet size={21}/>:type==='credit'?<CreditCard size={21}/>:type==='ewallet'?<Smartphone size={21}/>:type==='brokerage'?<ChartNoAxesCombined size={21}/>:type==='trust'?<Layers3 size={21}/>:type==='policy'?<Shield size={21}/>:<Landmark size={21}/>}</span><strong>{i18n(label)}</strong><ChevronRight size={19} className={expanded?'stack-open-chevron':''}/></span>
-        <span className="account-stack-peek-bottom"><b>{fmtPrimaryNumber(converted)}</b></span>
+        <span className="account-stack-peek-bottom"><b>{fmtInvestmentMoney(converted)}</b></span>
       </button>
       <div id={'account-stack-details-'+type} className={"account-stack-details"+(expanded?" is-open":"")} aria-hidden={!expanded} inert={!expanded}><div className="account-stack-details-inner">
         <div className="account-stack-details-heading"><span>{i18n("帳戶明細")}</span><span>{primaryCurrency}</span></div>
