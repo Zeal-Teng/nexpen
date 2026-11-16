@@ -16,6 +16,7 @@ import {savingsCashFlows,calculateXirr} from './savingsPolicy.js';
 
 const numeric=v=>Number(v)||0;
 const figure=(n,code='TWD')=>moneySymbol(numeric(n).toLocaleString('zh-TW',{maximumFractionDigits:4}),code||'', '');
+const summaryFigure=(n,code='TWD')=>moneySymbol(numeric(n).toLocaleString('zh-TW',{minimumFractionDigits:0,maximumFractionDigits:0}),code||'', '');
 const typeLabels={fund:'基金',bond:'債券',savings:'儲蓄險',termDeposit:'定存'};
 const kindLabels={
  fund:{contribution:'申購',redemption:'贖回',yield:'基金配息'},
@@ -40,6 +41,7 @@ export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=
  const asset=items.find(p=>p.id===selected);
  const isBond=type==='bond',isSavings=type==='savings',isDeposit=type==='termDeposit',isPrincipal=isSavings||isDeposit;const typeName=typeLabels[type]||'投資';const actions=kindLabels[type]||kindLabels.fund;
  const showFigure=(n,code='TWD')=>figure(n,code===primaryCurrency?'':code);
+ const showSummaryFigure=(n,code='TWD')=>summaryFigure(n,code===primaryCurrency?'':code);
  const currencySuffix=code=>code&&code!==primaryCurrency?`（${code}）`:'';
  const position=asset?investmentProductPosition(asset,flows):null;
  const history=asset?flows.filter(f=>f.assetId===asset.id).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))):[];
@@ -199,7 +201,7 @@ export default function InvestmentProducts({type,items=[],flows=[],cashAccounts=
     </InvestmentStackCard>
    </InvestmentStack>
    </>:<>
-    <SummaryHero eyebrow={`NEXPEN · ${{fund:'FUNDS',bond:'BONDS',savings:'SAVINGS',termDeposit:'DEPOSITS'}[type]}`} title={asset.name} label={isDeposit?'目前定存本金':isSavings?'目前解約金':isBond?'債券估算市值':'基金估算現值'} value={showFigure(investmentProductValue(asset,position),asset.currency)} detailId={`investment-product-${asset.id}`}><div className="summary-hero-metrics"><div><small>持有成本</small><strong>{showFigure(position.cost,asset.currency)}</strong></div><div><small>{isDeposit?'尚未領回本金差額':isSavings?'現值與保費差額':'未實現損益'}</small><strong className={investmentProductValue(asset,position)>=position.cost?'income':'expense'}>{showFigure(investmentProductValue(asset,position)-position.cost,asset.currency)}</strong><em className={position.realized>=0?'income':'expense'}>已實現 {showFigure(position.realized,asset.currency)}</em></div></div></SummaryHero>
+    <SummaryHero eyebrow={`NEXPEN · ${{fund:'FUNDS',bond:'BONDS',savings:'SAVINGS',termDeposit:'DEPOSITS'}[type]}`} title={asset.name} label={isDeposit?'目前定存本金':isSavings?'目前解約金':isBond?'債券估算市值':'基金估算現值'} value={showSummaryFigure(investmentProductValue(asset,position),asset.currency)} detailId={`investment-product-${asset.id}`}><div className="summary-hero-metrics"><div><small>持有成本</small><strong>{showSummaryFigure(position.cost,asset.currency)}</strong></div><div><small>{isDeposit?'尚未領回本金差額':isSavings?'現值與保費差額':'未實現損益'}</small><strong className={investmentProductValue(asset,position)>=position.cost?'income':'expense'}>{showSummaryFigure(investmentProductValue(asset,position)-position.cost,asset.currency)}</strong><em className={position.realized>=0?'income':'expense'}>已實現 {showSummaryFigure(position.realized,asset.currency)}</em></div></div></SummaryHero>
     <section className="investment-valuation-list-panel" aria-label="估值歷史清單">
      <div className="investment-third-listview-heading"><h2>{isDeposit?'本金參考紀錄':'估值歷史'}</h2><button type="button" className="soft-btn small" onClick={()=>openValuation()}><Plus size={16}/>新增{isDeposit?'參考紀錄':'估值'}</button></div>
      <p className="investment-valuation-caption">估值當日匯率僅供參考；投資總額與淨資產按最新可取得的匯率換算。{asset.currency!=='TWD'&&<span className="investment-current-fx">目前換算匯率：{productTwdRate(asset)>0?`1 ${asset.currency} = ${productTwdRate(asset).toLocaleString('zh-TW',{maximumFractionDigits:8})} TWD${asset.currentFxDate?`（報價日 ${asset.currentFxDate}）`:''}`:'匯率尚未取得，暫不換算'}</span>}</p>

@@ -544,10 +544,10 @@ const catalog={
     "ja": "金額の色",
     "zh-CN": "金额颜色"
   },
-  "iCloud Drive 備份": {
-    "en": "iCloud Drive backup",
-    "ja": "iCloud Drive バックアップ",
-    "zh-CN": "iCloud Drive 备份"
+  "資料備份": {
+    "en": "Data backup",
+    "ja": "データのバックアップ",
+    "zh-CN": "数据备份"
   },
   "立即備份": {
     "en": "Back up now",
@@ -1345,15 +1345,15 @@ const catalog={
     "ja": "サブカテゴリを削除",
     "zh-CN": "删除子分类"
   },
-  "匯出完整 JSON，儲存到 iCloud Drive": {
-    "en": "Export full JSON backup to iCloud Drive",
-    "ja": "完全なJSONバックアップをiCloud Driveへ保存",
-    "zh-CN": "导出完整 JSON 并保存至 iCloud Drive"
+  "匯出完整JSON，儲存至內部儲存空間": {
+    "en": "Export full JSON to device storage",
+    "ja": "JSON全データを端末内ストレージに保存",
+    "zh-CN": "导出完整 JSON，保存至设备内部存储空间"
   },
-  "從 iCloud Drive 選擇備份檔，確認後覆蓋本機": {
-    "en": "Choose a backup from iCloud Drive and restore",
-    "ja": "iCloud Driveからバックアップを選択して復元",
-    "zh-CN": "从 iCloud Drive 选择备份文件并确认还原"
+  "從內部儲存空間選擇備份檔，確認後覆蓋": {
+    "en": "Choose a backup from device storage and confirm overwrite",
+    "ja": "端末内ストレージからバックアップを選び、確認後に上書き",
+    "zh-CN": "从设备内部存储空间选择备份文件，确认后覆盖"
   },
   "iPhone PWA 無法自動找到 iCloud Drive 最新檔案，還原時須自行選取；建議以檔名日期辨識最新備份。": {
     "en": "iPhone PWAs cannot auto-select the newest iCloud Drive backup. Choose the file manually by its date.",

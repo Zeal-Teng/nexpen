@@ -39,6 +39,7 @@ export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',prima
  const rate=primaryCurrency==='TWD'?1:Number(primaryTwdRate);
  const canConvert=Number.isFinite(rate)&&rate>0;
  const format=n=>canConvert?moneySymbol(new Intl.NumberFormat(language||'zh-TW',{maximumFractionDigits:['JPY','KRW'].includes(primaryCurrency)?0:2}).format(n/rate)):'—';
+ const formatSummary=n=>canConvert?moneySymbol(new Intl.NumberFormat(language||'zh-TW',{minimumFractionDigits:0,maximumFractionDigits:0}).format(n/rate)):'—';
  const now=()=>{const today=new Date();setLocalDate(`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`)};
  const dateLabel=period==='year'?date.slice(0,4):period==='month'?date.slice(0,7):date;
  const maxTick=Math.max(1,...report.timeline.flatMap(r=>[r.income,r.expense]));
@@ -49,9 +50,9 @@ export default function IncomeExpenseReport({rows=[],primaryCurrency='TWD',prima
    <div className="report-period-nav"><button type="button" onClick={()=>setLocalDate(d=>movePeriod(d,period,-1))} aria-label="上一期"><ChevronLeft size={20}/></button><strong>{dateLabel}</strong><button type="button" onClick={()=>setLocalDate(d=>movePeriod(d,period,1))} aria-label="下一期"><ChevronRight size={20}/></button><button type="button" className="report-now" onClick={now}><CalendarDays size={15}/>{period==='day'?t.today:period==='year'?t.nowYear:t.nowMonth}</button></div>
   </section>}
   {!embedded&&<div className="report-summary-grid">
-   <div className="glass report-summary-card"><span>{t.income}</span><strong className="income">{format(report.income)}</strong></div>
-   <div className="glass report-summary-card"><span>{t.expense}</span><strong className="expense">{format(report.expense)}</strong></div>
-   <div className="glass report-summary-card"><span>{t.net}</span><strong className={report.net>=0?'income':'expense'}>{format(report.net)}</strong></div>
+   <div className="glass report-summary-card"><span>{t.income}</span><strong className="income">{formatSummary(report.income)}</strong></div>
+   <div className="glass report-summary-card"><span>{t.expense}</span><strong className="expense">{formatSummary(report.expense)}</strong></div>
+   <div className="glass report-summary-card"><span>{t.net}</span><strong className={report.net>=0?'income':'expense'}>{formatSummary(report.net)}</strong></div>
   </div>}
   <section className="report-panel report-unified-panel report-plain-section">
    <div className="report-view-tabs" role="tablist" aria-label={t.report}>
