@@ -1272,7 +1272,7 @@ html .app-shell .investment-dashboard.glass.panel.investment-combined,
 .app-shell .daily-compact .stats-three.diary-finance-summary{
   display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:0!important;margin:9px 0 12px!important;
-  border:1px solid var(--theme-line);border-radius:20px;overflow:hidden;
+  border:1px solid var(--theme-line);border-radius:0!important;overflow:hidden;
   background:var(--theme-surface);
 }
 .app-shell .daily-compact .stats-three.diary-finance-summary > .stat,
@@ -2702,7 +2702,7 @@ html .app-shell .summary-hero.networth-overview-hero {
   display:block!important;min-height:0!important;
   box-sizing:border-box!important;width:100%!important;
   background:#1e241f!important;color:#fffaf1!important;
-  border:1px solid #455447!important;border-radius:26px!important;
+  border:1px solid #455447!important;border-radius:0!important;
   padding:0!important;margin:0 0 23px!important;
   box-shadow:0 12px 26px rgba(12,28,25,.14)!important;
 }
@@ -4628,7 +4628,7 @@ html .app-shell .investment-dashboard {
 }
 /* OVERVIEW / SUMMARY: quiet typography, one clear portfolio total, a second-line return */
 html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero) {
-  border-radius:23px!important;
+  border-radius:0!important;
   box-shadow:0 10px 28px rgba(0,0,0,.055)!important;
   border:1px solid color-mix(in srgb,currentColor 10%,transparent)!important;
   overflow:hidden!important;
@@ -6422,7 +6422,7 @@ html .app-shell .summary-hero.investment-performance-summary-hero {
   background:#202821!important;
   color:#fff9ed!important;
   border:1px solid #8f967a50!important;
-  border-radius:23px!important;
+  border-radius:0!important;
   box-shadow:0 9px 22px rgba(0,0,0,.12)!important;
 }
 html .app-shell .summary-hero.investment-performance-summary-hero .summary-hero-trigger {
@@ -7634,3 +7634,7 @@ html .app-shell .networth-goal-head-actions > button {
 @media (max-width:480px) {
   html .app-shell .networth-goal-head-actions { gap: 7px; }
 }
+
+/* v335: square corners for all summary hero containers */
+html .app-shell .summary-hero,
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero,.investment-performance-summary-hero) { border-radius: 0 !important; }
