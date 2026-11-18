@@ -12,7 +12,7 @@ const EDITOR_SELECTORS=[
 ].join(',');
 export function hasOpenEditor(doc=document){return !!doc.querySelector(EDITOR_SELECTORS)}
 export function requestPwaUpdateCheck(){window.dispatchEvent(new Event(UPDATE_EVENT))}
-export const pwaBuildInfo={version:'v345',buildId:BUILD_ID,buildTime:BUILD_TIME};
+export const pwaBuildInfo={version:'v346',buildId:BUILD_ID,buildTime:BUILD_TIME};
 
 // The worker is downloaded silently. Never replace an open editor or an in-progress
 // form; when the user returns to the app after closing it, activate the waiting SW.

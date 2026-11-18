@@ -1332,13 +1332,30 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   try{
    const data=await snapshot();
    const name=backupFileName();
-   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-   const url=URL.createObjectURL(blob);
-   const a=document.createElement('a');
-   a.href=url;a.download=name;a.style.display='none';
-   document.body.appendChild(a);
-   try{a.click()}finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
-   toast(i18n('已開始下載 JSON 備份'));
+   const file=new File([JSON.stringify(data,null,2)],name,{type:'application/json'});
+   const saveDownload=()=>{
+    const url=URL.createObjectURL(file);
+    const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+   };
+   // Desktop Chrome may support navigator.share but deny permission for file sharing.
+   // Use the native share sheet only on iOS; fall back to a direct download on errors.
+   const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||
+    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+   if(ios&&navigator.share&&navigator.canShare?.({files:[file]})){
+    try{
+     await navigator.share({files:[file],title:'NEXPEN 備份'});
+     toast(i18n("備份已分享，請確認已儲存到 iCloud Drive"));
+     return;
+    }catch(err){
+     if(err?.name==='AbortError')return; // User cancelled share sheet.
+     // Permission denied, NotAllowedError, etc.: download is still available.
+     console.warn('分享備份失敗，改用下載：',err);
+    }
+   }
+   saveDownload();
+   toast(i18n("已下載備份 JSON；如需 iCloud Drive，請將檔案移至 iCloud Drive"));
   }catch(e){toast('備份失敗：'+(e?.message||String(e)))}
  };
  const importFile=async e=>{if(isDemoMode){toast(i18n('演示模式無法還原個人備份'));e.target.value='';return;}const file=e.target.files[0];e.target.value='';if(!file)return;try{const obj=JSON.parse(await file.text());if(obj?.app!=='cyberpulse-liquid'||![1,2,3].includes(obj.version)||!['records','accounts','stocks','recurring','settings'].every(k=>Array.isArray(obj[k])))throw Error(i18n("備份格式或版本不正確"));if(!(await askConfirm({kind:'restore',title:i18n('還原本機備份？'),subtitle:file.name,description:i18n('還原將覆蓋目前所有本機資料。請先確認已備份現有資料。'),details:`備份時間：${obj.exportedAt?new Date(obj.exportedAt).toLocaleString('zh-TW'):i18n('未記錄')}\n交易 ${obj.records.length} 筆 · 帳戶 ${obj.accounts.length} 個\n股票 ${obj.stocks.length} 筆 · 保單估值 ${(obj.investmentValuations||[]).length} 筆\n定期排程 ${obj.recurring.length} 筆` })))return;await restore(obj);await reload();toast(i18n("備份還原完成"))}catch(err){toast(i18n('匯入失敗：')+err.message)}};
