@@ -128,9 +128,11 @@ export function createDemoDataset() {
  const settings = [
   {key:'theme',value:'dark'},
   {key:'projects',value:[{id:'demo-trip',name:'週末小旅行'},{id:'demo-learning',name:'個人成長'}]},
-  {key:'transactionTemplates',value:[]},
   {key:'stockClosingQuotes',value:{'2330':{price:790,date:daysBefore(1),source:'demo'},'0050':{price:165,date:daysBefore(1),source:'demo'}}},
   {key:'netWorthGoalTwd',value:3000000},
+  {key:'netWorthMilestones',value:[{amountTwd:1000000,achievedDate:daysBefore(240)},{amountTwd:1500000,achievedDate:daysBefore(100)}]},
+  {key:'accountTypes',value:[{id:'bank',name:'銀行帳戶',cardColor:'#79bada'},{id:'cash',name:'現金',cardColor:'#e9ca8f'},{id:'credit',name:'信用卡',cardColor:'#eb93a2'},{id:'ewallet',name:'電子支付',cardColor:'#b2a0e4'},{id:'brokerage',name:'證券交割戶',cardColor:'#91cbb0'}]},
+  {key:'transactionTemplates',value:[{id:'demo-template-lunch',name:'午餐快速記帳',type:'expense',amount:'180',account:'demo-cash',fromAccount:'',toAccount:'',mainCategory:'餐飲美食',subCategory:'午餐',note:'示範午餐',projectId:''}]},
   {key:'demoSeedVersion',value:2},
  ];
  return {accounts,records,stocks,recurring,investmentValuations,investmentFlows,investmentProducts,netWorthHistory,settings};

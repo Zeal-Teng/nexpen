@@ -1,6 +1,6 @@
 import {moneySymbol} from './moneyDisplay.js';
 import React,{useState} from 'react';
-import {Wallet,Landmark,ChartNoAxesCombined,Shield,Layers3,Coins,ChartLine,HandCoins,AlertCircle,ChevronRight} from 'lucide-react';
+import {Wallet,Landmark,ChartColumnBig,Shield,Layers3,Coins,ChartLine,HandCoins,AlertCircle,ChevronRight} from 'lucide-react';
 import {ASSET_GROUPS} from './netWorth.js';
 import SummaryHero from './SummaryHero.jsx';
 import NetWorthTrend from './NetWorthTrend.jsx';
@@ -12,7 +12,7 @@ const translations={
  en:{title:'Asset allocation',gross:'Total assets',debt:'Total liabilities',net:'Net worth',ratio:'Share of assets',liabilities:'Liabilities',none:'No liabilities recorded',empty:'No assets to display',unknown:'Some investments have no valid quote. Totals show known values and may understate net worth.',cash:'Cash',deposit:'Deposits',securities:'Securities',trust:'Stock trusts',insurance:'Insurance',fund:'Funds',bond:'Bonds',savings:'Savings insurance',termDeposit:'Time deposits',other:'Other assets',assetCount:'asset categories',liabilityCount:'liabilities',credit:'Credit card debt',overdraft:'Account overdraft'},
  ja:{title:'資産構成',gross:'総資産',debt:'負債合計',net:'純資産',ratio:'資産比率',liabilities:'負債明細',none:'負債はありません',empty:'表示する資産がありません',unknown:'一部の投資の時価が未取得です。合計は既知の金額のみで計算しています。',cash:'現金',deposit:'預金',securities:'証券',trust:'株式信託',insurance:'保険',fund:'ファンド',bond:'債券',savings:'貯蓄保険',termDeposit:'定期預金',other:'その他資産',assetCount:'資産区分',liabilityCount:'件の負債',credit:'カード債務',overdraft:'口座のマイナス残高'}
 };
-const icons={cash:Wallet,deposit:Landmark,securities:ChartNoAxesCombined,trust:Layers3,insurance:Shield,fund:ChartLine,bond:HandCoins,savings:Shield,termDeposit:Landmark,other:Coins};
+const icons={cash:Wallet,deposit:Landmark,securities:ChartColumnBig,trust:Layers3,insurance:Shield,fund:ChartLine,bond:HandCoins,savings:Shield,termDeposit:Landmark,other:Coins};
 const colors={cash:'#35b9ab',deposit:'#638bd9',securities:'#a88be5',trust:'#ff9b82',insurance:'#e7b75f',fund:'#799bc5',bond:'#68a99c',savings:'#dbac72',termDeposit:'#87b49a',other:'#8fa6b0'};
 
 export default function NetWorthBreakdown({data,format,language='zh-TW',currency='TWD',history=[],goalTwd=null,milestones=[],onRecordGoal=()=>{},mainRate=1,onSaveGoal=()=>{}}){
