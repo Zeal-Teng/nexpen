@@ -7650,3 +7650,20 @@ html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-h
   }
   html .app-shell .sidebar .side-link.selected svg { color: inherit !important; }
 }
+
+
+/* v349: amount privacy must cover liabilities and account-stack summaries.
+   Target numeric nodes, not their ancestor cards, so names/actions remain legible. */
+html .app-shell[data-hide-amounts="true"] :is(
+  .networth-liability-row > strong,
+  .networth-liability-row > .expense,
+  .account-stack-peek-bottom > b,
+  .account-stack-peek-bottom > strong,
+  .accounts-group-section .account-stack-amount,
+  .hero.compact-hero > strong
+) {
+  filter: blur(9px) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  pointer-events: none !important;
+}
