@@ -7638,3 +7638,15 @@ html .app-shell .networth-goal-head-actions > button {
 /* v336: subtle corners for summary hero containers */
 html .app-shell .summary-hero,
 html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero,.investment-performance-summary-hero) { border-radius: 8px !important; }
+
+/* v341: desktop navigation highlight must be anchored to its actual item, not
+   a pseudo-element advanced by an assumed row height. */
+@media (min-width: 801px) {
+  html .app-shell .sidebar::before { content: none !important; display: none !important; }
+  html .app-shell .sidebar .side-link.selected {
+    background: var(--theme-accent) !important;
+    color: var(--theme-accent-contrast) !important;
+    box-shadow: none !important;
+  }
+  html .app-shell .sidebar .side-link.selected svg { color: inherit !important; }
+}
