@@ -1957,6 +1957,11 @@ const catalog={
     "ja": "サイバーネオン",
     "zh-CN": "赛博霓虹"
   },
+  "午夜靛藍": {"en": "Midnight Indigo", "ja": "ミッドナイトインディゴ", "zh-CN": "午夜靛蓝"},
+  "石墨灰階": {"en": "Graphite Gray", "ja": "グラファイトグレー", "zh-CN": "石墨灰阶"},
+  "深海松綠": {"en": "Deep Sea Teal", "ja": "ディープシーティール", "zh-CN": "深海松绿"},
+  "紫電霓虹": {"en": "Neon Violet", "ja": "ネオンバイオレット", "zh-CN": "紫电霓虹"},
+  "緋紅霓虹": {"en": "Neon Crimson", "ja": "ネオンクリムゾン", "zh-CN": "绯红霓虹"},
   "矩陣綠光": {
     "en": "Matrix Green",
     "ja": "マトリックスグリーン",

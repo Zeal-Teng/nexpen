@@ -1881,7 +1881,7 @@ html .app-shell .diary-search-filter>.smart-select.compact {
 :root[data-theme] .app-shell .sheet-floating-actions .fab.sheet-action-delete svg {
   color:#b53e5b!important;stroke:currentColor!important;
 }
-:root:is([data-theme="dark"],[data-theme="cyber"],[data-theme="matrix"],[data-theme="violet"],[data-theme="titanium"],[data-theme="ember"]) .app-shell .sheet-floating-actions .fab.sheet-action-delete {
+:root:is([data-theme="dark"],[data-theme="cyber"],[data-theme="titanium"],[data-theme="midnight"],[data-theme="graphite"],[data-theme="deepsea"],[data-theme="neonviolet"],[data-theme="neoncrimson"]) .app-shell .sheet-floating-actions .fab.sheet-action-delete {
   background:#633544!important;
   color:#ffb9c8!important;
   -webkit-text-fill-color:#ffb9c8!important;
@@ -1890,7 +1890,7 @@ html .app-shell .diary-search-filter>.smart-select.compact {
              0 3px 12px rgba(208,89,116,.18),
              inset 0 1px 0 rgba(255,255,255,.10)!important;
 }
-:root:is([data-theme="dark"],[data-theme="cyber"],[data-theme="matrix"],[data-theme="violet"],[data-theme="titanium"],[data-theme="ember"]) .app-shell .sheet-floating-actions .fab.sheet-action-delete svg {
+:root:is([data-theme="dark"],[data-theme="cyber"],[data-theme="titanium"],[data-theme="midnight"],[data-theme="graphite"],[data-theme="deepsea"],[data-theme="neonviolet"],[data-theme="neoncrimson"]) .app-shell .sheet-floating-actions .fab.sheet-action-delete svg {
   color:#ffb9c8!important;
 }
 :root[data-theme] .app-shell .sheet-floating-actions .fab.sheet-action-delete:active:not(:disabled) {
