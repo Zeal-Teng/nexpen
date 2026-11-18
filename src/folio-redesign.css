@@ -1272,7 +1272,7 @@ html .app-shell .investment-dashboard.glass.panel.investment-combined,
 .app-shell .daily-compact .stats-three.diary-finance-summary{
   display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:0!important;margin:9px 0 12px!important;
-  border:1px solid var(--theme-line);border-radius:0!important;overflow:hidden;
+  border:1px solid var(--theme-line);border-radius:8px!important;overflow:hidden;
   background:var(--theme-surface);
 }
 .app-shell .daily-compact .stats-three.diary-finance-summary > .stat,
@@ -7635,6 +7635,6 @@ html .app-shell .networth-goal-head-actions > button {
   html .app-shell .networth-goal-head-actions { gap: 7px; }
 }
 
-/* v335: square corners for all summary hero containers */
+/* v336: subtle corners for summary hero containers */
 html .app-shell .summary-hero,
-html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero,.investment-performance-summary-hero) { border-radius: 0 !important; }
+html .app-shell .summary-hero:is(.investment-dashboard-hero,.networth-overview-hero,.investment-performance-summary-hero) { border-radius: 8px !important; }

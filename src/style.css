@@ -2209,3 +2209,44 @@ html .app-shell .transaction-icon:is(.expense, .income, .stock, .transfer) {
 :root[data-theme="portfolio"] .app-shell .investment-sheet-select {
  background:transparent!important;
 }
+
+/* v337: square diary range switch and icon-only jump-to-current control. */
+html .app-shell .daily-compact .calendar-header .diary-view-switch,
+html .app-shell .daily-compact .calendar-header .diary-view-switch button {
+  border-radius: 0 !important;
+}
+html .app-shell .daily-compact .calendar-header .calendar-header-controls .diary-jump-current {
+  display: inline-flex !important; align-items: center; justify-content: center;
+  width: 35px; height: 35px; min-width: 35px; min-height: 35px !important;
+  padding: 0 !important; flex: 0 0 35px;
+}
+html .app-shell .daily-compact .calendar-header .calendar-header-controls .diary-jump-current svg {
+  display: block !important; width: 18px; height: 18px;
+}
+
+/* v338: transparent outer diary view switch, preserve active button highlight. */
+html .app-shell .diary-view-switch {
+  background: transparent !important;
+}
+
+/* v339: genuinely transparent day/month/year switch, including its outline. */
+html .app-shell .daily-compact .calendar-header .diary-view-switch,
+html .app-shell .diary-view-switch {
+  background: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+}
+/* Keep only the selected view filled; remove inactive button surfaces. */
+html .app-shell .daily-compact .calendar-header .diary-view-switch button:not(.active) {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+/* Today / this month / this year icon control: sharp corners in every theme. */
+html .app-shell .calendar-header-controls .diary-jump-current,
+html .app-shell .daily-compact .calendar-header .calendar-header-controls .diary-jump-current {
+  border-radius: 0 !important;
+}
