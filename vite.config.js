@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const buildId = `v350-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}`;
+const buildId = `v351-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}`;
 const buildTime = new Date().toISOString();
 
 export default defineConfig(({mode})=>({
@@ -19,7 +19,7 @@ export default defineConfig(({mode})=>({
   }},
   plugins:[react(), {
     name:'nexpen-build-version',
-    generateBundle(){this.emitFile({type:'asset',fileName:'version.json',source:JSON.stringify({version:'v350',buildId,buildTime})})}
+    generateBundle(){this.emitFile({type:'asset',fileName:'version.json',source:JSON.stringify({version:'v351',buildId,buildTime})})}
   }, VitePWA({
     injectRegister:null,
     registerType:'prompt',

@@ -5,6 +5,7 @@ import AccountTypeColorPicker from './AccountTypeColorPicker.jsx';
 import {productTwdRate} from './investmentValuationsProduct.js';
 import {balanceAuditDelta,isBalanceAudit} from './balanceAudit.js';
 import {investmentDiaryRows} from './investmentDiary.js';
+import {stockRealizedDiaryRows} from './stockRealizedDiary.js';
 import {repairLegacyTrustContributions} from './trustLegacyRepair.js';
 import {investmentPosition} from './investmentLedger.js';
 import {normalizeTrustSubsidyRate} from './trustSubsidy.js';
@@ -1298,7 +1299,10 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
  // 投資贖回及投入款使用 investmentFlows 做唯一帳務來源；這裡僅投影到日記帳。
  // 不新增 records，否則會與 accountBalance 中的 flows 重複入帳。
  const projectedInvestmentDiaryRows=investmentDiaryRows(investmentFlows,accounts,investmentProducts);
- const diaryRecords=[...records,...dividendDiaryRows,...tradeDiaryRows,...projectedInvestmentDiaryRows];
+ // Sale proceeds are cash movements; realized profit/loss is a separate *virtual*
+ // income/expense entry for the diary and reports, never another account movement.
+ const realizedStockDiaryRows=stockRealizedDiaryRows(stocks);
+ const diaryRecords=[...records,...dividendDiaryRows,...tradeDiaryRows,...realizedStockDiaryRows,...projectedInvestmentDiaryRows];
  const month=date.slice(0,7);
  const selectedYear=date.slice(0,4);
  const yearTx=diaryRecords.filter(r=>r.date?.startsWith(`${selectedYear}-`));
@@ -1479,14 +1483,14 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
   const account=accounts.find(a=>a.id===x.account);
   const accountLabel=x.type==='transfer'?`${accounts.find(a=>a.id===x.fromAccount)?.name||i18n('未指定轉出帳戶')} → ${accounts.find(a=>a.id===x.toAccount)?.name||i18n('未指定轉入帳戶')}`:(account?.name||i18n('未指定帳戶'));
   const rawTitle=diaryTransactionTitle(x,picker[x.type]);
-  const isCategorizedDiaryRow=!x.isStockTrade&&!x.isStockDividend&&!x.isInvestmentFlow&&(x.type==='expense'||x.type==='income');
+  const isCategorizedDiaryRow=!x.isStockTrade&&!x.isStockDividend&&!x.isInvestmentFlow&&!x.isStockRealized&&(x.type==='expense'||x.type==='income');
   const categoryTitle=x.subCategory||x.mainCategory||rawTitle;
   const displayTitle=isCategorizedDiaryRow?i18n(categoryTitle):(rawTitle===x.subCategory||rawTitle===x.mainCategory?i18n(rawTitle):rawTitle);
   const diaryNote=isCategorizedDiaryRow?String(x.note||'').trim():'';
   const signedAmount=`${x.type==='adjustment'?(Number(x.amount)>=0?'+':'−'):x.type==='expense'||(x.isStockTrade&&x.stockAction==='buy')||(x.isInvestmentFlow&&x.investmentAction==='contribution')?'-':x.type==='income'||(x.isStockTrade&&x.stockAction==='sell')||(x.isInvestmentFlow&&x.investmentAction==='redemption')?'+':''}${fmtAccountFigure(x.type==='adjustment'?Math.abs(Number(x.amount)):x.amount,accounts.find(a=>a.id===(x.type==='transfer'?x.fromAccount:x.account)))}`;
-  const Icon=CATEGORY_ICONS[x.isInvestmentFlow?'trend':x.type==='stock'?'trend':x.type==='transfer'?'transfer':categoryIcons[`${x.type}/sub/${x.mainCategory}/${x.subCategory}`]||categoryIcons[`${x.type}/main/${x.mainCategory}`]||suggestedIcon(x.mainCategory||'')]||Tags;
-  const editDiaryRow=()=>{if(isBalanceAudit(x)){openBalanceAudit(accounts.find(a=>a.id===x.account),x);return;}if(x.isInvestmentFlow){const f=investmentFlows.find(f=>f.id===x.investmentFlowId);const asset=accounts.find(a=>a.id===f?.assetId);setTab('stocks');setInvestSection(asset?.type==='policy'?'policy':asset?.type==='trust'?'trust':investmentProducts.find(p=>p.id===f?.assetId)?.type||'fund');setSelectedStockSymbol(null);return;}if(x.isStockDividend||x.isStockTrade)open('stock',stocks.find(s=>s.id===x.stockId));else open('transaction',x)};
-  const deleteDiaryRow=()=>{if(x.isInvestmentFlow){editDiaryRow();toast('請在投資資產的資金異動紀錄中編輯或刪除此筆交易');return;}remove(x.isStockDividend||x.isStockTrade?'stocks':'records',x.isStockDividend||x.isStockTrade?x.stockId:x.id)};
+  const Icon=CATEGORY_ICONS[x.isStockRealized?'trend':x.isInvestmentFlow?'trend':x.type==='stock'?'trend':x.type==='transfer'?'transfer':categoryIcons[`${x.type}/sub/${x.mainCategory}/${x.subCategory}`]||categoryIcons[`${x.type}/main/${x.mainCategory}`]||suggestedIcon(x.mainCategory||'')]||Tags;
+  const editDiaryRow=()=>{if(isBalanceAudit(x)){openBalanceAudit(accounts.find(a=>a.id===x.account),x);return;}if(x.isInvestmentFlow){const f=investmentFlows.find(f=>f.id===x.investmentFlowId);const asset=accounts.find(a=>a.id===f?.assetId);setTab('stocks');setInvestSection(asset?.type==='policy'?'policy':asset?.type==='trust'?'trust':investmentProducts.find(p=>p.id===f?.assetId)?.type||'fund');setSelectedStockSymbol(null);return;}if(x.isStockDividend||x.isStockTrade||x.isStockRealized)open('stock',stocks.find(s=>s.id===x.stockId));else open('transaction',x)};
+  const deleteDiaryRow=()=>{if(x.isStockRealized){editDiaryRow();toast(i18n('此筆損益由股票賣出自動計算，請修改或刪除原始賣出交易'));return;}if(x.isInvestmentFlow){editDiaryRow();toast('請在投資資產的資金異動紀錄中編輯或刪除此筆交易');return;}remove(x.isStockDividend||x.isStockTrade||x.isStockRealized?'stocks':'records',x.isStockDividend||x.isStockTrade||x.isStockRealized?x.stockId:x.id)};
   return <React.Fragment key={x.id}>
     {diaryView!=='day'&&(i===0||dayTx[i-1].date!==x.date)&&<div className="diary-month-date-heading">{x.date} <small>{weekdayLabels[language]?.[parseDate(x.date).getDay()]||weekdayLabels['zh-TW'][parseDate(x.date).getDay()]}</small></div>}
     <article role="listitem" className={`diary-list-row diary-type-${x.type}`}>
@@ -1505,7 +1509,7 @@ const stockCandidate={id:editing?.id||uid(),date:form.date,action,symbol:form.sy
     </article>
   </React.Fragment>;
 }):<Blank text={diaryView==='year'?i18n('這一年沒有符合條件的交易'):diaryView==='month'?i18n('這個月沒有符合條件的交易'):i18n('這一天沒有符合條件的交易')}/>}
-</div></section>}{diaryPanel==='analysis'&&<IncomeExpenseReport embedded period={diaryView} date={date} rows={diaryRecords.filter(r=>r.type==='expense'||r.type==='income').map(r=>({...r,reportAmount:toTWD(r.amount,r.account)}))} primaryCurrency={primaryCurrency} primaryTwdRate={mainRate} language={language} colorScheme={colorScheme} onSelectRow={row=>{if(row.isInvestmentFlow){const f=investmentFlows.find(f=>f.id===row.investmentFlowId);const asset=accounts.find(a=>a.id===f?.assetId);setTab('stocks');setInvestSection(asset?.type==='policy'?'policy':asset?.type==='trust'?'trust':investmentProducts.find(p=>p.id===f?.assetId)?.type||'fund');setSelectedStockSymbol(null);}else if(row.isStockDividend||row.isStockTrade){open('stock',stocks.find(s=>s.id===row.stockId));}else{open('transaction',row);}}}/>}</>}
+</div></section>}{diaryPanel==='analysis'&&<IncomeExpenseReport embedded period={diaryView} date={date} rows={diaryRecords.filter(r=>r.type==='expense'||r.type==='income').map(r=>({...r,reportAmount:toTWD(r.amount,r.account)}))} primaryCurrency={primaryCurrency} primaryTwdRate={mainRate} language={language} colorScheme={colorScheme} onSelectRow={row=>{if(row.isInvestmentFlow){const f=investmentFlows.find(f=>f.id===row.investmentFlowId);const asset=accounts.find(a=>a.id===f?.assetId);setTab('stocks');setInvestSection(asset?.type==='policy'?'policy':asset?.type==='trust'?'trust':investmentProducts.find(p=>p.id===f?.assetId)?.type||'fund');setSelectedStockSymbol(null);}else if(row.isStockDividend||row.isStockTrade||row.isStockRealized){open('stock',stocks.find(s=>s.id===row.stockId));}else{open('transaction',row);}}}/>}</>}
  {tab==='dashboard'&&<NetWorthBreakdown data={netWorthData} history={netWorthHistory} goalTwd={netWorthGoalTwd} milestones={netWorthMilestones} onRecordGoal={saveNetWorthMilestone} mainRate={mainRate} onSaveGoal={saveNetWorthGoal} format={n=>baseAvailable?new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0,minimumFractionDigits:0}).format(Math.round(inPrimary(n))):'匯率尚未取得'} language={language} currency={primaryCurrency}/>}
  {tab==='accounts'&&<><div className="hero glass compact-hero"><span>{tr('帳戶資產總額（不含股票）')}</span><strong>{fmtSummaryNumber(includedAccounts.filter(a=>!isInvestmentAssetType(a.type)).reduce((s,a)=>s+bal(a)*fxOf(a),0))}</strong><small>{i18n("依各帳戶匯率換算為")} {primaryCurrency}{i18n("，僅供估值")}</small></div><section className="accounts-group-section"><div className="section-header account-list-header"><h2>{tr('我的帳戶')}</h2><div className="account-list-toolbar"><button className="soft-btn small" type="button" onClick={()=>setTab('accountTypes')}><Tags size={15}/>{i18n("帳戶類型管理")}</button></div></div>{accounts.length?(()=>{
   const groups=accountTypes.filter(t=>!isInvestmentAssetType(t.id)&&accounts.some(a=>a.type===t.id));

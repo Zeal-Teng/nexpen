@@ -1,6 +1,10 @@
 // NEXPEN UI localization. Keys use the original Traditional Chinese source labels.
 // Account names, custom categories and transaction notes are never translated automatically.
 const catalog={
+  "投資損益": {"en":"Investment P/L","ja":"投資損益","zh-CN":"投资损益"},
+  "股票獲利": {"en":"Stock realized gain","ja":"株式売却益","zh-CN":"股票盈利"},
+  "股票虧損": {"en":"Stock realized loss","ja":"株式売却損","zh-CN":"股票亏损"},
+  "此筆損益由股票賣出自動計算，請修改或刪除原始賣出交易": {"en":"This P/L is calculated from the stock sale. Edit or delete the original sale.","ja":"この損益は株式売却から自動計算されます。元の売却取引を編集または削除してください。","zh-CN":"此笔损益由股票卖出自动计算，请修改或删除原始卖出交易"},
   "尚無贖回交易，贖回後將顯示已實現損益。": {"en": "No redemptions yet. Realized profit/loss will appear after redemption.", "ja": "解約履歴はまだありません。解約後に実現損益が表示されます。", "zh-CN": "暂无赎回交易，赎回后将显示已实现损益。"},
   "本次贖回總金額：": {"en": "Total redemption amount:", "ja": "今回の解約総額：", "zh-CN": "本次赎回总金额："},
   "贖回入帳試算：": {"en": "Estimated redemption proceeds:", "ja": "解約入金試算：", "zh-CN": "赎回入账试算："},
