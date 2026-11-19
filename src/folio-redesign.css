@@ -7667,3 +7667,29 @@ html .app-shell[data-hide-amounts="true"] :is(
   -webkit-user-select: none !important;
   pointer-events: none !important;
 }
+
+
+/* v352: balance reconciliations have explicit edit/delete actions in the diary. */
+.app-shell .diary-transaction-list .diary-balance-audit-actions {
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:8px;
+  padding:0 9px 10px;
+}
+.app-shell .diary-balance-audit-actions button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:6px 10px;
+  border:1px solid var(--theme-border,rgba(130,160,185,.28));
+  border-radius:8px;
+  background:transparent;
+  color:var(--theme-text,inherit);
+  font:inherit;
+  font-size:.8rem;
+  cursor:pointer;
+}
+.app-shell .diary-balance-audit-actions button.is-danger { color:var(--theme-danger,#f27e93); }
+.app-shell .diary-balance-audit-actions button:focus-visible {outline:2px solid var(--theme-accent,#68d7e7);outline-offset:2px;}
