@@ -1,5 +1,8 @@
-import {useCallback,useEffect,useRef} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
 import {registerSW} from 'virtual:pwa-register';
+import {t} from './i18n.js';
+import './pwa-update-dialog.css';
 
 const BUILD_ID=__NEXPEN_BUILD_ID__;
 const BUILD_TIME=__NEXPEN_BUILD_TIME__;
@@ -12,28 +15,25 @@ const EDITOR_SELECTORS=[
 ].join(',');
 export function hasOpenEditor(doc=document){return !!doc.querySelector(EDITOR_SELECTORS)}
 export function requestPwaUpdateCheck(){window.dispatchEvent(new Event(UPDATE_EVENT))}
-export const pwaBuildInfo={version:'v350',buildId:BUILD_ID,buildTime:BUILD_TIME};
+export const pwaBuildInfo={version:'v353',buildId:BUILD_ID,buildTime:BUILD_TIME};
 
-// The worker is downloaded silently. Never replace an open editor or an in-progress
-// form; when the user returns to the app after closing it, activate the waiting SW.
+// A waiting worker stays inactive until the user explicitly agrees to update.
+// Do not interrupt an open editor; defer the announcement until it closes.
 export default function PwaUpdateManager(){
   const registration=useRef(null);
-  const updateSW=useRef(null);
+  const updateSWRef=useRef(null);
   const checking=useRef(false);
   const activating=useRef(false);
   const pending=useRef(false);
+  const dismissedBuild=useRef(null);
+  const remoteBuild=useRef(null);
+  const [showPrompt,setShowPrompt]=useState(false);
+  const [busy,setBusy]=useState(false);
 
-  const activateWhenSafe=useCallback(async()=>{
+  const offerWhenSafe=useCallback(()=>{
     if(!pending.current||activating.current||hasOpenEditor())return;
-    const reg=registration.current;
-    if(!reg?.waiting||!updateSW.current)return;
-    activating.current=true;
-    try{
-      await updateSW.current(true); // activates waiting worker and reloads app
-    }catch(error){
-      activating.current=false;
-      console.warn('[NEXPEN] silent update activation failed',error);
-    }
+    if(dismissedBuild.current && dismissedBuild.current===(remoteBuild.current||'waiting'))return;
+    if(registration.current?.waiting)setShowPrompt(true);
   },[]);
 
   const check=useCallback(async()=>{
@@ -46,40 +46,52 @@ export default function PwaUpdateManager(){
       if(!response.ok)throw Error(`Version request ${response.status}`);
       const remote=await response.json();
       if(remote?.buildId&&remote.buildId!==BUILD_ID){
-        pending.current=true;
+        remoteBuild.current=remote.buildId;
         await registration.current?.update();
-        await activateWhenSafe();
+        if(registration.current?.waiting){pending.current=true;offerWhenSafe()}
       }
-    }catch(error){console.warn('[NEXPEN] silent update check failed',error)}
+    }catch(error){console.warn('[NEXPEN] update check failed',error)}
     finally{checking.current=false}
-  },[activateWhenSafe]);
+  },[offerWhenSafe]);
+
+  const installUpdate=useCallback(async()=>{
+    if(activating.current||!updateSWRef.current)return;
+    if(hasOpenEditor())return; // Never discard an in-progress edit.
+    activating.current=true;
+    setBusy(true);
+    try{await updateSWRef.current(true)}
+    catch(error){
+      console.warn('[NEXPEN] update activation failed',error);
+      activating.current=false;
+      setBusy(false);
+    }
+  },[]);
 
   useEffect(()=>{
     let active=true;
-    const updater=registerSW({
+    updateSWRef.current=registerSW({
       immediate:true,
       onNeedRefresh(){
         if(!active)return;
         pending.current=true;
-        void activateWhenSafe();
+        offerWhenSafe();
       },
       onRegisteredSW(_url,reg){
         if(!active)return;
         registration.current=reg;
         if(reg?.waiting)pending.current=true;
-        void activateWhenSafe();
+        offerWhenSafe();
         void check();
       },
       onRegisterError(error){console.warn('[NEXPEN] SW registration failed',error)}
     });
-    updateSW.current=updater;
     void check();
     const onResume=()=>{
       if(document.visibilityState==='hidden')return;
-      void activateWhenSafe();
+      offerWhenSafe();
       void check();
     };
-    const observer=new MutationObserver(()=>{if(pending.current)void activateWhenSafe()});
+    const observer=new MutationObserver(()=>{if(pending.current)offerWhenSafe()});
     observer.observe(document.body,{subtree:true,childList:true});
     const interval=window.setInterval(onResume,60*1000);
     window.addEventListener(UPDATE_EVENT,onResume);
@@ -93,6 +105,20 @@ export default function PwaUpdateManager(){
       window.removeEventListener('online',onResume);
       document.removeEventListener('visibilitychange',onResume);
     };
-  },[activateWhenSafe,check]);
-  return null; // no notification, banner, or action required
+  },[offerWhenSafe,check]);
+
+  return showPrompt?createPortal(
+    <div className="nexpen-update-overlay">
+      <section role="alertdialog" aria-modal="true" aria-labelledby="nexpen-update-title" aria-describedby="nexpen-update-description" className="nexpen-update-dialog">
+        <h2 id="nexpen-update-title">{t('發現新版本')}</h2>
+        <p id="nexpen-update-description">{t('NEXPEN 有新版本可用，要立即更新嗎？')}</p>
+        <div className="nexpen-update-actions">
+          <button type="button" className="nexpen-update-later" disabled={busy} onClick={()=>{
+            dismissedBuild.current=remoteBuild.current||'waiting';setShowPrompt(false);
+          }}>{t('稍後更新')}</button>
+          <button type="button" className="nexpen-update-now" disabled={busy} onClick={installUpdate}>{busy?t('更新中…'):t('立即更新')}</button>
+        </div>
+      </section>
+    </div>,document.body
+  ):null;
 }

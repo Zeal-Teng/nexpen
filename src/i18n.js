@@ -1,6 +1,11 @@
 // NEXPEN UI localization. Keys use the original Traditional Chinese source labels.
 // Account names, custom categories and transaction notes are never translated automatically.
 const catalog={
+  "發現新版本": {"en":"New version available","ja":"新しいバージョンがあります","zh-CN":"发现新版本"},
+  "NEXPEN 有新版本可用，要立即更新嗎？": {"en":"A new version of NEXPEN is available. Update now?","ja":"NEXPENの新しいバージョンがあります。今すぐ更新しますか？","zh-CN":"NEXPEN 有新版本可用，要立即更新吗？"},
+  "稍後更新": {"en":"Later","ja":"後で更新","zh-CN":"稍后更新"},
+  "立即更新": {"en":"Update now","ja":"今すぐ更新","zh-CN":"立即更新"},
+
   "尚無贖回交易，贖回後將顯示已實現損益。": {"en": "No redemptions yet. Realized profit/loss will appear after redemption.", "ja": "解約履歴はまだありません。解約後に実現損益が表示されます。", "zh-CN": "暂无赎回交易，赎回后将显示已实现损益。"},
   "本次贖回總金額：": {"en": "Total redemption amount:", "ja": "今回の解約総額：", "zh-CN": "本次赎回总金额："},
   "贖回入帳試算：": {"en": "Estimated redemption proceeds:", "ja": "解約入金試算：", "zh-CN": "赎回入账试算："},
