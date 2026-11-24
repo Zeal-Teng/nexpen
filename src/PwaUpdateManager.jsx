@@ -15,7 +15,7 @@ const EDITOR_SELECTORS=[
 ].join(',');
 export function hasOpenEditor(doc=document){return !!doc.querySelector(EDITOR_SELECTORS)}
 export function requestPwaUpdateCheck(){window.dispatchEvent(new Event(UPDATE_EVENT))}
-export const pwaBuildInfo={version:'v355',buildId:BUILD_ID,buildTime:BUILD_TIME};
+export const pwaBuildInfo={version:'v356',buildId:BUILD_ID,buildTime:BUILD_TIME};
 
 // A waiting worker stays inactive until the user explicitly agrees to update.
 // Do not interrupt an open editor; defer the announcement until it closes.
