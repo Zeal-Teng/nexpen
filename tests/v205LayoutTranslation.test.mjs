@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const app=fs.readFileSync(new URL('../src/App.jsx',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../src/style.css',import.meta.url),'utf8');
+const locale=fs.readFileSync(new URL('../src/i18n.js',import.meta.url),'utf8');
+const netWorth=fs.readFileSync(new URL('../src/NetWorthBreakdown.jsx',import.meta.url),'utf8');
+assert.match(app,/className="investment-action-header"/);
+assert.match(app,/className="circle-button investment-action-close"/);
+assert.doesNotMatch(app,/className="investment-action-cancel"/);
+assert.match(css,/\.investment-action-sheet \.investment-action-header \.investment-action-close/);
+assert.match(app,/className=\{'account-stack-heading-icon type-'/);
+assert.doesNotMatch(app,/className=\{'account-type-icon type-'\+type\}/);
+for(const name of ['存款','證券','其他資產'])assert.ok(locale.includes(`"${name}":`));
+assert.match(netWorth,/t\.assetCount/);
+assert.match(netWorth,/t\.liabilityCount/);
+console.log('v205 layout and translation regression: PASS');

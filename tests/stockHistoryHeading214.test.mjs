@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const css=readFileSync(new URL('../src/folio-redesign.css',import.meta.url),'utf8');
+const view=readFileSync(new URL('../src/StockPerformanceView.jsx',import.meta.url),'utf8');
+const latest=css.slice(css.lastIndexOf('/* v214'));
+assert.match(latest,/\.stock-history-heading time\s*\{[^}]*grid-column:1;[^}]*font-weight:750;/s);
+assert.match(latest,/\.stock-history-heading b\s*\{[^}]*grid-column:2;[^}]*justify-self:end;/s);
+assert.match(css,/\.stock-history-heading b,\s*\nhtml .*\.stock-history-heading time\s*\{\s*font-size:clamp\(16px,3\.8vw,19px\)/);
+assert.match(view,/<span className="stock-history-heading"><b>.*<time dateTime=\{x\.date\}>/);
+console.log('v214 heading layout checks passed');

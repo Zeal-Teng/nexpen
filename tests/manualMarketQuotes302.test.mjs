@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {collectClosingQuotes,mergeClosingQuotes} from '../src/manualMarketQuotes.js';
+test('official first, fallback missing and newer quotes, reject future, preserve newer local',async()=>{
+ const calls=[];const fetcher=async url=>{calls.push(url);if(url.includes('MI_INDEX')||url.includes('dailyQuotes'))throw Error('CORS');if(url.includes('openapi.twse'))return {ok:true,json:async()=>[{Code:'2330',ClosingPrice:'1200',Date:'1151110'},{Code:'0050',ClosingPrice:'60',Date:'1151112'}]};if(url.includes('tpex'))throw Error('CORS');return {ok:true,json:async()=>({format:'cyberpulse-market-quotes-v1',quotes:{'2330':{price:1190,date:'2026-11-09'},'6488':{price:100,date:'2026-11-10'},'0050':{price:55,date:'2026-11-10'}}})};};
+ const codes=['2330','6488','0050','9999'];const r=await collectClosingQuotes({codes,manual:true,bundleUrl:'/nexpen/market-quotes.json',fetcher,today:'2026-11-11'});assert.equal(calls.length,5);assert.equal(r.origins['2330'],'official');assert.equal(r.origins['6488'],'github');assert.equal(r.got['0050'].price,55);const m=mergeClosingQuotes({'0050':{price:56,date:'2026-11-11'}},r.got,r.origins,codes);assert.equal(m.official,1);assert.equal(m.github,1);assert.equal(m.unchanged,1);assert.equal(m.failed,1);assert.equal(m.merged['0050'].price,56);
+});
+test('automatic production uses only published JSON',async()=>{let count=0;await collectClosingQuotes({codes:['2330'],bundleUrl:'/market-quotes.json',fetcher:async()=>{count++;return {ok:true,json:async()=>({format:'cyberpulse-market-quotes-v1',quotes:{}})};}});assert.equal(count,1);});
