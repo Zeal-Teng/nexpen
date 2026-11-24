@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const buildId = `v353-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}`;
+const buildId = `v354-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}`;
 const buildTime = new Date().toISOString();
 
 export default defineConfig(({mode})=>({
@@ -19,12 +19,12 @@ export default defineConfig(({mode})=>({
   }},
   plugins:[react(), {
     name:'nexpen-build-version',
-    generateBundle(){this.emitFile({type:'asset',fileName:'version.json',source:JSON.stringify({version:'v353',buildId,buildTime})})}
+    generateBundle(){this.emitFile({type:'asset',fileName:'version.json',source:JSON.stringify({version:'v354',buildId,buildTime})})}
   }, VitePWA({
     injectRegister:null,
     registerType:'prompt',
-    includeAssets:['icon.svg'],
-    manifest:{name:'NEXPEN 記帳',short_name:'NEXPEN',description:'完全本機儲存的 iPhone 記帳應用',theme_color:'#e8edf8',background_color:'#e8edf8',display:'standalone',orientation:'portrait-primary',start_url:'.',icons:[{src:'icon.svg',sizes:'any',type:'image/svg+xml',purpose:'any maskable'}]},
+    includeAssets:['favicon-32.png','apple-touch-icon.png','icon-192.png','icon-512.png','icon-maskable-512.png'],
+    manifest:{name:'NEXPEN 記帳',short_name:'NEXPEN',description:'完全本機儲存的 iPhone 記帳應用',theme_color:'#e8edf8',background_color:'#e8edf8',display:'standalone',orientation:'portrait-primary',start_url:'.',icons:[{src:'icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},{src:'icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},{src:'icon-maskable-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'}]},
     workbox:{navigateFallback:'index.html',globPatterns:['**/*.{js,css,html,svg,png}'],cleanupOutdatedCaches:true}
   })]
 }));
